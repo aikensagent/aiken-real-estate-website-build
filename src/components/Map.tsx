@@ -4,6 +4,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { supabase } from '../lib/supabase'
+import { trackEvent } from '../lib/leadTracking'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -21,7 +22,6 @@ export default function Map() {
       style: 'mapbox://styles/mapbox/streets-v12',
       center: [-81.7196, 33.5604], // Aiken, SC
       zoom: 12,
-      // Prevent the map from stealing drag events while drawing
       dragPan: true,
     })
 
@@ -37,7 +37,6 @@ export default function Map() {
           trash: true,
         },
         defaultMode: 'simple_select',
-        // Better touch / pointer behavior
         touchEnabled: true,
         boxSelect: false,
       })
@@ -45,7 +44,6 @@ export default function Map() {
       map.current.addControl(draw.current, 'top-left')
       map.current.resize()
 
-      // Disable map drag while actively drawing so the hand does not take over
       map.current.on('draw.modechange', (e: any) => {
         if (e.mode === 'draw_polygon') {
           setShowDrawHelp(true)
@@ -56,13 +54,24 @@ export default function Map() {
         }
       })
 
+      // Track completed polygon
       map.current.on('draw.create', () => {
         setShowDrawHelp(false)
         map.current!.dragPan.enable()
         if (!draw.current) return
+
         const data = draw.current.getAll()
         if (data.features.length > 0) {
-          console.log('Current drawn polygon:', data.features[0].geometry)
+          const geometry = data.features[0].geometry
+          console.log('Current drawn polygon:', geometry)
+
+          // Phase 2 behavioral tracking
+          trackEvent('polygon_draw', {
+            eventData: {
+              type: geometry.type,
+              coordinates: geometry.type === 'Polygon' ? geometry.coordinates : null,
+            },
+          })
         }
       })
 
@@ -81,7 +90,7 @@ export default function Map() {
       })
     })
 
-    // Viewport tracking
+    // Viewport tracking (light – only log for now)
     map.current.on('moveend', () => {
       if (!map.current) return
       const bounds = map.current.getBounds()
@@ -97,7 +106,7 @@ export default function Map() {
       listings.forEach((listing) => {
         if (listing.lng == null || listing.lat == null) return
 
-        new mapboxgl.Marker({ color: '#0F2B5B' })
+        const marker = new mapboxgl.Marker({ color: '#0F2B5B' })
           .setLngLat([listing.lng, listing.lat])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 }).setHTML(`
@@ -115,6 +124,18 @@ export default function Map() {
             `)
           )
           .addTo(map.current!)
+
+        // Track listing view when the popup is opened
+        marker.getElement().addEventListener('click', () => {
+          trackEvent('listing_view', {
+            eventData: {
+              listing_id: listing.id,
+              mls_id: listing.mls_id,
+              address: listing.address,
+              price: listing.price,
+            },
+          })
+        })
       })
     }
 
