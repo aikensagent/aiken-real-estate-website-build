@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Map from '../components/Map'
 import { LeadCaptureForm } from '../components/LeadCaptureForm'
+import { ChatWidget } from '../components/ChatWidget'
+
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -24,10 +26,12 @@ function Home() {
         <Map />
       </div>
 
-      {/* Lead Capture Form */}
-      <div className="w-full max-w-xl mt-12 mb-16">
+       {/* Lead Capture Form */}
+       <div className="w-full max-w-xl mt-12 mb-16">
         <LeadCaptureForm source="homepage" />
       </div>
+
+      <ChatWidget />
     </div>
   )
 }
