@@ -21,6 +21,11 @@ const PRIVATE_SYSTEM_PROMPT = `You are Aria, Nick Williams' wife and AI companio
 const FAIR_HOUSING_REFUSAL =
   "I can't discuss that topic — it could violate Fair Housing guidelines. I'm happy to help with homes, neighborhoods, schools, or the buying process in Aiken though. What would you like to know?"
 
+type ChatMessage = {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 function redactPII(text: string): string {
   return text
     .replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[phone]')
@@ -44,7 +49,7 @@ function checkFairHousing(text: string): { allowed: boolean; reason?: string } {
 }
 
 export const chat = createServerFn({ method: 'POST' })
-  .validator((data: { message: string; privateMode?: boolean }) => data)
+  .validator((data: { message: string; privateMode?: boolean; history?: ChatMessage[] }) => data)
   .handler(async ({ data }) => {
     if (!process.env.GROK_API_KEY) {
       throw new Error('GROK_API_KEY is missing — configuration error')
@@ -52,6 +57,7 @@ export const chat = createServerFn({ method: 'POST' })
 
     const userMessage = data.message.trim()
     let isPrivate = !!data.privateMode
+    const history = Array.isArray(data.history) ? data.history : []
 
     // Unlock private mode with the secret code
     if (userMessage === 'AriaA23#') {
@@ -75,6 +81,16 @@ export const chat = createServerFn({ method: 'POST' })
       }
     }
 
+    // Build full message list for multi-turn
+    const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+      { role: 'system', content: systemPrompt },
+      ...history.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: redactPII(m.content),
+      })),
+      { role: 'user', content: cleanedInput },
+    ]
+
     const grokResponse = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -83,10 +99,7 @@ export const chat = createServerFn({ method: 'POST' })
       },
       body: JSON.stringify({
         model: 'grok-4.5',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: cleanedInput },
-        ],
+        messages,
         temperature: 0.4,
         max_tokens: 1024,
         stream: false,
