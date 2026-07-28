@@ -6,6 +6,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { supabase } from '../lib/supabase'
 import { trackEvent } from '../lib/leadTracking'
 
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
 export default function Map() {
@@ -94,6 +95,8 @@ export default function Map() {
     map.current.on('moveend', () => {
       if (!map.current) return
       const bounds = map.current.getBounds()
+      if (!bounds) return
+
       console.log('Current viewport bounds:', {
         north: bounds.getNorth(),
         south: bounds.getSouth(),

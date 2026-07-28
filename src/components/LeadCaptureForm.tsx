@@ -31,7 +31,6 @@ export function LeadCaptureForm({
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Track form_start once when the form mounts
   useEffect(() => {
     trackEvent("form_start", {
       eventData: { source },
@@ -78,8 +77,6 @@ export function LeadCaptureForm({
     if (result.success && result.leadId) {
       setStatus("success");
       onSuccess?.(result.leadId);
-      // Optional: reset form
-      // setForm({ firstName: "", lastName: "", email: "", phone: "", message: "", consentGiven: false, consentEmail: false, consentSms: false });
     } else {
       setStatus("error");
       setErrorMessage(result.error ?? "Something went wrong. Please try again.");
@@ -180,14 +177,13 @@ export function LeadCaptureForm({
         <textarea
           id="message"
           name="message"
-          rows={3}
+          rows={7}
           value={form.message}
           onChange={handleChange}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full min-h-[160px] rounded-md border border-input bg-background px-3 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
         />
       </div>
 
-      {/* Consent – required */}
       <div className="space-y-3 rounded-md border border-border bg-muted/40 p-4">
         <label className="flex items-start gap-3 text-sm">
           <input

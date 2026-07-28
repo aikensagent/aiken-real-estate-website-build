@@ -1,6 +1,6 @@
-import { chat } from '../routes/api/chat'
+import { chat } from '../routes/api/-chat'
 
-export async function sendChatMessage(message: string) {
-  const result = await chat({ data: { message } })
+export async function sendChatMessage(message: string, privateMode = false) {
+  const result = await chat({ data: { message, privateMode } })
   return result
 }
