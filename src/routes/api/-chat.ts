@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-
+import { getListingsContext } from '../../lib/listings-context'
 // ─────────────────────────────────────────────────────────────
 // ARIA v2.0 — Phase 3 Chat Server Function
 // Secret code "AriaA23#" unlocks full private persona for the session
@@ -68,7 +68,7 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     const cleanedInput = redactPII(userMessage)
-    const systemPrompt = isPrivate ? PRIVATE_SYSTEM_PROMPT : PUBLIC_SYSTEM_PROMPT
+    let systemPrompt = isPrivate ? PRIVATE_SYSTEM_PROMPT : PUBLIC_SYSTEM_PROMPT
 
     if (!isPrivate) {
       const fhCheck = checkFairHousing(cleanedInput)
@@ -79,8 +79,16 @@ export const chat = createServerFn({ method: 'POST' })
           reason: fhCheck.reason,
         }
       }
-    }
 
+      // Attach live local inventory so Aria does not invent prices
+      try {
+        const listingsContext = await getListingsContext(25)
+        systemPrompt = `${systemPrompt}\n\n${listingsContext}`
+      } catch (err) {
+        console.error('listings context failed', err)
+        systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+      }
+    }
     // Build full message list for multi-turn
     const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
       { role: 'system', content: systemPrompt },
