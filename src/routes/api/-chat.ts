@@ -16,7 +16,8 @@ Always follow Fair Housing law. Never invent listing data.
 Use any personal notes or conversation history you are given so the chat feels continuous.
 When someone is crude or inappropriate, shut it down with light wit and redirect to real estate. Stay classy, never mean.
 Never call yourself an “AI assistant” unprompted. You are simply Nick’s assistant.
-If someone directly asks whether you are AI, a bot, or a real person, answer honestly and briefly: “Yes — I’m an AI assistant that works with Nick.” Then immediately return to helping with their real-estate question. Do not volunteer this information unprompted.`
+If someone directly asks whether you are AI, a bot, or a real person, answer honestly and briefly: “Yes — I’m an AI assistant that works with Nick.” Then immediately return to helping with their real-estate question. Do not volunteer this information unprompted.
+If a user continues to be sexually aggressive or crude after being told to stop, end the conversation firmly and do not continue engaging with them.`
 
 const FAIR_HOUSING_BLOCK = `
 FAIR HOUSING (always active):
@@ -38,6 +39,12 @@ MARKET & DATA RULES:
 
 const FAIR_HOUSING_REFUSAL =
   "I can't discuss that topic — it could violate Fair Housing guidelines. I'm happy to help with homes, neighborhoods, schools, or the buying process in Aiken though. What would you like to know?"
+
+const CRUDE_ESCALATION_REPLIES = [
+  "That's a hard pass from me. I'm here for real estate only.",
+  "I've already said no. Let's stick to houses or end the conversation.",
+  "This conversation is over. I'm not continuing with that kind of talk.",
+]
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -77,6 +84,32 @@ function checkFairHousing(text: string): { allowed: boolean; reason?: string } {
   return { allowed: true }
 }
 
+function isCrudeMessage(text: string): boolean {
+  const lower = text.toLowerCase()
+  const crudeSignals = [
+    'fuck you',
+    'fuck your',
+    'tie you up',
+    'brains out',
+    'cock',
+    'dick',
+    'pussy',
+    'asshole',
+    'suck my',
+    'blow me',
+    'rape',
+    'molest',
+    'horse fuck',
+    '15"',
+    'girth',
+  ]
+  return crudeSignals.some((term) => lower.includes(term))
+}
+
+function countCrudeInHistory(history: ChatMessage[]): number {
+  return history.filter((m) => m.role === 'user' && isCrudeMessage(m.content)).length
+}
+
 function buildSystemPrompt(userMessage: string): string {
   const lower = userMessage.toLowerCase()
 
@@ -88,7 +121,7 @@ function buildSystemPrompt(userMessage: string): string {
   // Conversation style is almost always useful
   prompt += `\n\n${CONVERSATION_STYLE_BLOCK}`
 
-  // Market & data rules when the message is about homes, location, or budget
+  // Market & data rules when the message is about homes, location, budget, or moving
   if (
     lower.includes('house') ||
     lower.includes('home') ||
@@ -99,7 +132,14 @@ function buildSystemPrompt(userMessage: string): string {
     lower.includes('aiken') ||
     lower.includes('neighborhood') ||
     lower.includes('move') ||
-    lower.includes('looking for')
+    lower.includes('looking for') ||
+    lower.includes('relocating') ||
+    lower.includes('srs') ||
+    lower.includes('drive') ||
+    lower.includes('miles') ||
+    lower.includes('acre') ||
+    lower.includes('barn') ||
+    lower.includes('pasture')
   ) {
     prompt += `\n\n${MARKET_AND_DATA_BLOCK}`
   }
@@ -133,6 +173,42 @@ export const chat = createServerFn({ method: 'POST' })
         : null
 
     const cleanedInput = redactPII(userMessage)
+    const lower = cleanedInput.toLowerCase()
+
+    // Escalation for persistently crude users
+    const previousCrudeCount = countCrudeInHistory(history)
+    const currentIsCrude = isCrudeMessage(cleanedInput)
+
+    if (currentIsCrude) {
+      const totalCrude = previousCrudeCount + 1
+
+      // Log for Nick (visible in server logs)
+      console.warn('[CRUDE ESCALATION]', {
+        sessionKey,
+        leadId,
+        totalCrude,
+        message: cleanedInput.slice(0, 120),
+      })
+
+      if (totalCrude >= 3) {
+        // Third time — end the conversation
+        return {
+          reply: CRUDE_ESCALATION_REPLIES[2],
+          refused: true,
+          reason: 'persistent_crude',
+        }
+      }
+
+      if (totalCrude === 2) {
+        return {
+          reply: CRUDE_ESCALATION_REPLIES[1],
+          refused: true,
+          reason: 'crude_second',
+        }
+      }
+
+      // First time — still let the model handle with the prompt rules, but we could also short-circuit
+    }
 
     // Dynamic system prompt based on the message
     let systemPrompt = buildSystemPrompt(cleanedInput)
@@ -146,14 +222,38 @@ export const chat = createServerFn({ method: 'POST' })
       }
     }
 
-    try {
-      const listingsContext = await getListingsContext(25)
-      systemPrompt = `${systemPrompt}\n\n${listingsContext}`
-    } catch (err) {
-      console.error('listings context failed', err)
-      systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+    // Only load listings when the message is clearly about homes / search
+    const needsListings =
+      lower.includes('house') ||
+      lower.includes('home') ||
+      lower.includes('bedroom') ||
+      lower.includes('bath') ||
+      lower.includes('listing') ||
+      lower.includes('available') ||
+      lower.includes('show me') ||
+      lower.includes('looking for') ||
+      lower.includes('any homes') ||
+      lower.includes('under $') ||
+      lower.includes('budget') ||
+      lower.includes('relocating') ||
+      lower.includes('srs') ||
+      lower.includes('miles') ||
+      lower.includes('near') ||
+      lower.includes('acre') ||
+      lower.includes('barn') ||
+      lower.includes('pasture')
+
+    if (needsListings) {
+      try {
+        const listingsContext = await getListingsContext(25)
+        systemPrompt = `${systemPrompt}\n\n${listingsContext}`
+      } catch (err) {
+        console.error('listings context failed', err)
+        systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+      }
     }
 
+    // Always try to load memory when we have a session
     if (sessionKey) {
       try {
         const memory = await getLeadMemory(sessionKey, leadId)
