@@ -8,6 +8,19 @@ type Message = {
 }
 
 const STORAGE_KEY = 'aria-private-chat'
+const SESSION_KEY = 'aria-session-key'
+
+function getAriaSessionKey(): string {
+  if (typeof window === 'undefined') return 'server'
+  let key = localStorage.getItem(SESSION_KEY)
+  if (!key) {
+    key =
+      crypto.randomUUID?.() ??
+      `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`
+    localStorage.setItem(SESSION_KEY, key)
+  }
+  return key
+}
 
 function getSpeechRecognition(): SpeechRecognition | null {
   if (typeof window === 'undefined') return null
@@ -185,7 +198,7 @@ export function ChatWidget() {
         content: m.content,
       }))
 
-      const result = await sendChatMessage(trimmed, privateMode, historyForApi)
+const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAriaSessionKey())
 
       if (result.private) setPrivateMode(true)
 
