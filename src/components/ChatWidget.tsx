@@ -36,6 +36,7 @@ export function ChatWidget() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -55,7 +56,7 @@ export function ChatWidget() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+  }, [messages, loading, isTyping])
 
   function speakText(text: string) {
     if (!speakReplies || typeof window === 'undefined' || !window.speechSynthesis)
@@ -157,6 +158,7 @@ export function ChatWidget() {
     setMessages(newMessages)
     setInput('')
     setLoading(true)
+    setIsTyping(true)
     setError(null)
 
     try {
@@ -169,6 +171,11 @@ export function ChatWidget() {
         historyForApi,
         getAriaSessionKey()
       )
+
+      // Typing duration scales with reply length
+      const typingMs = Math.min(3200, 900 + result.reply.length * 35)
+            await new Promise((r) => setTimeout(r, typingMs))
+
       const assistantMessage: Message = {
         role: 'assistant',
         content: result.reply,
@@ -179,6 +186,7 @@ export function ChatWidget() {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
+      setIsTyping(false)
     }
   }
 
@@ -316,7 +324,7 @@ export function ChatWidget() {
             </div>
           </div>
         ))}
-        {loading && (
+        {(loading || isTyping) && (
           <div className="flex gap-3 justify-start">
             <img
               src={ariaAvatar}
@@ -324,7 +332,7 @@ export function ChatWidget() {
               className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
             />
             <div className="rounded-lg bg-white p-3 text-sm text-brand-slate shadow-sm">
-              Thinking…
+              Typing…
             </div>
           </div>
         )}
@@ -371,7 +379,7 @@ export function ChatWidget() {
             className="flex-1 rounded-lg bg-brand-navy px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-navy/90 disabled:opacity-50"
             aria-label="Send message"
           >
-            {loading ? 'Thinking…' : 'Send'}
+            {loading ? 'Typing…' : 'Send'}
           </button>
           <button
             onClick={handleTalkToNick}
