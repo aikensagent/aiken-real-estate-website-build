@@ -1,10 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getListingsContext } from '../../lib/listings-context'
 import {
-  formatMemoryForPrompt,
-  getLeadMemory,
-  saveConversationSummary,
-} from '../../lib/lead-memory'
+    formatMemoryForPrompt,
+    getLeadMemory,
+    saveConversationSummary,
+    extractAndSaveNotes,
+  } from '../../lib/lead-memory'
 
 // ARIA — public professional chat only (no private persona on the site)
 
@@ -167,6 +168,15 @@ export const chat = createServerFn({ method: 'POST' })
           leadId,
         }).catch((err) => console.error('lead memory save failed', err))
       }
-  
+      if (sessionKey) {
+        void extractAndSaveNotes({
+          sessionKey,
+          userMessage: cleanedInput,
+          assistantReply: reply,
+          leadId,
+        }).catch((err) => console.error('extractAndSaveNotes failed', err))
+      }
+
       return { reply }
+
     })

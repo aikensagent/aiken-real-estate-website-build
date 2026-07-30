@@ -73,7 +73,6 @@ export function formatMemoryForPrompt(memory: LeadMemory): string {
     'KNOWN FACTS ABOUT THIS VISITOR (from prior conversations — use naturally, never invent):',
   ]
 
-  // Active personal notes (highest confidence first)
   if (memory.notes && memory.notes.length > 0) {
     const sorted = [...memory.notes].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
     for (const note of sorted) {
@@ -82,7 +81,6 @@ export function formatMemoryForPrompt(memory: LeadMemory): string {
     }
   }
 
-  // Most recent conversation summary
   if (memory.summaries && memory.summaries.length > 0) {
     const latest = memory.summaries[0]
     if (latest.summary) {
@@ -142,4 +140,126 @@ export async function upsertPersonalNote(opts: {
   }
 
   return data as string
+}
+
+const EXTRACTION_NOTE_KEYS = [
+  'spouse_name',
+  'pet_name',
+  'kids',
+  'timeline',
+  'budget_notes',
+  'relocation_reason',
+  'preferred_style',
+  'prior_objection',
+  'favorite_feature',
+  'property_interest',
+] as const
+
+type ExtractionResult = {
+  note_key: (typeof EXTRACTION_NOTE_KEYS)[number]
+  excerpt: string
+  confidence: number
+  category: string
+}
+
+const NOTE_KEY_TO_CATEGORY: Record<string, string> = {
+  spouse_name: 'family',
+  pet_name: 'family',
+  kids: 'family',
+  timeline: 'timeline',
+  budget_notes: 'budget',
+  relocation_reason: 'preferences',
+  preferred_style: 'preferences',
+  prior_objection: 'objections',
+  favorite_feature: 'preferences',
+  property_interest: 'property_interest',
+}
+
+export async function extractAndSaveNotes(opts: {
+  sessionKey: string
+  userMessage: string
+  assistantReply: string
+  leadId?: string | null
+}): Promise<void> {
+  if (!process.env.GROK_API_KEY) return
+
+  const extractionPrompt = `You are a precise fact extractor for a real-estate chat. 
+Extract ONLY clear, explicit facts the USER stated in this conversation turn.
+Return a JSON array of objects with these exact fields:
+- note_key: one of [${EXTRACTION_NOTE_KEYS.join(', ')}]
+- excerpt: short direct quote or paraphrase (max 200 characters)
+- confidence: number between 0.6 and 0.9
+
+Rules:
+- Only extract if the user clearly stated it.
+- Never invent or assume.
+- Never extract anything related to race, religion, national origin, disability, or other Fair Housing protected classes.
+- If nothing clear, return an empty array [].
+- Output ONLY valid JSON. No markdown, no explanation.
+
+User message: ${opts.userMessage}
+Assistant reply: ${opts.assistantReply}`
+
+  try {
+    const res = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-4.5',
+        messages: [
+          { role: 'system', content: 'You output only valid JSON arrays.' },
+          { role: 'user', content: extractionPrompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 600,
+      }),
+    })
+
+    if (!res.ok) return
+
+    const json = await res.json()
+    const raw = json?.choices?.[0]?.message?.content?.trim() ?? '[]'
+    let parsed: ExtractionResult[] = []
+
+    try {
+      const cleaned = raw.replace(/```json|```/g, '').trim()
+      parsed = JSON.parse(cleaned)
+    } catch {
+      return
+    }
+
+    if (!Array.isArray(parsed)) return
+
+    for (const item of parsed) {
+      if (
+        !item.note_key ||
+        !EXTRACTION_NOTE_KEYS.includes(item.note_key as any) ||
+        !item.excerpt ||
+        typeof item.excerpt !== 'string'
+      ) {
+        continue
+      }
+
+      const excerpt = item.excerpt.slice(0, 280).trim()
+      if (excerpt.length < 2) continue
+
+      const confidence = Math.min(0.9, Math.max(0.6, Number(item.confidence) || 0.65))
+      const category = NOTE_KEY_TO_CATEGORY[item.note_key] ?? 'other'
+
+      await upsertPersonalNote({
+        sessionKey: opts.sessionKey,
+        category,
+        noteKey: item.note_key,
+        excerpt,
+        confidence,
+        source: 'extractor',
+        leadId: opts.leadId,
+      })
+    }
+  } catch (err) {
+    console.error('extractAndSaveNotes failed', err)
+  }
 }
