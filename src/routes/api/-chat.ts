@@ -151,28 +151,22 @@ export const chat = createServerFn({ method: 'POST' })
     let reply =
       result?.choices?.[0]?.message?.content?.trim() ??
       'I apologize, I could not generate a response.'
-    reply = redactPII(reply)
+      reply = redactPII(reply)
 
-    const outputCheck = checkFairHousing(reply)
-    if (!outputCheck.allowed) {
-      reply = FAIR_HOUSING_REFUSAL
-    }
-
-    if (sessionKey) {
-      const turn = `User: ${cleanedInput}\nAria: ${reply}`
-      void getLeadMemory(sessionKey, leadId)
-        .then((mem) => {
-          const prev = mem.summary?.summary ?? ''
-          const merged = `${prev}\n${turn}`.slice(-4000).trim()
-          return saveConversationSummary({
-            sessionKey,
-            summary: merged,
-            messageCount: history.length + 2,
-            leadId,
-          })
-        })
-        .catch((err) => console.error('lead memory save failed', err))
-    }
-
-    return { reply }
-  })
+      const outputCheck = checkFairHousing(reply)
+      if (!outputCheck.allowed) {
+        reply = FAIR_HOUSING_REFUSAL
+      }
+  
+      if (sessionKey) {
+        const turn = `User: ${cleanedInput}\nAria: ${reply}`
+        void saveConversationSummary({
+          sessionKey,
+          summary: turn,
+          turnCount: history.length + 2,
+          leadId,
+        }).catch((err) => console.error('lead memory save failed', err))
+      }
+  
+      return { reply }
+    })
