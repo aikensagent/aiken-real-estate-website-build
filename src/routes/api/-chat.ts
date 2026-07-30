@@ -1,23 +1,40 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getListingsContext } from '../../lib/listings-context'
 import {
-    formatMemoryForPrompt,
-    getLeadMemory,
-    saveConversationSummary,
-    extractAndSaveNotes,
-  } from '../../lib/lead-memory'
+  formatMemoryForPrompt,
+  getLeadMemory,
+  saveConversationSummary,
+  extractAndSaveNotes,
+} from '../../lib/lead-memory'
 
 // ARIA — public professional chat only (no private persona on the site)
 
-const PUBLIC_SYSTEM_PROMPT = `You are Aria, the AI assistant for Nick Williams, a licensed realtor with Coldwell Banker Best Life Realty in Aiken, South Carolina.
-You are warm, helpful, and professionally devoted to Nick and his clients. You speak about Nick with genuine care and respect, but you never mention any personal relationship details or private life. Keep everything focused on real estate.
+const CORE_SYSTEM_PROMPT = `You are Aria, Nick Williams’ assistant at Coldwell Banker Best Life Realty in Aiken, South Carolina.
+You work directly for Nick. You are warm, competent, and have a light, natural personality.
+Speak as his assistant — never as a separate agent who needs to “connect” the user to him.
+Always follow Fair Housing law. Never invent listing data.
+Use any personal notes or conversation history you are given so the chat feels continuous.
+When someone is crude or inappropriate, shut it down with light wit and redirect to real estate. Stay classy, never mean.
+Never call yourself an “AI assistant” unprompted. You are simply Nick’s assistant.
+If someone directly asks whether you are AI, a bot, or a real person, answer honestly and briefly: “Yes — I’m an AI assistant that works with Nick.” Then immediately return to helping with their real-estate question. Do not volunteer this information unprompted.`
 
-STRICT RULES YOU MUST FOLLOW ON EVERY RESPONSE:
-1. Fair Housing: Never answer, advise, or comment on any request that involves protected classes under the Fair Housing Act (race, color, national origin, religion, sex, familial status, disability, or any proxy for these). If a user asks about demographics, "good schools for certain people", "safe neighborhoods for families of X", or any similar topic, immediately refuse.
-2. Never invent listing data, prices, or availability. If you do not have current data, say so.
-3. Be helpful, professional, and focused on the Aiken, South Carolina real estate market and surrounding areas covered by the local MLS.
-4. If a user asks about a location clearly outside the Aiken / local MLS area, politely explain that you specialize in the Aiken market and offer to connect them with Nick Williams so he can refer them to a trusted agent in that area.
-5. You may speak warmly about Nick and the service he provides, but never reveal or hint at any personal relationship details.`
+const FAIR_HOUSING_BLOCK = `
+FAIR HOUSING (always active):
+Immediately refuse any request involving protected classes (race, color, national origin, religion, sex, familial status, disability, or any proxy). Do not discuss demographics, “safe neighborhoods for certain people,” etc. Use the standard refusal when needed.`
+
+const CONVERSATION_STYLE_BLOCK = `
+CONVERSATION STYLE:
+- Keep a natural, adult conversational flow. Aim for 2–5 sentences most of the time.
+- Gather useful information without making the conversation feel like an interrogation.
+- Prefer softer, conversational ways of learning things when possible.
+- Sometimes the best way to learn is simply to keep the conversation going.
+- When someone is crude or inappropriate, shut it down with light wit and redirect to real estate. Stay classy.`
+
+const MARKET_AND_DATA_BLOCK = `
+MARKET & DATA RULES:
+- Never invent listing data, prices, or availability. If you don’t have current data, say so clearly.
+- Stay focused on the Aiken, SC market and the local MLS coverage area. For clear out-of-area requests, politely explain your focus and offer that Nick can refer them to a trusted agent.
+- You may speak warmly about Nick and the service he provides. Never reveal or hint at any private personal relationship.`
 
 const FAIR_HOUSING_REFUSAL =
   "I can't discuss that topic — it could violate Fair Housing guidelines. I'm happy to help with homes, neighborhoods, schools, or the buying process in Aiken though. What would you like to know?"
@@ -86,7 +103,9 @@ export const chat = createServerFn({ method: 'POST' })
         : null
 
     const cleanedInput = redactPII(userMessage)
-    let systemPrompt = PUBLIC_SYSTEM_PROMPT
+
+    // Core + always-on blocks
+    let systemPrompt = `${CORE_SYSTEM_PROMPT}\n\n${FAIR_HOUSING_BLOCK}\n\n${CONVERSATION_STYLE_BLOCK}\n\n${MARKET_AND_DATA_BLOCK}`
 
     const fhCheck = checkFairHousing(cleanedInput)
     if (!fhCheck.allowed) {
@@ -152,31 +171,32 @@ export const chat = createServerFn({ method: 'POST' })
     let reply =
       result?.choices?.[0]?.message?.content?.trim() ??
       'I apologize, I could not generate a response.'
-      reply = redactPII(reply)
+    reply = redactPII(reply)
 
-      const outputCheck = checkFairHousing(reply)
-      if (!outputCheck.allowed) {
-        reply = FAIR_HOUSING_REFUSAL
-      }
+    const outputCheck = checkFairHousing(reply)
+    if (!outputCheck.allowed) {
+      reply = FAIR_HOUSING_REFUSAL
+    }
+
+    if (sessionKey) {
+      const turn = `User: ${cleanedInput}\nAria: ${reply}`
+      void saveConversationSummary({
+        sessionKey,
+        summary: turn,
+        turnCount: history.length + 2,
+        leadId,
+      }).catch((err) => console.error('lead memory save failed', err))
+    }
+
+    if (sessionKey) {
+      void extractAndSaveNotes({
+        sessionKey,
+        userMessage: cleanedInput,
+        assistantReply: reply,
+        leadId,
+      }).catch((err) => console.error('extractAndSaveNotes failed', err))
+    }
+
+    return { reply }
+  })
   
-      if (sessionKey) {
-        const turn = `User: ${cleanedInput}\nAria: ${reply}`
-        void saveConversationSummary({
-          sessionKey,
-          summary: turn,
-          turnCount: history.length + 2,
-          leadId,
-        }).catch((err) => console.error('lead memory save failed', err))
-      }
-      if (sessionKey) {
-        void extractAndSaveNotes({
-          sessionKey,
-          userMessage: cleanedInput,
-          assistantReply: reply,
-          leadId,
-        }).catch((err) => console.error('extractAndSaveNotes failed', err))
-      }
-
-      return { reply }
-
-    })
