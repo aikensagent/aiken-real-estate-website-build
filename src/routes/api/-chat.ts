@@ -77,6 +77,36 @@ function checkFairHousing(text: string): { allowed: boolean; reason?: string } {
   return { allowed: true }
 }
 
+function buildSystemPrompt(userMessage: string): string {
+  const lower = userMessage.toLowerCase()
+
+  let prompt = CORE_SYSTEM_PROMPT
+
+  // Fair Housing is always on
+  prompt += `\n\n${FAIR_HOUSING_BLOCK}`
+
+  // Conversation style is almost always useful
+  prompt += `\n\n${CONVERSATION_STYLE_BLOCK}`
+
+  // Market & data rules when the message is about homes, location, or budget
+  if (
+    lower.includes('house') ||
+    lower.includes('home') ||
+    lower.includes('bedroom') ||
+    lower.includes('bath') ||
+    lower.includes('budget') ||
+    lower.includes('price') ||
+    lower.includes('aiken') ||
+    lower.includes('neighborhood') ||
+    lower.includes('move') ||
+    lower.includes('looking for')
+  ) {
+    prompt += `\n\n${MARKET_AND_DATA_BLOCK}`
+  }
+
+  return prompt
+}
+
 export const chat = createServerFn({ method: 'POST' })
   .validator(
     (data: {
@@ -104,8 +134,8 @@ export const chat = createServerFn({ method: 'POST' })
 
     const cleanedInput = redactPII(userMessage)
 
-    // Core + always-on blocks
-    let systemPrompt = `${CORE_SYSTEM_PROMPT}\n\n${FAIR_HOUSING_BLOCK}\n\n${CONVERSATION_STYLE_BLOCK}\n\n${MARKET_AND_DATA_BLOCK}`
+    // Dynamic system prompt based on the message
+    let systemPrompt = buildSystemPrompt(cleanedInput)
 
     const fhCheck = checkFairHousing(cleanedInput)
     if (!fhCheck.allowed) {
@@ -199,4 +229,3 @@ export const chat = createServerFn({ method: 'POST' })
 
     return { reply }
   })
-  
