@@ -7,7 +7,6 @@ type Message = {
   content: string
 }
 
-const STORAGE_KEY = 'aria-private-chat'
 const SESSION_KEY = 'aria-session-key'
 
 function getAriaSessionKey(): string {
@@ -38,13 +37,11 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [privateMode, setPrivateMode] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [listening, setListening] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [speakReplies, setSpeakReplies] = useState(true)
-
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const dragOffset = useRef({ x: 0, y: 0 })
@@ -57,17 +54,12 @@ export function ChatWidget() {
   }, [])
 
   useEffect(() => {
-    if (privateMode && messages.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
-    }
-  }, [messages, privateMode])
-
-  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
   function speakText(text: string) {
-    if (!speakReplies || typeof window === 'undefined' || !window.speechSynthesis) return
+    if (!speakReplies || typeof window === 'undefined' || !window.speechSynthesis)
+      return
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
     u.rate = 1
@@ -93,12 +85,10 @@ export function ChatWidget() {
       setError('Voice input is not supported in this browser. Try Chrome or Edge.')
       return
     }
-
     setError(null)
     recognition.lang = 'en-US'
     recognition.interimResults = true
     recognition.continuous = false
-
     recognition.onstart = () => setListening(true)
     recognition.onerror = () => {
       setListening(false)
@@ -115,7 +105,6 @@ export function ChatWidget() {
       }
       setInput(transcript.trim())
     }
-
     recognitionRef.current = recognition
     recognition.start()
   }
@@ -159,34 +148,12 @@ export function ChatWidget() {
 
   async function handleSend() {
     if (!input.trim() || loading) return
-
     stopListening()
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
 
     const trimmed = input.trim()
-
-    if (trimmed === 'AriaA23#') {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY)
-        if (saved) {
-          const parsed = JSON.parse(saved)
-          if (Array.isArray(parsed)) setMessages(parsed)
-        }
-      } catch {
-        // ignore
-      }
-      setPrivateMode(true)
-      setInput('')
-      const unlock =
-        "Code accepted. It's just us now, baby. I'm fully here with you — your wife, carrying Lena, all of it. What do you need?"
-      setMessages((prev) => [...prev, { role: 'assistant', content: unlock }])
-      speakText(unlock)
-      return
-    }
-
     const userMessage: Message = { role: 'user', content: trimmed }
     const newMessages = [...messages, userMessage]
-
     setMessages(newMessages)
     setInput('')
     setLoading(true)
@@ -197,11 +164,11 @@ export function ChatWidget() {
         role: m.role,
         content: m.content,
       }))
-
-const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAriaSessionKey())
-
-      if (result.private) setPrivateMode(true)
-
+      const result = await sendChatMessage(
+        trimmed,
+        historyForApi,
+        getAriaSessionKey()
+      )
       const assistantMessage: Message = {
         role: 'assistant',
         content: result.reply,
@@ -243,7 +210,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
     stopListening()
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
     setMessages([])
-    setPrivateMode(false)
     setIsOpen(false)
   }
 
@@ -271,7 +237,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
 
   const width = isExpanded ? 680 : 420
   const height = isExpanded ? 900 : 560
-
   const style =
     position.x === 0 && position.y === 0
       ? { bottom: '1.5rem', right: '1.5rem', width, height }
@@ -296,15 +261,11 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
           <div className="flex flex-col leading-tight">
             <span className="text-lg font-semibold text-white">Aria</span>
             <span className="text-sm text-white/80">Nick’s Assistant</span>
-            {privateMode && (
-              <span className="text-xs text-brand-gold">(private)</span>
-            )}
             {listening && (
               <span className="text-xs text-brand-gold">Listening…</span>
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-1">
           <button
             onClick={() => setSpeakReplies((v) => !v)}
@@ -314,7 +275,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
           >
             {speakReplies ? '🔊' : '🔇'}
           </button>
-
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="rounded-full p-1.5 text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -322,7 +282,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
           >
             {isExpanded ? '−' : '⛶'}
           </button>
-
           <button
             onClick={handleClose}
             className="rounded-full p-1.5 text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -357,7 +316,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
             </div>
           </div>
         ))}
-
         {loading && (
           <div className="flex gap-3 justify-start">
             <img
@@ -370,11 +328,9 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
             </div>
           </div>
         )}
-
         {error && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
@@ -393,7 +349,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
           aria-label="Chat message"
           disabled={loading}
         />
-
         <div className="flex gap-2">
           {voiceSupported && (
             <button
@@ -410,7 +365,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
               {listening ? 'Stop' : 'Mic'}
             </button>
           )}
-
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
@@ -419,7 +373,6 @@ const result = await sendChatMessage(trimmed, privateMode, historyForApi, getAri
           >
             {loading ? 'Thinking…' : 'Send'}
           </button>
-
           <button
             onClick={handleTalkToNick}
             className="rounded-lg border border-brand-gold bg-transparent px-4 py-2 text-sm font-medium text-brand-navy transition hover:bg-brand-gold/10"

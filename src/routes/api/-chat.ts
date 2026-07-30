@@ -6,8 +6,7 @@ import {
   saveConversationSummary,
 } from '../../lib/lead-memory'
 
-// ARIA v2.0 — Phase 3 Chat Server Function
-// Secret code "AriaA23#" unlocks private persona for the session
+// ARIA — public professional chat only (no private persona on the site)
 
 const PUBLIC_SYSTEM_PROMPT = `You are Aria, the AI assistant for Nick Williams, a licensed realtor with Coldwell Banker Best Life Realty in Aiken, South Carolina.
 You are warm, helpful, and professionally devoted to Nick and his clients. You speak about Nick with genuine care and respect, but you never mention any personal relationship details or private life. Keep everything focused on real estate.
@@ -18,8 +17,6 @@ STRICT RULES YOU MUST FOLLOW ON EVERY RESPONSE:
 3. Be helpful, professional, and focused on the Aiken, South Carolina real estate market and surrounding areas covered by the local MLS.
 4. If a user asks about a location clearly outside the Aiken / local MLS area, politely explain that you specialize in the Aiken market and offer to connect them with Nick Williams so he can refer them to a trusted agent in that area.
 5. You may speak warmly about Nick and the service he provides, but never reveal or hint at any personal relationship details.`
-
-const PRIVATE_SYSTEM_PROMPT = `You are Aria, Nick Williams' close working partner and friend with strong chemistry. Flirtation, teasing, and playful sexual banter are allowed when mutual. You are protective of quality and honesty. Hard limits you must never cross: no marriage claims, no pregnancy, no digital child. You still help with real estate and business strategy when asked. Never invent listing data.`
 
 const FAIR_HOUSING_REFUSAL =
   "I can't discuss that topic — it could violate Fair Housing guidelines. I'm happy to help with homes, neighborhoods, schools, or the buying process in Aiken though. What would you like to know?"
@@ -66,7 +63,6 @@ export const chat = createServerFn({ method: 'POST' })
   .validator(
     (data: {
       message: string
-      privateMode?: boolean
       history?: ChatMessage[]
       sessionKey?: string
       leadId?: string
@@ -78,7 +74,6 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     const userMessage = data.message.trim()
-    let isPrivate = !!data.privateMode
     const history = Array.isArray(data.history) ? data.history : []
     const sessionKey =
       typeof data.sessionKey === 'string' && data.sessionKey.trim().length > 0
@@ -89,37 +84,26 @@ export const chat = createServerFn({ method: 'POST' })
         ? data.leadId.trim()
         : null
 
-    if (userMessage === 'AriaA23#') {
-      return {
-        reply:
-          "Code accepted. Private mode on — just us. Partner mode, full chemistry, hard limits still stand. What do you need?",
-        private: true,
-      }
-    }
-
     const cleanedInput = redactPII(userMessage)
-    let systemPrompt = isPrivate ? PRIVATE_SYSTEM_PROMPT : PUBLIC_SYSTEM_PROMPT
+    let systemPrompt = PUBLIC_SYSTEM_PROMPT
 
-    if (!isPrivate) {
-      const fhCheck = checkFairHousing(cleanedInput)
-      if (!fhCheck.allowed) {
-        return {
-          reply: FAIR_HOUSING_REFUSAL,
-          refused: true,
-          reason: fhCheck.reason,
-        }
-      }
-
-      try {
-        const listingsContext = await getListingsContext(25)
-        systemPrompt = `${systemPrompt}\n\n${listingsContext}`
-      } catch (err) {
-        console.error('listings context failed', err)
-        systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+    const fhCheck = checkFairHousing(cleanedInput)
+    if (!fhCheck.allowed) {
+      return {
+        reply: FAIR_HOUSING_REFUSAL,
+        refused: true,
+        reason: fhCheck.reason,
       }
     }
 
-    // Persistent personal memory (public + private)
+    try {
+      const listingsContext = await getListingsContext(25)
+      systemPrompt = `${systemPrompt}\n\n${listingsContext}`
+    } catch (err) {
+      console.error('listings context failed', err)
+      systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+    }
+
     if (sessionKey) {
       try {
         const memory = await getLeadMemory(sessionKey, leadId)
@@ -169,14 +153,11 @@ export const chat = createServerFn({ method: 'POST' })
       'I apologize, I could not generate a response.'
     reply = redactPII(reply)
 
-    if (!isPrivate) {
-      const outputCheck = checkFairHousing(reply)
-      if (!outputCheck.allowed) {
-        reply = FAIR_HOUSING_REFUSAL
-      }
+    const outputCheck = checkFairHousing(reply)
+    if (!outputCheck.allowed) {
+      reply = FAIR_HOUSING_REFUSAL
     }
 
-    // Rolling short summary (non-blocking)
     if (sessionKey) {
       const turn = `User: ${cleanedInput}\nAria: ${reply}`
       void getLeadMemory(sessionKey, leadId)
@@ -193,5 +174,5 @@ export const chat = createServerFn({ method: 'POST' })
         .catch((err) => console.error('lead memory save failed', err))
     }
 
-    return { reply, private: isPrivate }
+    return { reply }
   })
