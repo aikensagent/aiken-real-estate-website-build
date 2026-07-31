@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../lib/grok-client'
-import ariaAvatar from '../assets/aria-avatar.jpg'
+import rouAvatar from '../assets/rou-avatar.jpg'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
 }
 
-const SESSION_KEY = 'aria-session-key'
+const SESSION_KEY = 'rou-session-key'
 
-function getAriaSessionKey(): string {
+function getRouSessionKey(): string {
   if (typeof window === 'undefined') return 'server'
   let key = localStorage.getItem(SESSION_KEY)
   if (!key) {
@@ -169,12 +169,12 @@ export function ChatWidget() {
       const result = await sendChatMessage(
         trimmed,
         historyForApi,
-        getAriaSessionKey()
+        getRouSessionKey()
       )
 
       // Typing duration scales with reply length
       const typingMs = Math.min(3200, 900 + result.reply.length * 35)
-            await new Promise((r) => setTimeout(r, typingMs))
+      await new Promise((r) => setTimeout(r, typingMs))
 
       const assistantMessage: Message = {
         role: 'assistant',
@@ -225,17 +225,17 @@ export function ChatWidget() {
     return (
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
         <div className="relative rounded-xl bg-brand-navy px-4 py-2 text-sm font-medium text-white shadow-lg">
-          Meet Aria
+          Meet Rou
           <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 bg-brand-navy" />
         </div>
         <button
           onClick={() => setIsOpen(true)}
           className="flex h-28 w-28 items-center justify-center rounded-full bg-brand-navy shadow-lg transition hover:scale-105"
-          aria-label="Open chat with Aria"
+          aria-label="Open chat with Rou"
         >
           <img
-            src={ariaAvatar}
-            alt="Aria"
+            src={rouAvatar}
+            alt="Rou"
             className="h-24 w-24 rounded-full object-cover border-2 border-white"
           />
         </button>
@@ -262,12 +262,12 @@ export function ChatWidget() {
       >
         <div className="flex items-center gap-3">
           <img
-            src={ariaAvatar}
-            alt="Aria"
+            src={rouAvatar}
+            alt="Rou"
             className="h-[6.5rem] w-[6.5rem] rounded-full object-cover border border-white/30"
           />
           <div className="flex flex-col leading-tight">
-            <span className="text-lg font-semibold text-white">Aria</span>
+            <span className="text-lg font-semibold text-white">Rou</span>
             <span className="text-sm text-white/80">Nick’s Assistant</span>
             {listening && (
               <span className="text-xs text-brand-gold">Listening…</span>
@@ -278,7 +278,7 @@ export function ChatWidget() {
           <button
             onClick={() => setSpeakReplies((v) => !v)}
             className="rounded-full p-1.5 text-white/80 transition hover:bg-white/10 hover:text-white"
-            aria-label={speakReplies ? 'Mute Aria voice' : 'Unmute Aria voice'}
+            aria-label={speakReplies ? 'Mute Rou voice' : 'Unmute Rou voice'}
             title={speakReplies ? 'Mute spoken replies' : 'Speak replies'}
           >
             {speakReplies ? '🔊' : '🔇'}
@@ -308,8 +308,8 @@ export function ChatWidget() {
           >
             {msg.role === 'assistant' && (
               <img
-                src={ariaAvatar}
-                alt="Aria"
+                src={rouAvatar}
+                alt="Rou"
                 className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
               />
             )}
@@ -327,8 +327,8 @@ export function ChatWidget() {
         {(loading || isTyping) && (
           <div className="flex gap-3 justify-start">
             <img
-              src={ariaAvatar}
-              alt="Aria"
+              src={rouAvatar}
+              alt="Rou"
               className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
             />
             <div className="rounded-lg bg-white p-3 text-sm text-brand-slate shadow-sm">

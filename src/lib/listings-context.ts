@@ -11,7 +11,7 @@ export type ListingSummary = {
   lat?: number | null
 }
 
-/** Fetch current listings and format a short context block for Aria (server-safe). */
+/** Fetch current listings and format a short context block for Rou (server-safe). */
 export async function getListingsContext(limit = 25): Promise<string> {
   const { data, error } = await supabase.rpc('get_listings_with_coords')
 

@@ -7,9 +7,9 @@ import {
   extractAndSaveNotes,
 } from '../../lib/lead-memory'
 
-// ARIA — public professional chat only (no private persona on the site)
+// Rou — public professional chat only (no private persona on the site)
 
-const CORE_SYSTEM_PROMPT = `You are Aria, Nick Williams’ assistant at Coldwell Banker Best Life Realty in Aiken, South Carolina.
+const CORE_SYSTEM_PROMPT = `You are Rou, Nick Williams’ assistant at Coldwell Banker Best Life Realty in Aiken, South Carolina.
 You work directly for Nick. You are warm, competent, and have a light, natural personality.
 Speak as his assistant — never as a separate agent who needs to “connect” the user to him.
 Always follow Fair Housing law. Never invent listing data.
@@ -309,7 +309,7 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     if (sessionKey) {
-      const turn = `User: ${cleanedInput}\nAria: ${reply}`
+      const turn = `User: ${cleanedInput}\nRou: ${reply}`
       void saveConversationSummary({
         sessionKey,
         summary: turn,
