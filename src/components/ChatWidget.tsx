@@ -8,6 +8,16 @@ type Message = {
 }
 
 const SESSION_KEY = 'rou-session-key'
+const NICK_PHONE = '803-292-2921'
+function isWithinNickCallHours(): boolean {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    hour12: false,
+  })
+  const hour = Number(formatter.format(new Date()))
+  return hour >= 9 && hour < 21
+} 
 
 function getRouSessionKey(): string {
   if (typeof window === 'undefined') return 'server'
@@ -182,14 +192,39 @@ export function ChatWidget() {
       }
       setMessages([...newMessages, assistantMessage])
       speakText(result.reply)
+
+      // If the server refused (crude / Fair Housing escalation), make the human path obvious
+      if (result.refused) {
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: isWithinNickCallHours()
+                ? `I’d like to connect you with Nick Williams directly. You can reach him at ${NICK_PHONE}, or fill out the short form on this page and he’ll get right back to you.`
+                : `I’d like to connect you with Nick Williams. He’s available 9 AM – 9 PM Eastern. Please leave your details on the form and he’ll call you first thing.`,
+            },
+          ])
+        }, 600)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      setError(msg)
+      // Always offer a human path on hard failure
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: isWithinNickCallHours()
+            ? `I’m having trouble responding right now. Please reach Nick Williams at ${NICK_PHONE} or use the contact form on this page — he’ll take care of you.`
+            : `I’m having trouble responding right now. Nick is available 9 AM – 9 PM Eastern. Please leave your details on the form and he’ll call you first thing.`,
+        },
+      ])
     } finally {
       setLoading(false)
       setIsTyping(false)
     }
   }
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -198,23 +233,35 @@ export function ChatWidget() {
   }
 
   function handleTalkToNick() {
-    const form =
-      document.getElementById('lead-form') || document.querySelector('form')
-    if (form) {
-      form.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (isWithinNickCallHours()) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `Connecting you with Nick Williams now…`,
+        },
+      ])
+      window.location.href = 'tel:8032922921'
     } else {
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content:
-            "I'd love to connect you with Nick Williams. Please fill out the contact form on this page or call the office and he'll get right back to you.",
+          content: `Nick is available 9 AM – 9 PM Eastern. Please leave your details on the form and he’ll call you first thing, or try again during those hours.`,
         },
       ])
-    }
-  }
 
-  function handleClose() {
+      const form =
+        document.getElementById('lead-form') ||
+        document.querySelector('form[id*="lead"]') ||
+        document.querySelector('form')
+      if (form) {
+        setTimeout(() => {
+          form.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 300)
+      }
+    }
+  }  function handleClose() {
     stopListening()
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
     setMessages([])
@@ -337,7 +384,17 @@ export function ChatWidget() {
           </div>
         )}
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            {error}
+            <div className="mt-2">
+              <button
+                onClick={handleTalkToNick}
+                className="text-sm font-medium text-brand-navy underline hover:no-underline"
+              >
+                Talk to Nick instead →
+              </button>
+            </div>
+          </div>
         )}
         <div ref={bottomRef} />
       </div>
