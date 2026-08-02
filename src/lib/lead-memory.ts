@@ -142,16 +142,22 @@ export async function upsertPersonalNote(opts: {
   return data as string
 }
 
+// ------------------------------------------------------------
+// Note extraction (tightened 2026-08-01)
+// ------------------------------------------------------------
+
 const EXTRACTION_NOTE_KEYS = [
-  'spouse_name',
-  'pet_name',
+  'spouse_or_partner',
   'kids',
+  'pets',
   'timeline',
-  'budget_notes',
-  'relocation_reason',
-  'preferred_style',
-  'prior_objection',
-  'favorite_feature',
+  'budget',
+  'financing',
+  'move_reason',
+  'current_location',
+  'preferred_area',
+  'property_type',
+  'must_haves',
   'property_interest',
 ] as const
 
@@ -159,19 +165,20 @@ type ExtractionResult = {
   note_key: (typeof EXTRACTION_NOTE_KEYS)[number]
   excerpt: string
   confidence: number
-  category: string
 }
 
 const NOTE_KEY_TO_CATEGORY: Record<string, string> = {
-  spouse_name: 'family',
-  pet_name: 'family',
+  spouse_or_partner: 'family',
   kids: 'family',
+  pets: 'family',
   timeline: 'timeline',
-  budget_notes: 'budget',
-  relocation_reason: 'preferences',
-  preferred_style: 'preferences',
-  prior_objection: 'objections',
-  favorite_feature: 'preferences',
+  budget: 'budget',
+  financing: 'budget',
+  move_reason: 'preferences',
+  current_location: 'location',
+  preferred_area: 'preferences',
+  property_type: 'preferences',
+  must_haves: 'preferences',
   property_interest: 'property_interest',
 }
 
@@ -183,19 +190,51 @@ export async function extractAndSaveNotes(opts: {
 }): Promise<void> {
   if (!process.env.GROK_API_KEY) return
 
-  const extractionPrompt = `You are a precise fact extractor for a real-estate chat. 
-Extract ONLY clear, explicit facts the USER stated in this conversation turn.
-Return a JSON array of objects with these exact fields:
-- note_key: one of [${EXTRACTION_NOTE_KEYS.join(', ')}]
-- excerpt: short direct quote or paraphrase (max 200 characters)
-- confidence: number between 0.6 and 0.9
+  const extractionPrompt = `You are a precise fact extractor for a real-estate chat assistant named Rou.
+Extract ONLY clear, explicit facts the USER stated in this turn. Never invent or assume.
+
+Return a JSON array of objects. Each object must have:
+- note_key: exactly one of [${EXTRACTION_NOTE_KEYS.join(', ')}]
+- excerpt: short factual paraphrase or direct quote (max 180 characters)
+- confidence: number from 0.70 to 0.95 (use ≥ 0.80 only when the fact is unambiguous)
+
+Key definitions:
+- spouse_or_partner: name or clear presence of spouse/partner (“my wife and I”, “my partner”, “John and I”)
+- kids: children or family size with kids
+- pets: any mention of pets (“two dogs”, “a cat named Luna”, “we have pets”)
+- timeline: when they want to buy or move
+- budget: price range or budget constraints
+- financing: pre-approved, cash, need to sell first, loan type, etc.
+- move_reason: why they are moving or looking
+- current_location: where they currently live or are relocating from
+- preferred_area: specific neighborhoods, cities, or areas they want
+- property_type: ranch, townhouse, single-level, with acreage, pool, etc.
+- must_haves: explicit must-haves or deal-breakers
+- property_interest: interest in a specific listing or address
 
 Rules:
-- Only extract if the user clearly stated it.
-- Never invent or assume.
-- Never extract anything related to race, religion, national origin, disability, or other Fair Housing protected classes.
-- If nothing clear, return an empty array [].
-- Output ONLY valid JSON. No markdown, no explanation.
+- Only extract what the USER clearly stated.
+- Prefer the most specific key.
+- Never extract race, religion, national origin, disability, family status inferences, or any Fair Housing protected class.
+- If nothing clear and high-confidence, return [].
+- Output ONLY valid JSON. No markdown, no commentary.
+
+Examples of good extractions:
+User: “My wife and I are looking in Houndslake for a single-level home under $450k. We have two dogs.”
+→ [
+  {"note_key":"spouse_or_partner","excerpt":"My wife and I","confidence":0.92},
+  {"note_key":"preferred_area","excerpt":"looking in Houndslake","confidence":0.90},
+  {"note_key":"property_type","excerpt":"single-level home","confidence":0.88},
+  {"note_key":"budget","excerpt":"under $450k","confidence":0.90},
+  {"note_key":"pets","excerpt":"We have two dogs","confidence":0.93}
+]
+
+User: “We’re relocating from Charlotte next spring because of a job.”
+→ [
+  {"note_key":"current_location","excerpt":"relocating from Charlotte","confidence":0.91},
+  {"note_key":"timeline","excerpt":"next spring","confidence":0.87},
+  {"note_key":"move_reason","excerpt":"because of a job","confidence":0.88}
+]
 
 User message: ${opts.userMessage}
 Assistant reply: ${opts.assistantReply}`
@@ -210,11 +249,11 @@ Assistant reply: ${opts.assistantReply}`
       body: JSON.stringify({
         model: 'grok-4.5',
         messages: [
-          { role: 'system', content: 'You output only valid JSON arrays.' },
+          { role: 'system', content: 'You output only valid JSON arrays. No other text.' },
           { role: 'user', content: extractionPrompt },
         ],
         temperature: 0.1,
-        max_tokens: 600,
+        max_tokens: 700,
       }),
     })
 
@@ -246,7 +285,7 @@ Assistant reply: ${opts.assistantReply}`
       const excerpt = item.excerpt.slice(0, 280).trim()
       if (excerpt.length < 2) continue
 
-      const confidence = Math.min(0.9, Math.max(0.6, Number(item.confidence) || 0.65))
+      const confidence = Math.min(0.95, Math.max(0.70, Number(item.confidence) || 0.75))
       const category = NOTE_KEY_TO_CATEGORY[item.note_key] ?? 'other'
 
       await upsertPersonalNote({
