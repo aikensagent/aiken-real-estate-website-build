@@ -301,8 +301,7 @@ export function ChatWidget() {
     <div
       ref={widgetRef}
       style={style}
-      className="fixed z-50 flex flex-col rounded-xl border border-brand-navy/20 bg-brand-cream shadow-xl transition-all duration-200"
-    >
+      className="fixed z-50 flex flex-col rounded-xl border border-brand-navy/20 bg-white shadow-xl transition-all duration-200"    >
       <div
         onMouseDown={handleMouseDown}
         className="flex cursor-move items-center justify-between rounded-t-xl bg-brand-navy px-4 py-3 select-none"
