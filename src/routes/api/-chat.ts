@@ -3,10 +3,9 @@ import { getListingsContext } from '../../lib/listings-context'
 import {
   formatMemoryForPrompt,
   getLeadMemory,
-  saveConversationSummary,
   extractAndSaveNotes,
+  extractAndSaveConversationSummary,
 } from '../../lib/lead-memory'
-
 // Rou — public professional chat only (no private persona on the site)
 
 const CORE_SYSTEM_PROMPT = `You are Rou, Nick Williams’ assistant at Coldwell Banker Best Life Realty in Aiken, South Carolina.
@@ -309,15 +308,14 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     if (sessionKey) {
-      const turn = `User: ${cleanedInput}\nRou: ${reply}`
-      void saveConversationSummary({
+      void extractAndSaveConversationSummary({
         sessionKey,
-        summary: turn,
-        turnCount: history.length + 2,
+        history,
+        userMessage: cleanedInput,
+        assistantReply: reply,
         leadId,
-      }).catch((err) => console.error('lead memory save failed', err))
+      }).catch((err: unknown) => console.error('extractAndSaveConversationSummary failed', err))
     }
-
     if (sessionKey) {
       void extractAndSaveNotes({
         sessionKey,

@@ -302,3 +302,84 @@ Assistant reply: ${opts.assistantReply}`
     console.error('extractAndSaveNotes failed', err)
   }
 }
+// ------------------------------------------------------------
+// Conversation summary extraction (quality pass 2026-08-02)
+// ------------------------------------------------------------
+
+export async function extractAndSaveConversationSummary(opts: {
+  sessionKey: string
+  history: { role: 'user' | 'assistant'; content: string }[]
+  userMessage: string
+  assistantReply: string
+  leadId?: string | null
+}): Promise<void> {
+  if (!process.env.GROK_API_KEY) return
+
+  // Only summarize when there is enough signal
+  const turnCount = opts.history.length + 2
+  if (turnCount < 4) return
+
+  const recentTurns = [
+    ...opts.history.slice(-6),
+    { role: 'user' as const, content: opts.userMessage },
+    { role: 'assistant' as const, content: opts.assistantReply },
+  ]
+    .map((m) => `${m.role === 'user' ? 'User' : 'Rou'}: ${m.content}`)
+    .join('\n')
+
+  const summaryPrompt = `You are a precise conversation summarizer for a real-estate chat assistant named Rou (Nick Williams’ assistant in Aiken, SC).
+
+Write a short, high-signal summary of the conversation so far (2–4 sentences max, under 400 characters).
+
+Focus only on:
+- What the visitor is looking for (goals, property type, area, budget, timeline)
+- Key facts they have already stated
+- Current stage of the conversation (just starting, narrowing options, ready for next step, etc.)
+- Any clear open questions or next actions
+
+Rules:
+- Only use facts the USER clearly stated. Never invent.
+- Stay Fair Housing safe — never mention or infer protected classes.
+- Do not quote the full chat. Compress into useful memory.
+- Output ONLY the summary text. No labels, no markdown, no commentary.
+
+Conversation:
+${recentTurns}`
+
+  try {
+    const res = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-4.5',
+        messages: [
+          {
+            role: 'system',
+            content: 'You output only a short plain-text conversation summary. No other text.',
+          },
+          { role: 'user', content: summaryPrompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 220,
+      }),
+    })
+
+    if (!res.ok) return
+
+    const json = await res.json()
+    const summary = (json?.choices?.[0]?.message?.content ?? '').trim()
+    if (!summary || summary.length < 20) return
+
+    await saveConversationSummary({
+      sessionKey: opts.sessionKey,
+      summary: summary.slice(0, 600),
+      turnCount,
+      leadId: opts.leadId,
+    })
+  } catch (err) {
+    console.error('extractAndSaveConversationSummary failed', err)
+  }
+}
