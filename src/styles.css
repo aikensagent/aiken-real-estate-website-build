@@ -159,6 +159,8 @@
   /* Nick Williams / Coldwell Banker brand tokens */
   --color-brand-navy: #0F2B5B;
   --color-brand-gold: #C9A84C;
+  --color-brand-cream: #F7F8FA;
+  --color-brand-slate: #1E1E2E;
   --color-cb-accent: #012169;
   --font-display: "Playfair Display", serif;
 }

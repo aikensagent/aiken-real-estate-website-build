@@ -78,7 +78,6 @@ export function ChatWidget() {
     u.lang = 'en-US'
     window.speechSynthesis.speak(u)
   }
-
   function stopListening() {
     try {
       recognitionRef.current?.stop()
