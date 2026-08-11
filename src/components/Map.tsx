@@ -8,6 +8,7 @@ import { trackEvent } from '../lib/leadTracking'
 import { filterListings, type SearchFilters, type Listing } from '../lib/filterListings'
 import { BOUNDARY_LEGEND } from '../data/boundaryStyles'
 import { setupBoundaryLayers, setBoundaryLayersVisible } from '../lib/boundaryLayers'
+import { GOLF_COURSES } from '../lib/golfCourses'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -16,6 +17,12 @@ const SOURCE_ID = 'listings'
 const CLUSTER_LAYER = 'clusters'
 const CLUSTER_COUNT_LAYER = 'cluster-count'
 const UNCLUSTERED_LAYER = 'unclustered-point'
+
+const GOLF_SOURCE_ID = 'golf-courses'
+const GOLF_LAYER = 'golf-course-markers'
+const GOLF_ICON_ID = 'golf-flag'
+const GOLF_ICON_PX = 20
+const GOLF_FLAG_RED = '#D92D20'
 
 // Aiken / North Augusta corridor — dense local market, not statewide
 const AIKEN_CENTER: [number, number] = [-81.84, 33.53]
@@ -62,6 +69,49 @@ function listingsToGeoJSON(listings: Listing[]): ListingFeatureCollection {
   }
 }
 
+type GolfFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<{
+    type: 'Feature'
+    geometry: { type: 'Point'; coordinates: [number, number] }
+    properties: { id: string; name: string }
+  }>
+}
+
+function golfCoursesToGeoJSON(): GolfFeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: GOLF_COURSES.map((course) => ({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [course.lng, course.lat] as [number, number],
+      },
+      properties: { id: course.id, name: course.name },
+    })),
+  }
+}
+
+/** Drawn at 2x and registered with pixelRatio 2 so the flag stays sharp on retina. */
+const GOLF_FLAG_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="${GOLF_ICON_PX * 2}" height="${GOLF_ICON_PX * 2}" viewBox="0 0 20 20">
+  <g stroke="#FFFFFF" fill="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M6.6 18.2V2.4" fill="none"/>
+    <path d="M6.6 3.1 14.8 5.8 6.6 8.5 Z"/>
+    <ellipse cx="6.6" cy="18.2" rx="3.1" ry="1.3" stroke-width="2"/>
+  </g>
+  <ellipse cx="6.6" cy="18.2" rx="3.1" ry="1.3" fill="${BRAND_NAVY}"/>
+  <path d="M6.6 18.2V2.4" fill="none" stroke="${BRAND_NAVY}" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M6.6 3.1 14.8 5.8 6.6 8.5 Z" fill="${GOLF_FLAG_RED}"/>
+</svg>`
+
+function golfPopupContent(name: string) {
+  const el = document.createElement('div')
+  el.style.cssText =
+    'font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 600; color: #0F2B5B; white-space: nowrap;'
+  el.textContent = name
+  return el
+}
+
 function popupHtml(props: {
   address?: string
   price?: number
@@ -88,6 +138,7 @@ export default function Map({ filters }: MapProps) {
   const map = useRef<mapboxgl.Map | null>(null)
   const draw = useRef<MapboxDraw | null>(null)
   const popup = useRef<mapboxgl.Popup | null>(null)
+  const golfPopup = useRef<mapboxgl.Popup | null>(null)
   const pendingGeoJSON = useRef<ListingFeatureCollection | null>(null)
   const [status, setStatus] = useState('Loading…')
   const [showBoundaries, setShowBoundaries] = useState(true)
@@ -102,6 +153,70 @@ export default function Map({ filters }: MapProps) {
     } else {
       pendingGeoJSON.current = geojson
     }
+  }
+
+  function setupGolfCourseLayer(m: mapboxgl.Map) {
+    if (m.getSource(GOLF_SOURCE_ID)) return
+
+    m.addSource(GOLF_SOURCE_ID, {
+      type: 'geojson',
+      data: golfCoursesToGeoJSON(),
+    })
+
+    const showCourseName = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0]
+      if (!feature || feature.geometry.type !== 'Point') return
+
+      m.getCanvas().style.cursor = 'pointer'
+      golfPopup.current?.remove()
+      golfPopup.current = new mapboxgl.Popup({
+        offset: GOLF_ICON_PX + 4,
+        closeButton: false,
+        closeOnClick: false,
+      })
+        .setLngLat(feature.geometry.coordinates as [number, number])
+        .setDOMContent(golfPopupContent(String(feature.properties?.name ?? 'Golf course')))
+        .addTo(m)
+    }
+
+    const hideCourseName = () => {
+      m.getCanvas().style.cursor = ''
+      golfPopup.current?.remove()
+      golfPopup.current = null
+    }
+
+    const image = new Image(GOLF_ICON_PX * 2, GOLF_ICON_PX * 2)
+
+    image.onload = () => {
+      // The component can unmount while the SVG decodes
+      if (map.current !== m || m.getLayer(GOLF_LAYER)) return
+
+      if (!m.hasImage(GOLF_ICON_ID)) {
+        m.addImage(GOLF_ICON_ID, image, { pixelRatio: 2 })
+      }
+
+      m.addLayer(
+        {
+          id: GOLF_LAYER,
+          type: 'symbol',
+          source: GOLF_SOURCE_ID,
+          layout: {
+            'icon-image': GOLF_ICON_ID,
+            'icon-anchor': 'bottom',
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true,
+          },
+        },
+        // Keep flags beneath the listing pins so real estate stays primary
+        m.getLayer(CLUSTER_LAYER) ? CLUSTER_LAYER : undefined
+      )
+
+      m.on('mouseenter', GOLF_LAYER, showCourseName)
+      m.on('mouseleave', GOLF_LAYER, hideCourseName)
+      m.on('click', GOLF_LAYER, showCourseName)
+    }
+
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(GOLF_FLAG_SVG)}`
   }
 
   function setupClusterLayers(m: mapboxgl.Map) {
@@ -239,12 +354,15 @@ export default function Map({ filters }: MapProps) {
       // Boundaries first so the listing clusters render above them
       setupBoundaryLayers(map.current)
       setupClusterLayers(map.current)
+      setupGolfCourseLayer(map.current)
       map.current.resize()
     })
 
     return () => {
       popup.current?.remove()
       popup.current = null
+      golfPopup.current?.remove()
+      golfPopup.current = null
       map.current?.remove()
       map.current = null
     }
@@ -309,12 +427,9 @@ export default function Map({ filters }: MapProps) {
         >
           {showBoundaries ? 'Hide boundaries' : 'Show boundaries'}
         </button>
-        {showBoundaries && (
-          <ul
-            className="rounded-md bg-white/95 px-3 py-2 shadow space-y-1"
-            aria-label="Area boundary legend"
-          >
-            {BOUNDARY_LEGEND.map((item) => (
+        <ul className="rounded-md bg-white/95 px-3 py-2 shadow space-y-1" aria-label="Map legend">
+          {showBoundaries &&
+            BOUNDARY_LEGEND.map((item) => (
               <li key={item.id} className="flex items-center gap-2 text-xs text-brand-navy">
                 {item.swatch === 'fill' ? (
                   <span
@@ -334,8 +449,24 @@ export default function Map({ filters }: MapProps) {
                 {item.name}
               </li>
             ))}
-          </ul>
-        )}
+          <li className="flex items-center gap-2 text-xs text-brand-navy">
+            <svg viewBox="0 0 20 20" className="h-3 w-3 shrink-0" aria-hidden>
+              <path
+                d="M6.6 18.2V2.4"
+                fill="none"
+                stroke={BRAND_NAVY}
+                strokeWidth="2.6"
+                strokeLinecap="round"
+              />
+              <path
+                d="M6.6 3.1 14.8 5.8 6.6 8.5 Z"
+                fill={GOLF_FLAG_RED}
+                strokeWidth="0"
+              />
+            </svg>
+            Golf course
+          </li>
+        </ul>
       </div>
     </div>
   )
