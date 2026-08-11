@@ -269,20 +269,20 @@ export function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-        <div className="relative rounded-xl bg-brand-navy px-4 py-2 text-sm font-medium text-white shadow-lg">
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-1.5 md:bottom-6 md:right-6 md:gap-2">
+        <div className="relative rounded-lg bg-brand-navy px-3 py-1.5 text-sm font-medium text-white shadow-lg md:rounded-xl md:px-4 md:py-2">
           Meet Rou
-          <div className="absolute -bottom-1.5 right-6 h-3 w-3 rotate-45 bg-brand-navy" />
+          <div className="absolute -bottom-1.5 right-4 h-2.5 w-2.5 rotate-45 bg-brand-navy md:right-6 md:h-3 md:w-3" />
         </div>
         <button
           onClick={() => setIsOpen(true)}
-          className="flex h-28 w-28 items-center justify-center rounded-full bg-brand-navy shadow-lg transition hover:scale-105"
+          className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-navy shadow-lg transition hover:scale-105 md:h-28 md:w-28"
           aria-label="Open chat with Rou"
         >
           <img
             src={rouAvatar}
             alt="Rou"
-            className="h-24 w-24 rounded-full object-cover border-2 border-white"
+            className="h-[4.5rem] w-[4.5rem] rounded-full border-2 border-white object-cover md:h-24 md:w-24"
           />
         </button>
       </div>
