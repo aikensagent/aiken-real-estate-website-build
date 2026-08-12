@@ -4,7 +4,11 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { filterListings } from '../lib/filterListings'
-import type { SearchFilters, Listing } from '../lib/filterListings'
+import type {
+  SearchFilters,
+  Listing,
+  MapViewportBounds,
+} from '../lib/filterListings'
 import { rouPersonaRouter } from '../lib/rou/live'
 import {
   applyTransientFilters,
@@ -21,12 +25,17 @@ import {
   PARK_LEGEND,
   type ParkType,
 } from '../lib/parksAndRec'
-import type { AmenityRouteOverlay } from '../lib/rou/map-directions'
+import {
+  isWalkDisplayable,
+  pointAlongLine,
+  type AmenityRouteOverlay,
+} from '../lib/rou/map-directions'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
 const BRAND_NAVY = '#0F2B5B'
-const BRAND_GOLD = '#C9A84C'
+const BRAND_CREAM = '#F7F8FA'
+const ROUTE_LINE = '#D92D20'
 const BRAND_SLATE = '#1E1E2E'
 const SOURCE_ID = 'listings'
 const CLUSTER_LAYER = 'clusters'
@@ -43,10 +52,70 @@ const PARK_SOURCE_ID = 'parks-and-rec'
 const PARK_LAYER = 'parks-and-rec-markers'
 const PARK_ICON_PX = 22
 
-const ROUTE_SOURCE_ID = 'rou-amenity-route'
-const ROUTE_LAYER = 'rou-amenity-route-line'
+const ROUTE_WALK_WIDTH = [
+  'interpolate',
+  ['linear'],
+  ['zoom'],
+  11,
+  5,
+  14,
+  8,
+  17,
+  11,
+] as const
+const ROUTE_DRIVE_WIDTH = [
+  'interpolate',
+  ['linear'],
+  ['zoom'],
+  11,
+  4,
+  14,
+  6,
+  17,
+  8,
+] as const
+const ROUTE_DRIVE_SOURCE_ID = 'rou-amenity-route-drive'
+const ROUTE_DRIVE_LAYER = 'rou-amenity-route-drive-line'
+const ROUTE_WALK_SOURCE_ID = 'rou-amenity-route-walk'
+const ROUTE_WALK_LAYER = 'rou-amenity-route-walk-line'
 const ROUTE_ENDPOINTS_SOURCE = 'rou-amenity-route-ends'
 const ROUTE_ENDPOINTS_LAYER = 'rou-amenity-route-ends-layer'
+const LEGACY_ROUTE_SOURCE_ID = 'rou-amenity-route'
+const LEGACY_ROUTE_LAYER = 'rou-amenity-route-line'
+
+const ROUTE_LABEL_WALK_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>'
+const ROUTE_LABEL_DRIVE_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>'
+
+function routePathLabelElement(
+  mode: 'walking' | 'driving',
+  minutes: number
+): HTMLDivElement {
+  const el = document.createElement('div')
+  el.style.cssText = [
+    'display:flex',
+    'align-items:center',
+    'gap:4px',
+    'white-space:nowrap',
+    'pointer-events:none',
+    `background:${BRAND_CREAM}`,
+    `color:${BRAND_NAVY}`,
+    `border:1px solid ${BRAND_NAVY}33`,
+    'border-radius:999px',
+    'padding:3px 8px',
+    'font:600 12px/1.2 system-ui,-apple-system,sans-serif',
+    'box-shadow:0 2px 8px rgba(15,43,91,0.18)',
+  ].join(';')
+  el.setAttribute(
+    'aria-label',
+    mode === 'walking'
+      ? `Walk, about ${minutes} minutes`
+      : `Drive, about ${minutes} minutes`
+  )
+  el.innerHTML = `${mode === 'walking' ? ROUTE_LABEL_WALK_SVG : ROUTE_LABEL_DRIVE_SVG}<span>${minutes} min</span>`
+  return el
+}
 
 type MapProps = {
   filters?: SearchFilters
@@ -54,7 +123,8 @@ type MapProps = {
   visible?: boolean
   /** Shortest amenity route from Ask Rou — drawn as a line with endpoints. */
   routeOverlay?: AmenityRouteOverlay | null
-  onClearRoute?: () => void
+  /** Left-rail cards follow this camera bbox after pan/zoom. */
+  onViewportBounds?: (bounds: MapViewportBounds) => void
 }
 
 type ListingFeatureCollection = {
@@ -276,11 +346,14 @@ export default function Map({
   filters,
   visible = true,
   routeOverlay = null,
-  onClearRoute,
+  onViewportBounds,
 }: MapProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
+  const onViewportBoundsRef = useRef(onViewportBounds)
+  onViewportBoundsRef.current = onViewportBounds
+  const lastReportedBounds = useRef<MapViewportBounds | null>(null)
   const draw = useRef<MapboxDraw | null>(null)
   const popup = useRef<mapboxgl.Popup | null>(null)
   const golfPopup = useRef<mapboxgl.Popup | null>(null)
@@ -289,25 +362,76 @@ export default function Map({
   const [status, setStatus] = useState('Loading…')
   const [showBoundaries, setShowBoundaries] = useState(true)
   const [showLegend, setShowLegend] = useState(true)
+  const walkLabelMarker = useRef<mapboxgl.Marker | null>(null)
+  const driveLabelMarker = useRef<mapboxgl.Marker | null>(null)
+
+  function clearRouteLabelMarkers() {
+    walkLabelMarker.current?.remove()
+    walkLabelMarker.current = null
+    driveLabelMarker.current?.remove()
+    driveLabelMarker.current = null
+  }
+
+  function placeRouteLabelMarker(
+    m: mapboxgl.Map,
+    slot: 'walking' | 'driving',
+    lngLat: [number, number],
+    minutes: number
+  ) {
+    const marker = new mapboxgl.Marker({
+      element: routePathLabelElement(slot, minutes),
+      anchor: 'center',
+      pitchAlignment: 'viewport',
+      rotationAlignment: 'viewport',
+    })
+      .setLngLat(lngLat)
+      .addTo(m)
+    if (slot === 'walking') walkLabelMarker.current = marker
+    else driveLabelMarker.current = marker
+  }
 
   function ensureRouteLayers(m: mapboxgl.Map) {
-    if (!m.getSource(ROUTE_SOURCE_ID)) {
-      m.addSource(ROUTE_SOURCE_ID, {
+    if (m.getLayer(LEGACY_ROUTE_LAYER)) m.removeLayer(LEGACY_ROUTE_LAYER)
+    if (m.getSource(LEGACY_ROUTE_SOURCE_ID)) m.removeSource(LEGACY_ROUTE_SOURCE_ID)
+
+    if (!m.getSource(ROUTE_DRIVE_SOURCE_ID)) {
+      m.addSource(ROUTE_DRIVE_SOURCE_ID, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       })
       m.addLayer({
-        id: ROUTE_LAYER,
+        id: ROUTE_DRIVE_LAYER,
         type: 'line',
-        source: ROUTE_SOURCE_ID,
+        source: ROUTE_DRIVE_SOURCE_ID,
         layout: {
           'line-join': 'round',
           'line-cap': 'round',
         },
         paint: {
-          'line-color': BRAND_NAVY,
-          'line-width': 4,
-          'line-opacity': 0.9,
+          'line-color': ROUTE_LINE,
+          'line-width': [...ROUTE_DRIVE_WIDTH],
+          'line-opacity': 0.92,
+        },
+      })
+    }
+    if (!m.getSource(ROUTE_WALK_SOURCE_ID)) {
+      m.addSource(ROUTE_WALK_SOURCE_ID, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      m.addLayer({
+        id: ROUTE_WALK_LAYER,
+        type: 'line',
+        source: ROUTE_WALK_SOURCE_ID,
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': ROUTE_LINE,
+          'line-width': [...ROUTE_WALK_WIDTH],
+          'line-opacity': 1,
+          'line-dasharray': [0, 2],
         },
       })
     }
@@ -321,10 +445,28 @@ export default function Map({
         type: 'circle',
         source: ROUTE_ENDPOINTS_SOURCE,
         paint: {
-          'circle-radius': 7,
-          'circle-color': BRAND_GOLD,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#FFFFFF',
+          'circle-radius': [
+            'match',
+            ['get', 'role'],
+            'origin',
+            6,
+            8,
+          ],
+          'circle-color': [
+            'match',
+            ['get', 'role'],
+            'origin',
+            '#FFFFFF',
+            ROUTE_LINE,
+          ],
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': [
+            'match',
+            ['get', 'role'],
+            'origin',
+            ROUTE_LINE,
+            '#FFFFFF',
+          ],
         },
       })
     }
@@ -334,21 +476,34 @@ export default function Map({
     const m = map.current
     if (!m?.isStyleLoaded()) return
     ensureRouteLayers(m)
+    clearRouteLabelMarkers()
 
-    const lineSource = m.getSource(ROUTE_SOURCE_ID) as mapboxgl.GeoJSONSource
+    const driveSource = m.getSource(ROUTE_DRIVE_SOURCE_ID) as mapboxgl.GeoJSONSource
+    const walkSource = m.getSource(ROUTE_WALK_SOURCE_ID) as mapboxgl.GeoJSONSource
     const endsSource = m.getSource(ROUTE_ENDPOINTS_SOURCE) as mapboxgl.GeoJSONSource
 
     if (!overlay) {
-      lineSource.setData({ type: 'FeatureCollection', features: [] })
+      driveSource.setData({ type: 'FeatureCollection', features: [] })
+      walkSource.setData({ type: 'FeatureCollection', features: [] })
       endsSource.setData({ type: 'FeatureCollection', features: [] })
       return
     }
 
-    lineSource.setData({
-      type: 'Feature',
-      properties: {},
-      geometry: overlay.geometry,
-    })
+    const driveGeometry = overlay.driveGeometry
+    const showWalk =
+      isWalkDisplayable(overlay.walkMinutes) && overlay.walkGeometry != null
+    const walkGeometry = showWalk ? overlay.walkGeometry : null
+
+    driveSource.setData(
+      driveGeometry
+        ? { type: 'Feature', properties: {}, geometry: driveGeometry }
+        : { type: 'FeatureCollection', features: [] }
+    )
+    walkSource.setData(
+      walkGeometry
+        ? { type: 'Feature', properties: {}, geometry: walkGeometry }
+        : { type: 'FeatureCollection', features: [] }
+    )
     endsSource.setData({
       type: 'FeatureCollection',
       features: [
@@ -365,15 +520,54 @@ export default function Map({
       ],
     })
 
+    const walkFraction = driveGeometry && walkGeometry ? 0.42 : 0.5
+    const driveFraction = driveGeometry && walkGeometry ? 0.62 : 0.5
+    if (walkGeometry && overlay.walkMinutes != null) {
+      const at = pointAlongLine(walkGeometry.coordinates, walkFraction)
+      if (at) placeRouteLabelMarker(m, 'walking', at, overlay.walkMinutes)
+    }
+    if (driveGeometry && overlay.driveMinutes != null) {
+      const at = pointAlongLine(driveGeometry.coordinates, driveFraction)
+      if (at) placeRouteLabelMarker(m, 'driving', at, overlay.driveMinutes)
+    }
+
     const bounds = new mapboxgl.LngLatBounds(overlay.origin, overlay.origin)
-    for (const c of overlay.geometry.coordinates) {
-      bounds.extend(c as [number, number])
+    for (const line of [driveGeometry, walkGeometry]) {
+      if (!line) continue
+      for (const c of line.coordinates) {
+        bounds.extend(c as [number, number])
+      }
     }
     m.fitBounds(bounds, { padding: 64, maxZoom: 15, duration: 600 })
   }
 
+  function reportViewportBounds(m: mapboxgl.Map) {
+    const b = m.getBounds()
+    const next: MapViewportBounds = {
+      west: b.getWest(),
+      south: b.getSouth(),
+      east: b.getEast(),
+      north: b.getNorth(),
+    }
+    const prev = lastReportedBounds.current
+    if (
+      prev &&
+      prev.west === next.west &&
+      prev.south === next.south &&
+      prev.east === next.east &&
+      prev.north === next.north
+    ) {
+      return
+    }
+    lastReportedBounds.current = next
+    onViewportBoundsRef.current?.(next)
+  }
+
   function resizeMap() {
-    map.current?.resize()
+    const m = map.current
+    if (!m) return
+    m.resize()
+    reportViewportBounds(m)
   }
 
   function setListingsData(listings: Listing[]) {
@@ -667,11 +861,13 @@ export default function Map({
       setupGolfCourseLayer(map.current)
       setupParksLayer(map.current)
       resizeMap()
+      reportViewportBounds(map.current)
     })
 
     map.current.on('moveend', () => {
       if (!map.current) return
       persistMapViewport(map.current)
+      reportViewportBounds(map.current)
     })
 
     return () => {
@@ -769,47 +965,14 @@ export default function Map({
     const paint = () => applyRouteOverlay(routeOverlay)
     if (m.isStyleLoaded()) paint()
     else m.once('load', paint)
+    return () => {
+      m.off('load', paint)
+    }
   }, [routeOverlay])
 
   return (
     <div ref={rootRef} className="relative h-full w-full min-h-0">
       <div ref={mapContainer} className="absolute inset-0 h-full w-full" />
-      {routeOverlay && (
-        <div className="absolute bottom-3 left-3 right-3 z-10 mx-auto max-w-md rounded-md border border-brand-navy/15 bg-brand-cream/95 px-3 py-2 shadow md:left-3 md:right-auto">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 text-sm text-brand-navy">
-              <div className="truncate font-semibold">
-                Route to {routeOverlay.destinationLabel}
-              </div>
-              <div className="mt-0.5 text-xs text-brand-slate">
-                {routeOverlay.driveMinutes != null && (
-                  <span>~{routeOverlay.driveMinutes} min drive</span>
-                )}
-                {routeOverlay.driveMinutes != null &&
-                  routeOverlay.walkMinutes != null && <span> · </span>}
-                {routeOverlay.walkMinutes != null && (
-                  <span>~{routeOverlay.walkMinutes} min walk</span>
-                )}
-              </div>
-              {routeOverlay.hazardNote && (
-                <div className="mt-1 text-xs text-brand-slate">
-                  Note: involves {routeOverlay.hazardNote}
-                </div>
-              )}
-            </div>
-            {onClearRoute && (
-              <button
-                type="button"
-                onClick={onClearRoute}
-                className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-navy hover:bg-brand-navy/5"
-                aria-label="Clear route from map"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      )}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         <div className="rounded-md bg-white/95 px-3 py-1.5 text-sm font-medium text-brand-navy shadow">
           {status}

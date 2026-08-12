@@ -14,7 +14,8 @@ describe('RouOrb public visual', () => {
     expect(orb).toContain('rou-eq')
     expect(orb).not.toMatch(/rou-orb-portrait/)
     expect(orb).not.toMatch(/rou-avatar/)
-    expect(orb).not.toMatch(/<img/)
+    expect(orb).toContain('max-h-20')
+    expect(orb).toContain('askEnabled')
   })
 
   it('ChatWidget uses RouOrb as the public surface and does not import the sandbox experiment', () => {

@@ -3,7 +3,10 @@ import {
   buildAmenityRouteOverlay,
   fetchMapboxRoute,
   formatRoutedTimesBlock,
+  geometryForMode,
+  isWalkDisplayable,
   minutesFromSeconds,
+  pointAlongLine,
 } from './map-directions'
 
 describe('map directions', () => {
@@ -86,7 +89,15 @@ describe('map directions', () => {
     expect(overlay?.driveMinutes).toBe(4)
     expect(overlay?.walkMinutes).toBe(10)
     expect(overlay?.geometry.coordinates.at(-1)?.[0]).toBe(-81.7)
+    expect(overlay?.driveGeometry?.coordinates.at(-1)?.[0]).toBe(-81.7)
+    expect(overlay?.walkGeometry?.coordinates.at(-1)?.[0]).toBe(-81.719)
     expect(overlay?.hazardNote).toContain('Whiskey')
+    expect(geometryForMode(overlay!, 'walking').coordinates.at(-1)?.[0]).toBe(
+      -81.719
+    )
+    expect(geometryForMode(overlay!, 'driving').coordinates.at(-1)?.[0]).toBe(
+      -81.7
+    )
   })
 
   it('formats Mapbox times as the spoken-answer authority block', () => {
@@ -103,6 +114,21 @@ describe('map directions', () => {
     expect(block).toContain('Whiskey Road')
   })
 
+  it('omits walk times over 60 minutes from the spoken block', () => {
+    expect(isWalkDisplayable(60)).toBe(true)
+    expect(isWalkDisplayable(61)).toBe(false)
+    expect(isWalkDisplayable(null)).toBe(false)
+    const block = formatRoutedTimesBlock({
+      destinationLabel: 'Aiken Regional Medical Center',
+      driveMinutes: 41,
+      walkMinutes: 180,
+      hazardNote: null,
+    })
+    expect(block).toContain('~41 min drive')
+    expect(block).not.toContain('~180 min walk')
+    expect(block).toContain('Do not mention a walk time')
+  })
+
   it('returns null when Directions fails', async () => {
     const fetchImpl = async () => ({ ok: false }) as Response
     const route = await fetchMapboxRoute(
@@ -113,5 +139,17 @@ describe('map directions', () => {
       fetchImpl
     )
     expect(route).toBeNull()
+  })
+
+  it('picks a point partway along a line', () => {
+    const mid = pointAlongLine(
+      [
+        [-81.72, 33.55],
+        [-81.7, 33.55],
+      ],
+      0.5
+    )
+    expect(mid?.[0]).toBeCloseTo(-81.71)
+    expect(mid?.[1]).toBeCloseTo(33.55)
   })
 })

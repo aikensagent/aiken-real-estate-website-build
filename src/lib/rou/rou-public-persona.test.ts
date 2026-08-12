@@ -24,6 +24,8 @@ describe('Rou public persona profile', () => {
     expect(ROU_SYSTEM_PROMPT).toContain('Fair Housing')
     expect(ROU_SYSTEM_PROMPT).toContain('protected classes')
     expect(ROU_SYSTEM_PROMPT).toContain('Never invent')
+    expect(ROU_SYSTEM_PROMPT).toContain('Never say you do not have a saved route')
+    expect(ROU_SYSTEM_PROMPT).toContain('general Aiken area')
   })
 
   it('matches the context matrix utility node', () => {

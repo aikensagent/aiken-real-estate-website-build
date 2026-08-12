@@ -24,14 +24,14 @@
 
 ### Map / amenities
 1. Lean visible map — no more always-on amenity clutter unless necessary.
-2. Hybrid POI — invisible curated list for grocery/schools/playgrounds/retail; named-place geocode when user supplies a place (e.g. “Bridgestone”); no broad unsupervised web crawl for amenity answers.
+2. Hybrid POI — invisible curated list for grocery/schools/playgrounds/retail; named-place geocode when user supplies a place (e.g. “Bridgestone”); no broad unsupervised web crawl for amenity answers. **Named-place slice shipped 2026-08-12** — curated name match first, then Mapbox Geocoding inside the Aiken bbox; draws the same walk/drive route overlay.
 3. Walk + drive times + shortest route on the map; hazard note only if obvious (interstate / multi-lane). **Shipped 2026-08-12** — Mapbox overlay on the map *and* Mapbox times injected into Rou’s spoken amenity prompt (`formatRoutedTimesBlock` in `-chat.ts`). Straight-line remains fallback if Directions fails.
 18b. School answers must label **public / private / charter**; prefer nearest **public** unless user asks otherwise; never imply private = zoning. **Implemented 2026-08-12** in `playgrounds.ts` (+ Rou public prompt).
 
 ### Rou public UX
 4. **LOCK (shipped)** — First open of a property card → one-time **Introducing Rou** dialog (neighborhood-fit framing + example asks); dismissible; localStorage so it does not nag every card.
 5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Will feel cleaner once full property-card detail exists.
-11. Visual walk/drive route lines (with #3). **First slice shipped** — navy route line + gold endpoints + clearable caption bar on map.
+11. Visual walk/drive route lines (with #3). **Shipped** — both paths at once: red dotted walk + solid drive; walk/drive icon+time pills on the lines; no separate route box.
 12. Public Rou = abstract orb + EQ-while-speaking (not face, not bars-on-photo). **First slice shipped 2026-08-12** — closed ChatWidget is `RouOrb` (navy/gold EQ). Chat panel still exists until full orb replacement.
 13. Clickable chips after activate (schools / grocery / park…). **Shipped** with activate greeting.
 14. Dual presence — Rou public / Gholi dashboard (Gholi may be warm/visual in-dashboard only).
@@ -44,6 +44,7 @@
 
 ### Map chrome
 24. **LOCK (shipped)** — Legend + boundaries start visible on all breakpoints; buttons read Hide… when shown, Show… when hidden.
+25. **LOCK (shipped)** — Branded `__root__` `notFoundComponent` + real document title (no TanStack starter chrome).
 
 ---
 
@@ -57,8 +58,6 @@
 19. Comparison mode (side-by-side) — with #9.
 20. “What should I know about this area?” — only with real curated area notes (don’t invent).
 22. Hesitation / objection prompts — easy to feel pushy; after activate + mute-safe UI trusted.
-25. TanStack `__root__` notFoundComponent — small polish; not Phase 3 critical (**PARK** by Nick’s “you decide”).
-
 ---
 
 ## DROP

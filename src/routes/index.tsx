@@ -1,11 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChatWidget } from '../components/ChatWidget'
 import { RouCardIntroDialog } from '../components/RouCardIntroDialog'
 import { Hero } from '@/components/Hero'
 import Map from '../components/Map'
 import { supabase } from '../lib/supabase'
-import { filterListings, type SearchFilters, type Listing } from '../lib/filterListings'
+import {
+  filterListings,
+  filterListingsInBounds,
+  type SearchFilters,
+  type Listing,
+  type MapViewportBounds,
+} from '../lib/filterListings'
 import {
   hasSeenRouCardIntro,
   markRouCardIntroSeen,
@@ -19,6 +25,7 @@ import {
   findNearestPlaygrounds,
   findNearestSchools,
 } from '../lib/playgrounds'
+import { resolveNamedPlace } from '../lib/rou/named-place'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -37,6 +44,8 @@ function Home() {
   const [routeOverlay, setRouteOverlay] = useState<AmenityRouteOverlay | null>(
     null
   )
+  const [mapBounds, setMapBounds] = useState<MapViewportBounds | null>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   function handleHeroSearch(newFilters: SearchFilters) {
     setFilters(newFilters)
@@ -44,6 +53,7 @@ function Home() {
     setSelectedListing(null)
     setFocusedListingId(null)
     setRouteOverlay(null)
+    setMapBounds(null)
     setMobileView('list')
   }
 
@@ -115,6 +125,39 @@ function Home() {
     setMobileView('map')
   }
 
+  async function handleNamedPlaceQuery(query: string) {
+    const listing = selectedListing
+    if (
+      listing?.lng == null ||
+      listing?.lat == null ||
+      !Number.isFinite(listing.lng) ||
+      !Number.isFinite(listing.lat)
+    ) {
+      return
+    }
+
+    const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
+    if (!token) return
+
+    const origin = { lng: listing.lng, lat: listing.lat }
+    const hit = await resolveNamedPlace({
+      query,
+      proximity: origin,
+      accessToken: token,
+    })
+    if (!hit) return
+
+    const overlay = await buildAmenityRouteOverlay({
+      from: origin,
+      to: { lng: hit.lng, lat: hit.lat },
+      destinationLabel: hit.name,
+      accessToken: token,
+    })
+    if (!overlay) return
+    setRouteOverlay(overlay)
+    setMobileView('map')
+  }
+
   // Public Rou uses selected listing as distance origin
   const rouOrigin = selectedListing
     ? {
@@ -167,6 +210,13 @@ function Home() {
     }
   }, [showResults, filters])
 
+  const visibleListings = filterListingsInBounds(listings, mapBounds)
+  const visibleListingKey = visibleListings.map((l) => l.id).join(',')
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: 0 })
+  }, [visibleListingKey])
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {!showResults ? (
@@ -181,7 +231,13 @@ function Home() {
               ← Back to search
             </button>
             <span className="text-sm opacity-90">
-              {loading ? 'Loading…' : `${listings.length} homes`}
+              {loading
+                ? 'Loading…'
+                : `${visibleListings.length} homes${
+                    mapBounds && visibleListings.length !== listings.length
+                      ? ' in view'
+                      : ''
+                  }`}
             </span>
           </div>
 
@@ -243,17 +299,22 @@ function Home() {
 
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div
+              ref={listRef}
               className={`w-full md:w-[420px] lg:w-[480px] min-h-0 overflow-y-auto border-r border-slate-200 bg-white ${
                 mobileView === 'list' ? 'block' : 'hidden'
               } md:block`}
             >
               {loading ? (
                 <div className="p-6 text-slate-500">Loading homes…</div>
-              ) : listings.length === 0 ? (
-                <div className="p-6 text-slate-500">No homes found</div>
+              ) : visibleListings.length === 0 ? (
+                <div className="p-6 text-slate-500">
+                  {listings.length === 0
+                    ? 'No homes found'
+                    : 'No homes in this map view'}
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
-                  {listings.map((listing) => {
+                  {visibleListings.map((listing) => {
                     const isRouActive = selectedListing?.id === listing.id
                     const isFocused = focusedListingId === listing.id
                     const listingLabel = listing.address || 'this Aiken listing'
@@ -361,7 +422,7 @@ function Home() {
                   filters={filters || undefined}
                   visible={isDesktop || mobileView === 'map'}
                   routeOverlay={routeOverlay}
-                  onClearRoute={() => setRouteOverlay(null)}
+                  onViewportBounds={setMapBounds}
                 />
               </div>
             </div>
@@ -370,7 +431,11 @@ function Home() {
       )}
 
       <RouCardIntroDialog open={showRouIntro} onDismiss={handleDismissRouIntro} />
-      <ChatWidget origin={rouOrigin} onAmenityIntent={handleAmenityIntent} />
+      <ChatWidget
+        origin={rouOrigin}
+        onAmenityIntent={handleAmenityIntent}
+        onNamedPlaceQuery={handleNamedPlaceQuery}
+      />
     </div>
   )
 }

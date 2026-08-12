@@ -598,5 +598,358 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - LOCK #3 spoken times now Mapbox-backed when Directions succeeds."
+  },
+  {
+    "timestamp": "2026-08-12T21:56:00Z",
+    "task_id": "ROOT_NOT_FOUND_CHROME_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/__root.tsx",
+    "supporting_files": [
+      "src/lib/root-not-found.test.ts",
+      "artifacts/IDEAS_PARKING_LOT.md",
+      "STATUS.md"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "notFoundComponent on the root route so unmatched paths stay inside the existing document shell. Internal Link to / only. Document title replaced starter chrome.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Static copy only; does not echo the unknown path (avoids reflected URL phishing). No new data, secrets, or AI on 404. Home link is the handoff.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source assertions for notFoundComponent, brand tokens, aria heading/label, and no hex. Full vitest gate after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #25 shipped: branded 404 + real document title."
+  },
+  {
+    "timestamp": "2026-08-12T22:00:00Z",
+    "task_id": "ROUTE_DOTTED_BEAD_STYLE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": [
+      "src/lib/rou/map-route-style.test.ts",
+      "artifacts/IDEAS_PARKING_LOT.md"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Kept LineString geometry. Round cap + line-dasharray [0, 2] for circular beads. Re-applies paint on existing layers so a live map picks up the style without a remount.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Paint-only. Same ROUTE_LINE hex already required by Mapbox. No new data, tokens, or PII on the overlay.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source assertions for red dotted beads, round cap, white origin / red destination. Full vitest gate after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #11 route line restyled as red Google-walking beads."
+  },
+  {
+    "timestamp": "2026-08-12T22:04:00Z",
+    "task_id": "ROUTE_WALK_DRIVE_MODE_CHIPS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": [
+      "src/lib/rou/map-directions.ts",
+      "src/lib/rou/map-directions.test.ts",
+      "src/lib/rou/map-route-style.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Overlay now carries driveGeometry and walkGeometry. Map owns routeMode; walking paints beads, driving paints a solid red line. geometryForMode picks the path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Mode chips are buttons with aria-pressed and minute aria-labels. No new data paths or tokens. Client still uses existing VITE_MAPBOX_TOKEN.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "geometryForMode unit coverage plus source assertions for Car/PersonStanding chips. Full vitest gate after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #11 walk/drive icon chips switch the drawn Mapbox path."
+  },
+  {
+    "timestamp": "2026-08-12T22:08:00Z",
+    "task_id": "NAMED_PLACE_GEOCODE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/named-place.ts",
+    "supporting_files": [
+      "src/lib/rou/named-place.test.ts",
+      "src/routes/api/-chat.ts",
+      "src/routes/index.tsx",
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/rou-public-persona.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Curated amenity name match first, then Mapbox Geocoding v5 with Aiken bbox + listing proximity. Same AmenityRouteOverlay path as playground/school/grocery. No web crawl.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "extractNamedPlaceQuery returns null on Fair Housing tokens and on curated amenity intents. Overlay label is the matched place name, not the raw utterance. Existing VITE_MAPBOX_TOKEN only. Hits outside the Aiken bbox are dropped.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Unit tests for extract, curated match, geocode parse, out-of-bbox reject, and resolve preferring curated. chat-stream source assertion for resolveNamedPlace.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #2 named-place slice: Bridgestone-style asks geocode inside Aiken and draw the route."
+  },
+  {
+    "timestamp": "2026-08-12T22:12:00Z",
+    "task_id": "XAI_TTS_CARINA_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/api/-tts.ts",
+    "supporting_files": [
+      "src/lib/rou/voice.ts",
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/voice.test.ts",
+      "src/lib/rou/tts.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "New pathless synthesizeSpeech server fn. Chat/route/named-place paths untouched. Client plays MP3 blob. ChatWidget speakText is async and generation-guarded so in-flight TTS cannot overlap a new ask.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "GROK_API_KEY stays server-only. TTS input is PII-redacted and Fair Housing blocked. Failure returns { ok: false }; client never falls back to speechSynthesis.speak. Utterance text is not logged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source assertions: Carina, api.x.ai/v1/tts, no SpeechSynthesisUtterance. Mute tests still load without importing the server fn. Full vitest gate after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public Rou speaks xAI Carina. Browser robot voice is gone."
+  },
+  {
+    "timestamp": "2026-08-12T22:16:00Z",
+    "task_id": "DUAL_WALK_DRIVE_PATH_LABELS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": [
+      "src/lib/rou/map-directions.ts",
+      "src/lib/rou/map-directions.test.ts",
+      "src/lib/rou/map-route-style.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Two Mapbox line layers at once: solid drive under dotted walk. Google-style icon+time markers at pointAlongLine fractions so labels sit on each path. Legacy single-line source removed on ensure.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Path labels use numeric minutes and static SVGs only — no user HTML. Markers are pointer-events-none. No new data or tokens.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "pointAlongLine unit test plus source assertions for dual layers and attached walk/drive markers.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Walk and drive paths draw together with icons on the lines."
+  },
+  {
+    "timestamp": "2026-08-12T22:19:00Z",
+    "task_id": "REMOVE_ROUTE_INFO_BOX_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": [
+      "src/routes/index.tsx",
+      "src/lib/rou/map-route-style.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Removed the gold route info box. Walk/drive path layers and on-path icon pills remain. Overlay still clears on new search, new amenity ask, or Rou deactivate.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No new data. Hazard note remains in Rou speech only, not a map overlay. Removed Clear control from the map chrome.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source assertions that Route-to box, onClearRoute, and lucide box chips are gone while path labels remain.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Route chrome is path icons only; the duplicate box is gone."
+  },
+  {
+    "timestamp": "2026-08-12T22:24:00Z",
+    "task_id": "BRIDGESTONE_FROM_TO_AND_CAPTION_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/named-place.ts",
+    "supporting_files": [
+      "src/components/RouOrb.tsx",
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/rou-public-persona.ts",
+      "src/lib/rou/named-place.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "from-A-to-B extraction plus curated Bridgestone Graniteville alias (EPA 33.622, -81.855) so Mapbox POI miss cannot block the route. Caption is no longer a full chat panel.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Fair Housing block still runs before extract. Alias is a public industrial facility, not a demographic proxy. Caption height capped so listings stay usable.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Tests for Greenville-to-Bridgestone phrasing, Bridgestone alias coords, and RouOrb max-h-20 / askEnabled.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Bridgestone from-to asks draw the route again; the covering caption box is gone."
+  },
+  {
+    "timestamp": "2026-08-12T22:26:00Z",
+    "task_id": "HOSPITAL_CURATED_NOT_CITY_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/named-place.ts",
+    "supporting_files": [
+      "src/lib/rou/named-place.test.ts",
+      "src/components/Map.tsx",
+      "src/lib/rou/rou-public-persona.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Curated Aiken Regional Medical Center at 33.571164,-81.761958. Geocode limited to poi/address; city/locality hits rejected. Route label pills use inline styles so they render on the path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Hospital alias is a public facility, not a demographic proxy. Query 'Aiken' does not bind to the hospital. Fair Housing extract block unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Tests for hospital phrasing, city-level geocode reject, and Aiken-not-hospital. Full vitest gate after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Hospital asks route to Aiken Regional, not the city of Aiken."
+  },
+  {
+    "timestamp": "2026-08-12T22:28:00Z",
+    "task_id": "HIDE_WALK_OVER_60_MIN_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/map-directions.ts",
+    "supporting_files": [
+      "src/components/Map.tsx",
+      "src/lib/rou/map-directions.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "isWalkDisplayable: walk path, walk pill, and spoken walk time only when minutes <= 60. Drive path unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Display rule only. No new data or tokens.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "60 stays visible, 61 omitted from spoken block and map walk layer.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Walk overlay hidden when walking is over 60 minutes."
+  },
+  {
+    "timestamp": "2026-08-12T22:32:00Z",
+    "task_id": "LIST_FOLLOWS_MAP_VIEWPORT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/filterListings.ts",
+    "supporting_files": [
+      "src/components/Map.tsx",
+      "src/routes/index.tsx",
+      "src/lib/filterListings.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Client-side bbox filter on already-fetched listings. Map reports WGS84 west/south/east/north on load, moveend, and resize. No new RPC.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Camera numbers only. No extra persistence, PII, or listing RPC. Listings without coords stay off the rail.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Inside/edge/outside/null-coords tests. Empty view copy vs no search hits. Header count matches visible cards.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Left property cards follow the map camera as the visitor pans and zooms."
   }
 ]

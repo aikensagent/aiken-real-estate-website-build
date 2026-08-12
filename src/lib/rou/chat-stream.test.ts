@@ -15,6 +15,8 @@ describe('Rou chat streaming path', () => {
     expect(chat).toMatch(/ROU_SYSTEM_PROMPT/)
     expect(chat).toMatch(/formatRoutedTimesBlock/)
     expect(chat).toMatch(/buildAmenityRouteOverlay/)
+    expect(chat).toMatch(/resolveNamedPlace/)
+    expect(chat).toMatch(/formatNamedPlaceBlock/)
   })
 
   it('routes ChatWidget through streamCompanionChat without Node A imports', () => {

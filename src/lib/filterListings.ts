@@ -18,6 +18,14 @@ export type Listing = {
   property_type?: string | null
 }
 
+/** Camera bbox from Mapbox `map.getBounds()` — west/south/east/north in WGS84. */
+export type MapViewportBounds = {
+  west: number
+  south: number
+  east: number
+  north: number
+}
+
 /**
  * Client-side filter.
  * - beds / baths / price / sqft = minimums
@@ -56,4 +64,27 @@ export function filterListings(
 
     return true
   })
+}
+
+export function listingInBounds(
+  listing: Listing,
+  bounds: MapViewportBounds
+): boolean {
+  if (listing.lng == null || listing.lat == null) return false
+  if (!Number.isFinite(listing.lng) || !Number.isFinite(listing.lat)) return false
+  return (
+    listing.lng >= bounds.west &&
+    listing.lng <= bounds.east &&
+    listing.lat >= bounds.south &&
+    listing.lat <= bounds.north
+  )
+}
+
+/** Cards follow the map: no bounds yet means show the full filtered set. */
+export function filterListingsInBounds(
+  listings: Listing[],
+  bounds: MapViewportBounds | null
+): Listing[] {
+  if (!bounds) return listings
+  return listings.filter((listing) => listingInBounds(listing, bounds))
 }

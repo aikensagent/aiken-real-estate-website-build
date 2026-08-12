@@ -12,6 +12,7 @@ import {
   mentionsPlayground,
   mentionsSchool,
 } from '../lib/playgrounds'
+import { extractNamedPlaceQuery } from '../lib/rou/named-place'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -21,6 +22,7 @@ type Message = {
 type ChatWidgetProps = {
   origin?: ChatOrigin | null
   onAmenityIntent?: (kind: 'playground' | 'school' | 'grocery') => void
+  onNamedPlaceQuery?: (query: string) => void
 }
 
 const SESSION_KEY = 'rou-session-key'
@@ -55,7 +57,11 @@ function getRouSessionKey(): string {
   return key
 }
 
-export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
+export function ChatWidget({
+  origin,
+  onAmenityIntent,
+  onNamedPlaceQuery,
+}: ChatWidgetProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [speakReplies] = useState(() =>
@@ -82,10 +88,12 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
       return
     }
     setSpeaking(true)
-    speakGholiReply(trimmed, { enabled: true })
-    const words = trimmed.split(/\s+/).length
-    const ms = Math.min(20000, Math.max(2500, words * 380))
-    window.setTimeout(() => setSpeaking(false), ms)
+    void speakGholiReply(trimmed, {
+      enabled: true,
+      onEnded: () => setSpeaking(false),
+    }).then((played) => {
+      if (!played) setSpeaking(false)
+    })
   }
 
   useEffect(() => {
@@ -105,12 +113,17 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
   async function sendMessage(raw: string) {
     if (!raw.trim() || loading) return
     cancelGholiSpeech()
+    setSpeaking(false)
     setSuggestionChips([])
 
     const trimmed = raw.trim()
     if (mentionsPlayground(trimmed)) onAmenityIntent?.('playground')
     else if (mentionsSchool(trimmed)) onAmenityIntent?.('school')
     else if (mentionsGrocery(trimmed)) onAmenityIntent?.('grocery')
+    else {
+      const named = extractNamedPlaceQuery(trimmed)
+      if (named) onNamedPlaceQuery?.(named)
+    }
 
     const userMessage: Message = { role: 'user', content: trimmed }
     const newMessages = [...messages, userMessage]
@@ -193,6 +206,7 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
       speaking={speaking}
       caption={caption}
       muted={!speakReplies}
+      askEnabled={Boolean(origin)}
       chips={suggestionChips}
       onChip={(label) => void sendMessage(label)}
       onAsk={(text) => void sendMessage(text)}

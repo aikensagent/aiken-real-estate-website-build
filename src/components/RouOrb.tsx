@@ -2,6 +2,7 @@ type RouOrbProps = {
   speaking: boolean
   caption: string | null
   muted: boolean
+  askEnabled?: boolean
   chips?: string[]
   onChip?: (label: string) => void
   onAsk?: (text: string) => void
@@ -15,25 +16,30 @@ export function RouOrb({
   speaking,
   caption,
   muted,
+  askEnabled = false,
   chips = [],
   onChip,
   onAsk,
 }: RouOrbProps) {
-  const showCaption =
-    Boolean(caption?.trim()) && (muted || speaking || chips.length > 0)
+  const showCaption = Boolean(caption?.trim()) && (muted || speaking)
+  const showAsk = Boolean(askEnabled && onAsk)
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-40 flex max-w-[min(22rem,calc(100vw-2rem))] flex-col items-start gap-2 md:bottom-6 md:left-6">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-40 flex max-w-[min(16rem,calc(100vw-2rem))] flex-col items-start gap-2 md:bottom-6 md:left-6">
       {showCaption && (
         <div
-          className="pointer-events-auto w-full rounded-lg border border-brand-navy/20 bg-brand-cream px-3 py-2 text-sm leading-snug text-brand-navy shadow-lg"
+          className="pointer-events-auto max-h-20 w-full overflow-y-auto rounded-lg border border-brand-navy/20 bg-brand-cream px-3 py-2 text-xs leading-snug text-brand-navy shadow-lg"
           role="status"
           aria-live="polite"
         >
           {caption}
+        </div>
+      )}
+      {(showAsk || chips.length > 0) && (
+        <div className="pointer-events-auto w-full rounded-lg border border-brand-navy/20 bg-brand-cream px-3 py-2 shadow-lg">
           {chips.length > 0 && onChip && (
             <div
-              className="mt-2 flex flex-wrap gap-1.5"
+              className="mb-2 flex flex-wrap gap-1.5"
               role="group"
               aria-label="Suggested questions for Rou"
             >
@@ -49,9 +55,8 @@ export function RouOrb({
               ))}
             </div>
           )}
-          {onAsk && (
+          {showAsk && (
             <form
-              className="mt-2"
               onSubmit={(e) => {
                 e.preventDefault()
                 const form = e.currentTarget
@@ -60,7 +65,7 @@ export function RouOrb({
                 ) as HTMLInputElement
                 const value = field.value.trim()
                 if (!value) return
-                onAsk(value)
+                onAsk?.(value)
                 field.value = ''
               }}
             >

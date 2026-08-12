@@ -17,11 +17,16 @@ export type MapboxRouteResult = {
   }
 }
 
+export type RouteLineGeometry = {
+  type: 'LineString'
+  coordinates: [number, number][]
+}
+
 export type AmenityRouteOverlay = {
-  geometry: {
-    type: 'LineString'
-    coordinates: [number, number][]
-  }
+  /** Default draw path: driving if present, otherwise walking. */
+  geometry: RouteLineGeometry
+  driveGeometry: RouteLineGeometry | null
+  walkGeometry: RouteLineGeometry | null
   origin: [number, number]
   destination: [number, number]
   destinationLabel: string
@@ -46,6 +51,13 @@ type DirectionsApiResponse = {
 
 export function minutesFromSeconds(seconds: number): number {
   return Math.max(1, Math.round(seconds / 60))
+}
+
+/** Walk path, walk icon, and spoken walk time are omitted above this. */
+export const WALK_DISPLAY_MAX_MINUTES = 60
+
+export function isWalkDisplayable(walkMinutes: number | null): boolean {
+  return walkMinutes != null && walkMinutes <= WALK_DISPLAY_MAX_MINUTES
 }
 
 /**
@@ -109,6 +121,8 @@ export async function buildAmenityRouteOverlay(opts: {
 
   return {
     geometry,
+    driveGeometry: driving?.geometry ?? null,
+    walkGeometry: walking?.geometry ?? null,
     origin: [opts.from.lng, opts.from.lat],
     destination: [opts.to.lng, opts.to.lat],
     destinationLabel: opts.destinationLabel,
@@ -116,6 +130,48 @@ export async function buildAmenityRouteOverlay(opts: {
     walkMinutes: walking ? minutesFromSeconds(walking.durationSeconds) : null,
     hazardNote: opts.hazardNote?.trim() || null,
   }
+}
+
+export function geometryForMode(
+  overlay: AmenityRouteOverlay,
+  mode: RouteProfile
+): RouteLineGeometry {
+  if (mode === 'walking') {
+    return overlay.walkGeometry ?? overlay.geometry
+  }
+  return overlay.driveGeometry ?? overlay.geometry
+}
+
+/** Point at `fraction` (0–1) along a LineString, by coordinate-length. */
+export function pointAlongLine(
+  coordinates: [number, number][],
+  fraction: number
+): [number, number] | null {
+  if (coordinates.length === 0) return null
+  if (coordinates.length === 1) return coordinates[0]
+  const t = Math.min(1, Math.max(0, fraction))
+  const lengths: number[] = []
+  let total = 0
+  for (let i = 1; i < coordinates.length; i += 1) {
+    const [lng0, lat0] = coordinates[i - 1]
+    const [lng1, lat1] = coordinates[i]
+    const d = Math.hypot(lng1 - lng0, lat1 - lat0)
+    lengths.push(d)
+    total += d
+  }
+  if (total === 0) return coordinates[0]
+  let remaining = total * t
+  for (let i = 1; i < coordinates.length; i += 1) {
+    const seg = lengths[i - 1]
+    if (remaining <= seg) {
+      const r = seg === 0 ? 0 : remaining / seg
+      const [lng0, lat0] = coordinates[i - 1]
+      const [lng1, lat1] = coordinates[i]
+      return [lng0 + (lng1 - lng0) * r, lat0 + (lat1 - lat0) * r]
+    }
+    remaining -= seg
+  }
+  return coordinates[coordinates.length - 1]
 }
 
 export function formatRoutedTimesBlock(overlay: {
@@ -129,9 +185,9 @@ export function formatRoutedTimesBlock(overlay: {
       ? `~${overlay.driveMinutes} min drive`
       : 'drive time unavailable'
   const walk =
-    overlay.walkMinutes != null
+    isWalkDisplayable(overlay.walkMinutes)
       ? `~${overlay.walkMinutes} min walk`
-      : 'walk time unavailable'
+      : 'Do not mention a walk time. Walking is over 60 minutes or unavailable — speak drive only.'
   const hazard = overlay.hazardNote
     ? ` Obvious road on the way: ${overlay.hazardNote}. Mention it only if it is an interstate or a major multi-lane road.`
     : ''

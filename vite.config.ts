@@ -9,6 +9,12 @@ import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  server: {
+    allowedHosts: [
+      'tex-manufacturer-stage-seniors.trycloudflare.com',
+      '.trycloudflare.com',
+    ],
+  },
   plugins: [
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),

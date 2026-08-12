@@ -14,6 +14,11 @@ import {
   findNearestSchools,
 } from '../../lib/playgrounds'
 import {
+  extractNamedPlaceQuery,
+  formatNamedPlaceBlock,
+  resolveNamedPlace,
+} from '../../lib/rou/named-place'
+import {
   buildAmenityRouteOverlay,
   formatRoutedTimesBlock,
 } from '../../lib/rou/map-directions'
@@ -296,9 +301,12 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
   const wantsSchools = mentionsSchool(cleanedInput)
   const wantsGrocery = mentionsGrocery(cleanedInput)
   const wantsAmenities = wantsPlaygrounds || wantsSchools || wantsGrocery
+  const namedPlaceQuery = !wantsAmenities
+    ? extractNamedPlaceQuery(cleanedInput)
+    : null
 
   let listingRows: ListingSummary[] | null = null
-  if (needsListings || wantsAmenities) {
+  if (needsListings || wantsAmenities || namedPlaceQuery) {
     try {
       listingRows = await getListingRows()
     } catch (err) {
@@ -353,6 +361,44 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
         if (overlay) {
           systemPrompt = `${systemPrompt}\n\n${formatRoutedTimesBlock(overlay)}`
         }
+      }
+    }
+  }
+
+  if (namedPlaceQuery) {
+    const amenityOrigin =
+      origin ??
+      (listingRows ? resolveOriginFromMessage(cleanedInput, listingRows) : null)
+    const token = process.env.VITE_MAPBOX_TOKEN
+    const proximity =
+      amenityOrigin &&
+      Number.isFinite(amenityOrigin.lng) &&
+      Number.isFinite(amenityOrigin.lat)
+        ? { lng: amenityOrigin.lng, lat: amenityOrigin.lat }
+        : null
+    if (token) {
+      const hit = await resolveNamedPlace({
+        query: namedPlaceQuery,
+        proximity,
+        accessToken: token,
+      })
+      if (hit) {
+        systemPrompt = `${systemPrompt}\n\n${formatNamedPlaceBlock(hit)}`
+        if (proximity) {
+          const overlay = await buildAmenityRouteOverlay({
+            from: proximity,
+            to: { lng: hit.lng, lat: hit.lat },
+            destinationLabel: hit.name,
+            accessToken: token,
+          })
+          if (overlay) {
+            systemPrompt = `${systemPrompt}\n\n${formatRoutedTimesBlock(overlay)}`
+          }
+        } else {
+          systemPrompt = `${systemPrompt}\n\nNo listing origin for this turn. Name the matched place but do not invent drive or walk minutes from an unknown start. Ask them to tap a home first if they want a route.`
+        }
+      } else {
+        systemPrompt = `${systemPrompt}\n\nNAMED PLACE LOOKUP FAILED: could not match "${namedPlaceQuery}" inside the Aiken coverage area. Do not invent a location. Say you could not find that place near Aiken and offer a fuller name or Nick.`
       }
     }
   }

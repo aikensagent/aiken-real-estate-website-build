@@ -39,7 +39,7 @@ function installSessionStorage() {
   return sessionStorage
 }
 
-describe('Gholi browser voice foundation', () => {
+describe('Rou spoken voice', () => {
   beforeEach(() => {
     installSessionStorage()
   })
@@ -53,7 +53,7 @@ describe('Gholi browser voice foundation', () => {
     expect(readSpeakRepliesPreference()).toBe(true)
   })
 
-  it('keeps ChatWidget on the voice helper without Twilio imports', () => {
+  it('plays xAI TTS and never speaks through browser speechSynthesis', () => {
     const widget = readFileSync(
       join(here, '../../components/ChatWidget.tsx'),
       'utf8'
@@ -62,6 +62,10 @@ describe('Gholi browser voice foundation', () => {
     expect(widget).toMatch(/from ['"][^'"]*rou\/voice['"]/)
     expect(widget).toMatch(/speakGholiReply/)
     expect(widget).toMatch(/cancelGholiSpeech/)
+    expect(voice).toMatch(/synthesizeSpeech/)
+    expect(voice).toMatch(/routes\/api\/-tts/)
+    expect(voice).not.toMatch(/speechSynthesis\.speak/)
+    expect(voice).not.toMatch(/SpeechSynthesisUtterance/)
     expect(voice).not.toMatch(/from ['"][^'"]*twilio/i)
     expect(voice).toMatch(/sessionStorage/)
     expect(voice).not.toMatch(/localStorage\.(get|set)Item/)
