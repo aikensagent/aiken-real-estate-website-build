@@ -1,10 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { ChatWidget } from '../components/ChatWidget'
+import { RouCardIntroDialog } from '../components/RouCardIntroDialog'
 import { Hero } from '@/components/Hero'
 import Map from '../components/Map'
 import { supabase } from '../lib/supabase'
 import { filterListings, type SearchFilters, type Listing } from '../lib/filterListings'
+import {
+  hasSeenRouCardIntro,
+  markRouCardIntroSeen,
+} from '../lib/rou/card-intro'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -15,17 +20,42 @@ function Home() {
   const [loading, setLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
   const [isDesktop, setIsDesktop] = useState(false)
+  /** Listing Rou is answering about (activated). */
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
+  /** Listing the visitor opened/focused without activating Rou. */
+  const [focusedListingId, setFocusedListingId] = useState<string | null>(null)
+  const [showRouIntro, setShowRouIntro] = useState(false)
 
   function handleHeroSearch(newFilters: SearchFilters) {
     setFilters(newFilters)
     setShowResults(true)
     setSelectedListing(null)
-    setMobileView('list') // always start on List when a new search runs
+    setFocusedListingId(null)
+    setMobileView('list')
   }
 
-  // Gives Gholi a reference point for "how far is the nearest playground" questions
-  // Coordinates may be missing; the address alone still tells Gholi which home is in play
+  function handleCardOpen(listing: Listing) {
+    setFocusedListingId(listing.id)
+    if (!hasSeenRouCardIntro()) {
+      setShowRouIntro(true)
+    }
+  }
+
+  function handleDismissRouIntro() {
+    markRouCardIntroSeen()
+    setShowRouIntro(false)
+  }
+
+  function handleActivateRou(listing: Listing) {
+    setFocusedListingId(listing.id)
+    setSelectedListing(listing)
+  }
+
+  function handleClearRou() {
+    setSelectedListing(null)
+  }
+
+  // Public Rou uses selected listing as distance origin
   const rouOrigin = selectedListing
     ? {
         lng: selectedListing.lng,
@@ -83,7 +113,6 @@ function Home() {
         <Hero onSearch={handleHeroSearch} />
       ) : (
         <div className="flex h-dvh flex-col overflow-hidden">
-          {/* Top bar */}
           <div className="bg-brand-navy text-white px-4 py-3 flex items-center justify-between shrink-0">
             <button
               onClick={() => setShowResults(false)}
@@ -96,19 +125,18 @@ function Home() {
             </span>
           </div>
 
-          {/* Which home Gholi is answering about */}
           {selectedListing && (
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-brand-gold/40 bg-brand-gold/15 px-4 py-2">
               <span className="truncate text-sm text-brand-navy">
-                Gholi is answering about{' '}
+                Rou is helping with{' '}
                 <span className="font-semibold">
                   {selectedListing.address || 'the selected home'}
                 </span>
               </span>
               <button
                 type="button"
-                onClick={() => setSelectedListing(null)}
-                aria-label="Clear the home Gholi is answering about"
+                onClick={handleClearRou}
+                aria-label="Clear the home Rou is helping with"
                 className="shrink-0 rounded-md border border-brand-navy/25 bg-white px-2.5 py-1 text-xs font-medium text-brand-navy transition hover:bg-brand-navy/5"
               >
                 Clear
@@ -116,7 +144,6 @@ function Home() {
             </div>
           )}
 
-          {/* Mobile List | Map toggle */}
           <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 shrink-0">
             <div
               className="flex rounded-lg bg-slate-100 p-1"
@@ -154,9 +181,7 @@ function Home() {
             </div>
           </div>
 
-          {/* Main results area */}
           <div className="flex min-h-0 flex-1 overflow-hidden">
-            {/* Results list */}
             <div
               className={`w-full md:w-[420px] lg:w-[480px] min-h-0 overflow-y-auto border-r border-slate-200 bg-white ${
                 mobileView === 'list' ? 'block' : 'hidden'
@@ -169,69 +194,89 @@ function Home() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
                   {listings.map((listing) => {
-                    const isSelected = selectedListing?.id === listing.id
+                    const isRouActive = selectedListing?.id === listing.id
+                    const isFocused = focusedListingId === listing.id
                     const listingLabel = listing.address || 'this Aiken listing'
 
                     return (
                       <div
                         key={listing.id}
-                        className={`group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                          isSelected
+                        className={`group overflow-hidden rounded-lg bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                          isRouActive
                             ? 'ring-2 ring-brand-gold'
-                            : 'ring-1 ring-slate-200/80'
+                            : isFocused
+                              ? 'ring-2 ring-brand-navy/40'
+                              : 'ring-1 ring-slate-200/80'
                         }`}
                       >
-                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
-                          {listing.primary_photo_url ? (
-                            <img
-                              src={listing.primary_photo_url}
-                              alt={listing.address || 'Listing photo'}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
-                              No photo
+                        <button
+                          type="button"
+                          onClick={() => handleCardOpen(listing)}
+                          className="w-full text-left"
+                          aria-label={`Open listing ${listingLabel}`}
+                        >
+                          <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
+                            {listing.primary_photo_url ? (
+                              <img
+                                src={listing.primary_photo_url}
+                                alt={listing.address || 'Listing photo'}
+                                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                                No photo
+                              </div>
+                            )}
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-2.5 pt-10">
+                              <div className="text-lg font-semibold tracking-tight text-white">
+                                ${Number(listing.price || 0).toLocaleString()}
+                              </div>
                             </div>
-                          )}
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-2.5 pt-10">
-                            <div className="text-lg font-semibold tracking-tight text-white">
-                              ${Number(listing.price || 0).toLocaleString()}
+                            {isRouActive && (
+                              <div className="pointer-events-none absolute left-2 top-2 rounded-md bg-brand-gold px-2 py-1 text-[11px] font-semibold text-brand-navy shadow">
+                                Rou is on this home
+                              </div>
+                            )}
+                          </div>
+                          <div className="px-3 pt-2.5">
+                            <div className="truncate text-[15px] font-semibold leading-snug text-brand-navy">
+                              {listing.address || 'Aiken Listing'}
+                            </div>
+                            <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
+                              <span>{listing.beds || 0} bed</span>
+                              <span className="text-slate-300">·</span>
+                              <span>{listing.baths || 0} bath</span>
                             </div>
                           </div>
-                          {isSelected && (
-                            <div className="pointer-events-none absolute left-2 top-2 rounded-md bg-brand-gold px-2 py-1 text-[11px] font-semibold text-brand-navy shadow">
-                              Gholi is on this home
-                            </div>
-                          )}
-                        </div>
-                        <div className="px-3 py-2.5">
-                          <div className="truncate text-[15px] font-semibold leading-snug text-brand-navy">
-                            {listing.address || 'Aiken Listing'}
-                          </div>
-                          <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                            <span>{listing.beds || 0} bed</span>
-                            <span className="text-slate-300">·</span>
-                            <span>{listing.baths || 0} bath</span>
-                          </div>
+                        </button>
+                        <div className="flex items-center justify-end px-3 pb-2.5 pt-1.5">
                           <button
                             type="button"
                             onClick={() =>
-                              setSelectedListing(isSelected ? null : listing)
+                              isRouActive
+                                ? handleClearRou()
+                                : handleActivateRou(listing)
                             }
-                            aria-pressed={isSelected}
+                            aria-pressed={isRouActive}
                             aria-label={
-                              isSelected
-                                ? `Stop asking Gholi about ${listingLabel}`
-                                : `Ask Gholi about ${listingLabel}`
+                              isRouActive
+                                ? `Stop asking Rou about ${listingLabel}`
+                                : `Ask Rou about ${listingLabel}`
                             }
-                            className={`mt-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition ${
-                              isSelected
+                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition ${
+                              isRouActive
                                 ? 'bg-brand-navy text-white hover:bg-brand-navy/90'
-                                : 'border border-brand-navy/25 bg-white text-brand-navy hover:bg-brand-navy/5'
+                                : 'text-brand-navy/70 hover:bg-brand-navy/5 hover:text-brand-navy'
                             }`}
                           >
-                            {isSelected ? 'Selected — tap to clear' : 'Ask Gholi about this home'}
+                            <span
+                              className={`inline-block h-1.5 w-1.5 rounded-full ${
+                                isRouActive ? 'bg-brand-gold' : 'bg-brand-gold/80'
+                              }`}
+                              aria-hidden
+                            />
+                            {isRouActive ? 'Rou active · clear' : 'Ask Rou'}
                           </button>
                         </div>
                       </div>
@@ -241,7 +286,6 @@ function Home() {
               )}
             </div>
 
-            {/* Map */}
             <div
               className={`relative min-h-0 flex-1 ${
                 mobileView === 'map' ? 'block' : 'hidden'
@@ -258,6 +302,7 @@ function Home() {
         </div>
       )}
 
+      <RouCardIntroDialog open={showRouIntro} onDismiss={handleDismissRouIntro} />
       <ChatWidget origin={rouOrigin} />
     </div>
   )

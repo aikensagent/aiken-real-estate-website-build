@@ -37,12 +37,13 @@ describe('Gholi persona profile', () => {
     )
   })
 
-  it('is injected into -chat.ts and the memory extractors', () => {
+  it('keeps Gholi on Node B / memory; public -chat speaks as Rou', () => {
     const chat = readFileSync(join(here, '../../routes/api/-chat.ts'), 'utf8')
     const memory = readFileSync(join(here, '../lead-memory.ts'), 'utf8')
     const nodeB = readFileSync(join(here, './node-b.ts'), 'utf8')
-    expect(chat).toMatch(/GHOLI_SYSTEM_PROMPT/)
-    expect(chat).toMatch(/from ['"][^'"]*gholi-persona['"]/)
+    expect(chat).toMatch(/ROU_SYSTEM_PROMPT/)
+    expect(chat).toMatch(/from ['"][^'"]*rou-public-persona['"]/)
+    expect(chat).not.toMatch(/CORE_SYSTEM_PROMPT = GHOLI_SYSTEM_PROMPT/)
     expect(chat).toMatch(/rouPersonaRouter/)
     expect(memory).toMatch(/Gholi/)
     expect(memory).not.toMatch(/named Rou/)

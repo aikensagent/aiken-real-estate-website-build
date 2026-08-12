@@ -17,19 +17,19 @@ import {
 } from '../../lib/lead-memory'
 import { rouPersonaRouter } from '../../lib/rou/live'
 import {
-  GHOLI_CONVERSATION_STYLE_BLOCK,
-  GHOLI_SYSTEM_PROMPT,
-} from '../../lib/rou/gholi-persona'
-// Node B conversational output is Gholi. Routing stays on this file + companion RPCs.
+  ROU_CONVERSATION_STYLE_BLOCK,
+  ROU_SYSTEM_PROMPT,
+} from '../../lib/rou/rou-public-persona'
+// Public ChatWidget speaks as Rou (Node A interface). Gholi stays for dashboard/Node B.
 
-const CORE_SYSTEM_PROMPT = GHOLI_SYSTEM_PROMPT
+const CORE_SYSTEM_PROMPT = ROU_SYSTEM_PROMPT
 
 const FAIR_HOUSING_BLOCK = `
 FAIR HOUSING (always active):
 Immediately refuse any request involving protected classes (race, color, national origin, religion, sex, familial status, disability, or any proxy). Do not discuss demographics, “safe neighborhoods for certain people,” etc. Use the standard refusal when needed.`
 
 const CONVERSATION_STYLE_BLOCK = `
-${GHOLI_CONVERSATION_STYLE_BLOCK}`
+${ROU_CONVERSATION_STYLE_BLOCK}`
 
 const MARKET_AND_DATA_BLOCK = `
 MARKET & DATA RULES:

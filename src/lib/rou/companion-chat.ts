@@ -22,7 +22,8 @@ const COMPANION_FALLBACK_REPLY =
  * - redacts PII on input, history, and output
  * - enforces Fair Housing
  * - reads/writes memory exclusively through Node B SECURITY DEFINER RPCs
- * - speaks as Gholi (see gholi-persona.ts)
+ * - speaks as Rou on the public ChatWidget (see rou-public-persona.ts)
+ * - Gholi remains the dashboard companion persona (gholi-persona.ts)
  * - streams tokens when using `streamCompanionChat`
  *
  * This module must never import Node A, supabase, or listing RPCs.

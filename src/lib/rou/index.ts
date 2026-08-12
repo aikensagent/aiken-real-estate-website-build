@@ -34,6 +34,13 @@ export {
   GHOLI_TITLE,
 } from './gholi-persona'
 export {
+  ROU_CONVERSATION_STYLE_BLOCK,
+  ROU_DISPLAY_NAME,
+  ROU_FIRM,
+  ROU_SYSTEM_PROMPT,
+  ROU_TITLE,
+} from './rou-public-persona'
+export {
   GHOLI_VOICE_MUTE_STORAGE_KEY,
   cancelGholiSpeech,
   getBrowserSpeechRecognition,

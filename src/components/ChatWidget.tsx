@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { streamCompanionChat } from '../lib/rou/companion-chat'
 import {
-  GHOLI_DISPLAY_NAME,
-  GHOLI_TITLE,
-} from '../lib/rou/gholi-persona'
+  ROU_DISPLAY_NAME,
+  ROU_TITLE,
+} from '../lib/rou/rou-public-persona'
 import {
   cancelGholiSpeech,
   getBrowserSpeechRecognition,
@@ -20,12 +20,19 @@ type Message = {
 }
 
 type ChatWidgetProps = {
-  /** Selected listing coordinates, so Gholi can answer distance questions against it. */
+  /** Selected listing coordinates, so Rou can answer distance questions against it. */
   origin?: ChatOrigin | null
 }
 
 const SESSION_KEY = 'rou-session-key'
 const NICK_PHONE = '803-292-2921'
+
+const ORIGIN_SUGGESTION_CHIPS = [
+  'Nearby playgrounds',
+  'Schools nearby',
+  'Grocery & daily needs',
+  'Details on this home',
+] as const
 function isWithinNickCallHours(): boolean {
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
@@ -61,6 +68,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   const [speakReplies, setSpeakReplies] = useState(() =>
     readSpeakRepliesPreference(true)
   )
+  const [suggestionChips, setSuggestionChips] = useState<string[]>([])
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const dragOffset = useRef({ x: 0, y: 0 })
@@ -92,7 +100,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     persistSpeakRepliesPreference(next)
     if (!next) cancelGholiSpeech()
   }
-  // Selecting a home from a listing card opens Gholi and has her greet with that address
+  // Activating Rou from a listing card opens chat with a short utility greeting
   useEffect(() => {
     if (!originKey) {
       announcedOrigin.current = null
@@ -101,9 +109,10 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     if (announcedOrigin.current === originKey) return
     announcedOrigin.current = originKey
 
-    const intro = `Got it — ${originStreet}. I'm Gholi, your Best Life Realty personal advisor. I can tell you about this home, nearby playgrounds, schools, grocery, or anything else you're curious about. What would help?`
+    const intro = `Got it — ${originStreet}. I can help with nearby playgrounds, schools, grocery, or details on this home. What would help?`
 
     setIsOpen(true)
+    setSuggestionChips([...ORIGIN_SUGGESTION_CHIPS])
     setMessages((prev) => [...prev, { role: 'assistant', content: intro }])
     speakText(intro)
   }, [originKey, originStreet])
@@ -188,12 +197,13 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     }
   }, [isDragging])
 
-  async function handleSend() {
-    if (!input.trim() || loading) return
+  async function sendMessage(raw: string) {
+    if (!raw.trim() || loading) return
     stopListening()
     cancelGholiSpeech()
+    setSuggestionChips([])
 
-    const trimmed = input.trim()
+    const trimmed = raw.trim()
     const userMessage: Message = { role: 'user', content: trimmed }
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
@@ -282,10 +292,19 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
       setIsTyping(false)
     }
   }
+
+  async function handleSend() {
+    await sendMessage(input)
+  }
+
+  async function handleChipClick(label: string) {
+    await sendMessage(label)
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSend()
+      void handleSend()
     }
   }
 
@@ -324,6 +343,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     stopListening()
     cancelGholiSpeech()
     setMessages([])
+    setSuggestionChips([])
     setIsOpen(false)
   }
 
@@ -331,17 +351,17 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     return (
       <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-1.5 md:bottom-6 md:right-6 md:gap-2">
         <div className="relative rounded-lg bg-brand-navy px-3 py-1.5 text-sm font-medium text-white shadow-lg md:rounded-xl md:px-4 md:py-2">
-          Meet {GHOLI_DISPLAY_NAME}
+          Meet {ROU_DISPLAY_NAME}
           <div className="absolute -bottom-1.5 right-4 h-2.5 w-2.5 rotate-45 bg-brand-navy md:right-6 md:h-3 md:w-3" />
         </div>
         <button
           onClick={() => setIsOpen(true)}
           className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-navy shadow-lg transition hover:scale-105 md:h-28 md:w-28"
-          aria-label={`Open chat with ${GHOLI_DISPLAY_NAME}`}
+          aria-label={`Open chat with ${ROU_DISPLAY_NAME}`}
         >
           <img
             src={rouAvatar}
-            alt={GHOLI_DISPLAY_NAME}
+            alt={ROU_DISPLAY_NAME}
             className="h-[4.5rem] w-[4.5rem] rounded-full border-2 border-white object-cover md:h-24 md:w-24"
           />
         </button>
@@ -369,12 +389,12 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
         <div className="flex items-center gap-3">
           <img
             src={rouAvatar}
-            alt={GHOLI_DISPLAY_NAME}
+            alt={ROU_DISPLAY_NAME}
             className="h-[6.5rem] w-[6.5rem] rounded-full object-cover border border-white/30"
           />
           <div className="flex flex-col leading-tight">
-            <span className="text-lg font-semibold text-white">{GHOLI_DISPLAY_NAME}</span>
-            <span className="text-sm text-white/80">{GHOLI_TITLE}</span>
+            <span className="text-lg font-semibold text-white">{ROU_DISPLAY_NAME}</span>
+            <span className="text-sm text-white/80">{ROU_TITLE}</span>
             {listening && (
               <span className="text-xs text-brand-gold">Listening…</span>
             )}
@@ -384,7 +404,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
           <button
             onClick={() => setSpeakRepliesAndPersist(!speakReplies)}
             className="rounded-full p-1.5 text-white/80 transition hover:bg-white/10 hover:text-white"
-            aria-label={speakReplies ? `Mute ${GHOLI_DISPLAY_NAME} voice` : `Unmute ${GHOLI_DISPLAY_NAME} voice`}
+            aria-label={speakReplies ? `Mute ${ROU_DISPLAY_NAME} voice` : `Unmute ${ROU_DISPLAY_NAME} voice`}
             title={speakReplies ? 'Mute spoken replies' : 'Speak replies'}
           >
             {speakReplies ? '🔊' : '🔇'}
@@ -430,7 +450,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
             {msg.role === 'assistant' && (
               <img
                 src={rouAvatar}
-                alt={GHOLI_DISPLAY_NAME}
+                alt={ROU_DISPLAY_NAME}
                 className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
               />
             )}
@@ -452,7 +472,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
           <div className="flex gap-3 justify-start">
             <img
               src={rouAvatar}
-              alt={GHOLI_DISPLAY_NAME}
+              alt={ROU_DISPLAY_NAME}
               className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
             />
             <div className="rounded-lg bg-white p-3 text-sm text-brand-slate shadow-sm">
@@ -475,6 +495,25 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {suggestionChips.length > 0 && !loading && (
+        <div
+          className="flex shrink-0 flex-wrap gap-2 border-t border-brand-navy/10 bg-brand-cream/80 px-4 py-2.5"
+          role="group"
+          aria-label="Suggested questions for Rou"
+        >
+          {suggestionChips.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => void handleChipClick(chip)}
+              className="rounded-md border border-brand-navy/20 bg-white px-2.5 py-1.5 text-xs font-medium text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 border-t border-brand-navy/10 p-4">
         <textarea

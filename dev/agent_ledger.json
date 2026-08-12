@@ -372,5 +372,105 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Browser voice foundation locked for Gholi. Twilio server voice remains a later Phase 3 slice."
+  },
+  {
+    "timestamp": "2026-08-12T20:31:00Z",
+    "task_id": "IDEAS_PARKING_LOT_ALIGNMENT_AUG12",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/IDEAS_PARKING_LOT.md",
+    "supporting_files": [
+      "artifacts/IDEAS_PARKING_LOT.md"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Locked lean map + hybrid curated/geocode POI model, walk/drive route doctrine, school public/private labeling, Rou orb-first public surface vs Gholi dashboard companion.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Preference/confidence/thumbs/trash/nurture scoped to account/Gholi; named-place geocode session-scoped by default; no public face stereotype risk; private Aria thumbnail out of product scope.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Captured LOCK/PARK/DROP/REVISE vocabulary with dependencies (#6 after #7/#8; #18 only when capability real). #25 notFound parked as non-critical polish.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Desktop thread inventory decided with Nick. Written to artifacts/IDEAS_PARKING_LOT.md. No product code changed."
+  },
+  {
+    "timestamp": "2026-08-12T20:40:00Z",
+    "task_id": "ROU_CARD_INTRO_SUBTLE_ACTIVATE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/lib/rou/card-intro.ts",
+      "src/lib/rou/card-intro.test.ts",
+      "src/components/RouCardIntroDialog.tsx",
+      "src/components/ChatWidget.tsx",
+      "artifacts/IDEAS_PARKING_LOT.md"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Split card open (focus) from Rou activate (selectedListing origin). First-open intro via localStorage; subtle Ask Rou control; origin still feeds ChatWidget distance context.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Intro flag is non-PII localStorage only. No new anon writes. Public copy uses Rou; companion API path unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "card-intro.test.ts green; chips clear on send; dismissible dialog with aria labels. Full suite run after change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Card Ask-Gholi button farm revised to one-time Rou intro + subtle activate + suggestion chips."
+  },
+  {
+    "timestamp": "2026-08-12T20:56:00Z",
+    "task_id": "ROU_PUBLIC_CHROME_AND_SCHOOL_SECTOR_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/rou-public-persona.ts",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/routes/api/-chat.ts",
+      "src/lib/playgrounds.ts",
+      "src/lib/playgrounds.test.ts",
+      "src/routes/index.tsx",
+      "src/components/RouCardIntroDialog.tsx",
+      "src/lib/rou/card-intro.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Public chat CORE_SYSTEM_PROMPT switched to Rou. Schools tagged sector public/private; getSchoolContext leads with closest public and lists private separately.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Gholi persona retained for dashboard/Node B memory. Fair Housing school rules strengthened against private-as-zoning confusion.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "93/93 vitest green including school sector and Rou public persona injection checks.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public Rou chrome + card intro + school sector honesty shipped as one commit slice."
   }
 ]

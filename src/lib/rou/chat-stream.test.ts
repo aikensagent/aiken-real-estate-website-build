@@ -5,14 +5,14 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
-describe('Gholi chat streaming path', () => {
+describe('Rou chat streaming path', () => {
   it('exposes chatStream beside the non-streaming chat server fn', () => {
     const chat = readFileSync(join(here, '../../routes/api/-chat.ts'), 'utf8')
     expect(chat).toMatch(/export const chatStream/)
     expect(chat).toMatch(/stream:\s*true/)
     expect(chat).toMatch(/redactPII/)
     expect(chat).toMatch(/checkFairHousing/)
-    expect(chat).toMatch(/GHOLI_SYSTEM_PROMPT/)
+    expect(chat).toMatch(/ROU_SYSTEM_PROMPT/)
   })
 
   it('routes ChatWidget through streamCompanionChat without Node A imports', () => {

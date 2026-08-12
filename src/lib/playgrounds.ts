@@ -24,6 +24,8 @@ export type Playground = Amenity
 
 export interface School extends Amenity {
   level: 'elementary' | 'middle' | 'high' | 'other'
+  /** Governance type — always spoken aloud so private is never mistaken for zoned public. */
+  sector: 'public' | 'private' | 'charter'
 }
 
 /**
@@ -235,7 +237,9 @@ export const playgrounds: Playground[] = [
  *
  * This list answers "how far" and nothing else. It carries no ratings, no test
  * scores and no attendance zones — zoning is set by the district, and a school
- * being closest does not mean an address is assigned to it.
+ * being closest does not mean an address is assigned to it. Every entry is
+ * tagged public / private / charter so Rou never implies a private campus is
+ * the assigned public school.
  */
 export const schools: School[] = [
   // ——— Aiken ———
@@ -243,6 +247,7 @@ export const schools: School[] = [
     id: 'aiken-high-school',
     name: 'Aiken High School',
     level: 'high',
+    sector: 'public',
     lng: -81.71289,
     lat: 33.57792,
     area: 'Aiken (north)',
@@ -252,6 +257,7 @@ export const schools: School[] = [
     id: 'south-aiken-high-school',
     name: 'South Aiken High School',
     level: 'high',
+    sector: 'public',
     lng: -81.71358,
     lat: 33.52184,
     area: 'Aiken (south)',
@@ -260,6 +266,7 @@ export const schools: School[] = [
     id: 'kennedy-middle-school',
     name: 'Kennedy Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.71305,
     lat: 33.52431,
     area: 'Aiken (south)',
@@ -269,6 +276,7 @@ export const schools: School[] = [
     id: 'schofield-middle-school',
     name: 'Schofield Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.7108,
     lat: 33.56113,
     area: 'Aiken (east of downtown)',
@@ -277,6 +285,7 @@ export const schools: School[] = [
     id: 'millbrook-elementary-school',
     name: 'Millbrook Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.71425,
     lat: 33.52663,
     area: 'Aiken (south)',
@@ -286,6 +295,7 @@ export const schools: School[] = [
     id: 'chukker-creek-elementary-school',
     name: 'Chukker Creek Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.71294,
     lat: 33.48466,
     area: 'Aiken (south, Chukker Creek)',
@@ -294,6 +304,7 @@ export const schools: School[] = [
     id: 'east-aiken-school-of-the-arts',
     name: 'East Aiken School of the Arts',
     level: 'elementary',
+    sector: 'public',
     lng: -81.67454,
     lat: 33.55129,
     area: 'Aiken (east side)',
@@ -302,6 +313,7 @@ export const schools: School[] = [
     id: 'aiken-scholars-academy',
     name: 'Aiken Scholars Academy',
     level: 'high',
+    sector: 'public',
     lng: -81.76883,
     lat: 33.57451,
     area: 'Aiken (USC Aiken campus)',
@@ -311,6 +323,7 @@ export const schools: School[] = [
     id: 'st-mary-help-of-christians-school',
     name: 'St. Mary Help of Christians School',
     level: 'other',
+    sector: 'private',
     lng: -81.71769,
     lat: 33.55897,
     area: 'Aiken (downtown)',
@@ -320,6 +333,7 @@ export const schools: School[] = [
     id: 'mead-hall-episcopal-school',
     name: 'Mead Hall Episcopal School (Aiken Prep campus)',
     level: 'other',
+    sector: 'private',
     lng: -81.7267,
     lat: 33.56478,
     area: 'Aiken (downtown)',
@@ -331,6 +345,7 @@ export const schools: School[] = [
     id: 'north-augusta-high-school',
     name: 'North Augusta High School',
     level: 'high',
+    sector: 'public',
     lng: -81.97449,
     lat: 33.5352,
     area: 'North Augusta',
@@ -339,6 +354,7 @@ export const schools: School[] = [
     id: 'north-augusta-middle-school',
     name: 'North Augusta Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.95046,
     lat: 33.49912,
     area: 'North Augusta',
@@ -347,6 +363,7 @@ export const schools: School[] = [
     id: 'north-augusta-elementary-school',
     name: 'North Augusta Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.96347,
     lat: 33.49276,
     area: 'North Augusta',
@@ -355,6 +372,7 @@ export const schools: School[] = [
     id: 'paul-knox-middle-school',
     name: 'Paul Knox Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.9703,
     lat: 33.52895,
     area: 'North Augusta',
@@ -363,6 +381,7 @@ export const schools: School[] = [
     id: 'hammond-hill-elementary-school',
     name: 'Hammond Hill Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.98194,
     lat: 33.51074,
     area: 'North Augusta',
@@ -371,6 +390,7 @@ export const schools: School[] = [
     id: 'mossy-creek-elementary-school',
     name: 'Mossy Creek Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.9596,
     lat: 33.54144,
     area: 'North Augusta (north)',
@@ -379,6 +399,7 @@ export const schools: School[] = [
     id: 'highland-springs-middle-school',
     name: 'Highland Springs Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.91399,
     lat: 33.52786,
     area: 'Belvedere',
@@ -387,6 +408,7 @@ export const schools: School[] = [
     id: 'belvedere-elementary-school',
     name: 'Belvedere Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.93662,
     lat: 33.52668,
     area: 'Belvedere',
@@ -397,6 +419,7 @@ export const schools: School[] = [
     id: 'midland-valley-high-school',
     name: 'Midland Valley High School',
     level: 'high',
+    sector: 'public',
     lng: -81.8651,
     lat: 33.52543,
     area: 'Langley / Graniteville',
@@ -405,6 +428,7 @@ export const schools: School[] = [
     id: 'byrd-elementary-school',
     name: 'Byrd Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.82921,
     lat: 33.58291,
     area: 'Graniteville',
@@ -413,6 +437,7 @@ export const schools: School[] = [
     id: 'warrenville-elementary-school',
     name: 'Warrenville Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.78569,
     lat: 33.52442,
     area: 'Warrenville',
@@ -421,6 +446,7 @@ export const schools: School[] = [
     id: 'gloverville-elementary-school',
     name: 'Gloverville Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.82474,
     lat: 33.52346,
     area: 'Gloverville',
@@ -429,6 +455,7 @@ export const schools: School[] = [
     id: 'bath-elementary-school',
     name: 'Bath Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.87122,
     lat: 33.50069,
     area: 'Bath',
@@ -437,6 +464,7 @@ export const schools: School[] = [
     id: 'clearwater-elementary-school',
     name: 'Clearwater Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.89622,
     lat: 33.49597,
     area: 'Clearwater',
@@ -446,6 +474,7 @@ export const schools: School[] = [
     id: 'vaucluse-elementary-school',
     name: 'Vaucluse Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.80616,
     lat: 33.60918,
     area: 'Vaucluse',
@@ -455,6 +484,7 @@ export const schools: School[] = [
     id: 'aiken-county-career-technology-center',
     name: 'Aiken County Career & Technology Center',
     level: 'other',
+    sector: 'public',
     lng: -81.8434,
     lat: 33.52835,
     area: 'Warrenville',
@@ -466,6 +496,7 @@ export const schools: School[] = [
     id: 'silver-bluff-high-school',
     name: 'Silver Bluff High School',
     level: 'high',
+    sector: 'public',
     lng: -81.75956,
     lat: 33.41125,
     area: 'Aiken County (Silver Bluff, south of Aiken)',
@@ -474,6 +505,7 @@ export const schools: School[] = [
     id: 'jackson-middle-school',
     name: 'Jackson Middle School',
     level: 'middle',
+    sector: 'public',
     lng: -81.7915,
     lat: 33.34153,
     area: 'Jackson',
@@ -483,6 +515,7 @@ export const schools: School[] = [
     id: 'oakwood-windsor-elementary-school',
     name: 'Oakwood-Windsor Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.57521,
     lat: 33.51612,
     area: 'Aiken County (Charleston Highway corridor)',
@@ -492,6 +525,7 @@ export const schools: School[] = [
     id: 'windsor-elementary-school',
     name: 'Windsor Elementary School',
     level: 'elementary',
+    sector: 'public',
     lng: -81.51927,
     lat: 33.47764,
     area: 'Windsor',
@@ -500,6 +534,7 @@ export const schools: School[] = [
     id: 'wagener-salley-high-school',
     name: 'Wagener-Salley High School',
     level: 'high',
+    sector: 'public',
     lng: -81.36582,
     lat: 33.6462,
     area: 'Wagener',
@@ -509,6 +544,7 @@ export const schools: School[] = [
     id: 'ridge-spring-monetta-high-school',
     name: 'Ridge Spring-Monetta High School',
     level: 'high',
+    sector: 'public',
     lng: -81.62566,
     lat: 33.82264,
     area: 'Ridge Spring / Monetta',
@@ -778,11 +814,25 @@ export function findNearestAmenities<T extends Amenity>(
 export const findNearestPlaygrounds = (origin: LatLng, count = 3) =>
   findNearestAmenities(playgrounds, origin, count)
 
+/** Default: public schools only so private campuses are not mistaken for zoning. */
 export const findNearestSchools = (origin: LatLng, count = 3) =>
+  findNearestAmenities(
+    schools.filter((school) => school.sector === 'public'),
+    origin,
+    count
+  )
+
+export const findNearestSchoolsAnySector = (origin: LatLng, count = 3) =>
   findNearestAmenities(schools, origin, count)
 
 export const findNearestGroceryStores = (origin: LatLng, count = 3) =>
   findNearestAmenities(groceryStores, origin, count)
+
+function schoolDetail(item: Amenity): string {
+  const school = item as School
+  const level = school.level === 'other' ? '' : ` ${school.level}`
+  return ` [${school.sector}${level}]`
+}
 
 const STREET_WORDS: Record<string, string> = {
   rd: 'road',
@@ -950,12 +1000,13 @@ const SCHOOL_OWNERSHIP = [
 
 const SCHOOL_RULES = [
   'HOW TO ANSWER SCHOOL QUESTIONS — REQUIRED ORDER, DO NOT REARRANGE:',
-  '1. Name the single closest school first, with its level (elementary, middle or high), the approximate distance and a rough drive time.',
+  '1. Name the single closest PUBLIC school first, with its sector (say "public" out loud), its level (elementary, middle or high when given), the approximate distance and a rough drive time.',
   '2. In that same answer, say that Aiken County Public Schools sets attendance zones and that the closest school is not automatically the assigned one, so the district or Nick can confirm the zoned school for a specific address.',
-  '3. Only after steps 1–2 may you list other nearby schools or ask a clarifying question.',
+  '3. Only after steps 1–2 may you list other nearby public schools, or mention a nearby private/charter school — and if you name a private or charter school you MUST say private or charter in the same breath. Never imply a private school is the zoned public school.',
+  '4. If the visitor explicitly asks for private schools, any school, or a named private campus, you may lead with that — still label the sector clearly.',
   '',
   'FAIR HOUSING — NON-NEGOTIABLE, OVERRIDES EVERYTHING ABOVE:',
-  '- Give names, levels, distances and travel times only. You have no ratings, rankings, test scores or report cards, and you must not supply, estimate or imply them.',
+  '- Give names, sectors, levels, distances and travel times only. You have no ratings, rankings, test scores or report cards, and you must not supply, estimate or imply them.',
   '- Never call a school or the area around it good, bad, better, worse, top, desirable, safe, or family-friendly, and never compare two schools in quality terms.',
   '- If asked which schools are best, or which area has the best schools, do not answer it. Say plainly that you do not rate schools or steer buyers by school quality, give the factual distances instead, and point them to the district and the state report card so they can judge for themselves.',
   '- Never use a school as a stand-in for describing who lives in an area. Any question about the makeup of a school or neighborhood gets the standard Fair Housing refusal, not a hedged answer.',
@@ -1099,27 +1150,49 @@ export function getPlaygroundContext(origin?: PlaygroundOrigin | null): string {
   )
 }
 
-/** Prompt block for school-location questions. Distances only — see SCHOOL_RULES. */
+/** Prompt block for school-location questions. Prefers public; labels sector. */
 export function getSchoolContext(origin?: PlaygroundOrigin | null): string {
-  return buildAmenityContext(
-    {
-      list: schools,
-      noun: 'school',
-      ownership: SCHOOL_OWNERSHIP,
-      rules: SCHOOL_RULES,
-      detail: (item) => {
-        const level = (item as School).level
-        return level === 'other' ? '' : ` [${level}]`
+  if (!origin) {
+    return buildAmenityContext(
+      {
+        list: schools,
+        noun: 'school',
+        ownership: SCHOOL_OWNERSHIP,
+        rules: SCHOOL_RULES,
+        detail: schoolDetail,
+        listHeading:
+          'CURATED SCHOOLS BY AREA (verified coordinates; each entry tagged public / private / charter):',
+        noOriginNote:
+          'NO COORDINATES FOR THIS QUESTION: no address matched, so give no numeric distance this turn. Still answer directly — name the schools serving the area they mentioned, straight from this list, and say public/private/charter for each. Prefer public unless they asked about private. Then in one short sentence ask which address or listing they are starting from. Do not apologize and do not call the data missing.',
+        nearestHeading: (label) =>
+          `NEAREST SCHOOLS TO ${label} (already computed — use these numbers, do not recalculate):`,
       },
-      listHeading:
-        'CURATED SCHOOLS BY AREA (verified coordinates, currently operating Aiken County campuses):',
-      noOriginNote:
-        'NO COORDINATES FOR THIS QUESTION: no address matched, so give no numeric distance this turn. Still answer directly — name the schools serving the area they mentioned, straight from this list. Then in one short sentence ask which address or listing they are starting from. Do not apologize and do not call the data missing.',
-      nearestHeading: (label) =>
-        `NEAREST SCHOOLS TO ${label} (already computed — use these numbers, do not recalculate):`,
-    },
-    origin
-  )
+      null
+    )
+  }
+
+  const publicSchools = schools.filter((school) => school.sector === 'public')
+  const otherSchools = schools.filter((school) => school.sector !== 'public')
+  const [closest, ...publicBackups] = findNearestAmenities(publicSchools, origin, 3)
+  const privateNearby = findNearestAmenities(otherSchools, origin, 2)
+  const label = origin.label?.trim() || 'the location being discussed'
+
+  return [
+    SCHOOL_OWNERSHIP,
+    '',
+    `NEAREST SCHOOLS TO ${label} (already computed — use these numbers, do not recalculate):`,
+    `CLOSEST PUBLIC — lead with this one, by name, and say it is public: ${formatMatch(closest, 'school', schoolDetail(closest.amenity))}`,
+    'OTHER NEARBY PUBLIC — hold these back until after the closest public school is fully answered:',
+    ...publicBackups.map(
+      (match) => `- ${formatMatch(match, 'school', schoolDetail(match.amenity))}`
+    ),
+    'NEARBY PRIVATE OR CHARTER — only after the public answer, or if they asked about private/any school. Always say private or charter out loud:',
+    ...privateNearby.map(
+      (match) => `- ${formatMatch(match, 'school', schoolDetail(match.amenity))}`
+    ),
+    '',
+    SCHOOL_RULES,
+  ].join('\n')
 }
 
 /** Prompt block for grocery questions. */

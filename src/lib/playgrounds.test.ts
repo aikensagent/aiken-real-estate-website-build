@@ -7,6 +7,7 @@ import {
   findNearestGroceryStores,
   findNearestPlaygrounds,
   findNearestSchools,
+  findNearestSchoolsAnySector,
   getGroceryContext,
   getPlaygroundContext,
   getSchoolContext,
@@ -291,16 +292,30 @@ describe('school and grocery data', () => {
     expect(new Set(all).size).toBe(all.length)
   })
 
-  it('labels every school with a level', () => {
+  it('labels every school with a level and sector', () => {
     for (const school of schools) {
       expect(['elementary', 'middle', 'high', 'other']).toContain(school.level)
+      expect(['public', 'private', 'charter']).toContain(school.sector)
     }
   })
 
-  it('finds the closest school and grocery store to a downtown origin', () => {
+  it('tags known private campuses and keeps the rest public', () => {
+    expect(
+      schools.find((s) => s.id === 'st-mary-help-of-christians-school')?.sector
+    ).toBe('private')
+    expect(
+      schools.find((s) => s.id === 'mead-hall-episcopal-school')?.sector
+    ).toBe('private')
+    expect(schools.filter((s) => s.sector === 'private')).toHaveLength(2)
+  })
+
+  it('finds the closest PUBLIC school and grocery store to a downtown origin', () => {
     const [school] = findNearestSchools(LIBRARY_PARK, 1)
+    const [anySchool] = findNearestSchoolsAnySector(LIBRARY_PARK, 1)
     const [store] = findNearestGroceryStores(LIBRARY_PARK, 1)
-    expect(school.amenity.id).toBe('st-mary-help-of-christians-school')
+    expect(school.amenity.sector).toBe('public')
+    expect(school.amenity.id).not.toBe('st-mary-help-of-christians-school')
+    expect(anySchool.amenity.id).toBe('st-mary-help-of-christians-school')
     expect(store.miles).toBeLessThan(5)
     expect(store.amenity.name).toContain('(')
   })
@@ -328,11 +343,18 @@ describe('mentionsSchool and mentionsGrocery', () => {
 })
 
 describe('getSchoolContext', () => {
-  it('leads with a computed closest school and its level', () => {
+  it('leads with a computed closest PUBLIC school and its sector', () => {
     const context = getSchoolContext({ ...LIBRARY_PARK, label: '123 Test Street' })
-    expect(context).toContain('CLOSEST — lead with this one')
+    expect(context).toContain('CLOSEST PUBLIC — lead with this one')
     expect(context).toContain('123 Test Street')
-    expect(context).toMatch(/\[(elementary|middle|high)\]/)
+    expect(context).toMatch(/\[public (elementary|middle|high)\]/)
+    const closestLine = context
+      .split('\n')
+      .find((line) => line.startsWith('CLOSEST PUBLIC'))
+    expect(closestLine).toBeTruthy()
+    expect(closestLine).toContain('Schofield Middle School')
+    expect(closestLine).not.toContain('St. Mary')
+    expect(context).toContain('[private')
   })
 
   it('always carries the Fair Housing and zoning guardrails', () => {
@@ -340,6 +362,7 @@ describe('getSchoolContext', () => {
       expect(context).toContain('FAIR HOUSING — NON-NEGOTIABLE')
       expect(context).toContain('no ratings, rankings, test scores')
       expect(context).toContain('Aiken County Public Schools sets attendance zones')
+      expect(context).toContain('say "public" out loud')
     }
   })
 
