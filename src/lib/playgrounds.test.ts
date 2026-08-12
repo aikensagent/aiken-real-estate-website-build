@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { parksAndRec } from './parksAndRec'
 import {
   COMFORTABLE_WALK_MILES,
+  LOCAL_COVERAGE_MILES,
+  WALK_REPORT_LIMIT_MILES,
   findNearestPlaygrounds,
   getPlaygroundContext,
   mentionsPlayground,
@@ -66,6 +68,33 @@ describe('findNearestPlaygrounds', () => {
     expect(nearest.miles).toBeGreaterThan(COMFORTABLE_WALK_MILES)
     expect(nearest.withinWalkRange).toBe(false)
     expect(nearest.recommendation).toBe('drive')
+  })
+
+  it('stops quoting a walk time once the trip is clearly a drive', () => {
+    // Ridge Spring is far outside the corridor the curated list covers
+    const [nearest] = findNearestPlaygrounds({ lng: -81.4707, lat: 33.8474 }, 1)
+    expect(nearest.miles).toBeGreaterThan(WALK_REPORT_LIMIT_MILES)
+    expect(nearest.walkMinutes).toBeNull()
+  })
+
+  it('flags a distant origin as outside the covered area', () => {
+    const [nearest] = findNearestPlaygrounds({ lng: -81.4707, lat: 33.8474 }, 1)
+    expect(nearest.miles).toBeGreaterThan(LOCAL_COVERAGE_MILES)
+    expect(nearest.outsideLocalCoverage).toBe(true)
+  })
+
+  it('keeps a walk time for a genuinely walkable trip', () => {
+    const [nearest] = findNearestPlaygrounds(KALMIA_HILL, 1)
+    expect(nearest.walkMinutes).not.toBeNull()
+    expect(nearest.outsideLocalCoverage).toBe(false)
+  })
+
+  it('uses a faster average speed for longer drives', () => {
+    const [inTown] = findNearestPlaygrounds(KALMIA_HILL, 1)
+    const [longHaul] = findNearestPlaygrounds({ lng: -81.4707, lat: 33.8474 }, 1)
+    const inTownMph = inTown.miles / (inTown.driveMinutes / 60)
+    const longHaulMph = longHaul.miles / (longHaul.driveMinutes / 60)
+    expect(longHaulMph).toBeGreaterThan(inTownMph)
   })
 })
 

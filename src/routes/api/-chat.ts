@@ -159,7 +159,7 @@ export const chat = createServerFn({ method: 'POST' })
       history?: ChatMessage[]
       sessionKey?: string
       leadId?: string
-      origin?: { lng: number; lat: number; label?: string }
+      origin?: { lng?: number | null; lat?: number | null; label?: string }
     }) => data
   )
   .handler(async ({ data }) => {
@@ -178,16 +178,24 @@ export const chat = createServerFn({ method: 'POST' })
         ? data.leadId.trim()
         : null
 
-    // Reference point for distance questions — the listing currently selected on screen
+    // Reference point for distance questions — the listing currently selected on screen.
+    // A selected listing can arrive without coordinates, so require real numbers here:
+    // Number(null) is 0, which would otherwise pass as a point in the Atlantic.
+    const originLng =
+      typeof data.origin?.lng === 'number' && Number.isFinite(data.origin.lng)
+        ? data.origin.lng
+        : null
+    const originLat =
+      typeof data.origin?.lat === 'number' && Number.isFinite(data.origin.lat)
+        ? data.origin.lat
+        : null
     const origin =
-      data.origin &&
-      Number.isFinite(Number(data.origin.lng)) &&
-      Number.isFinite(Number(data.origin.lat))
+      originLng !== null && originLat !== null
         ? {
-            lng: Number(data.origin.lng),
-            lat: Number(data.origin.lat),
+            lng: originLng,
+            lat: originLat,
             label:
-              typeof data.origin.label === 'string' && data.origin.label.trim()
+              typeof data.origin?.label === 'string' && data.origin.label.trim()
                 ? data.origin.label.trim()
                 : undefined,
           }

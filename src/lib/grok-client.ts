@@ -7,8 +7,8 @@ type ChatMessage = {
 
 /** Location the user is asking about — used for "how far is…" style questions. */
 export type ChatOrigin = {
-  lng: number
-  lat: number
+  lng?: number | null
+  lat?: number | null
   label?: string
 }
 

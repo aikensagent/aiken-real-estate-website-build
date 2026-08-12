@@ -65,6 +65,10 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   const widgetRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const announcedOrigin = useRef<string | null>(null)
+
+  const originKey = origin ? `${origin.lng},${origin.lat},${origin.label ?? ''}` : ''
+  const originStreet = (origin?.label ?? '').split(',')[0].trim() || 'this home'
 
   useEffect(() => {
     setVoiceSupported(!!getSpeechRecognition())
@@ -84,6 +88,22 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     u.lang = 'en-US'
     window.speechSynthesis.speak(u)
   }
+  // Selecting a home from a listing card opens Rou and has her greet with that address
+  useEffect(() => {
+    if (!originKey) {
+      announcedOrigin.current = null
+      return
+    }
+    if (announcedOrigin.current === originKey) return
+    announcedOrigin.current = originKey
+
+    const intro = `Got it — ${originStreet}. I can tell you about this home, nearby playgrounds, schools, grocery, or anything else you're curious about. What would help?`
+
+    setIsOpen(true)
+    setMessages((prev) => [...prev, { role: 'assistant', content: intro }])
+    speakText(intro)
+  }, [originKey, originStreet])
+
   function stopListening() {
     try {
       recognitionRef.current?.stop()
@@ -297,11 +317,12 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     )
   }
 
-  const width = isExpanded ? 680 : 420
-  const height = isExpanded ? 900 : 560
+  // Clamp to the viewport so the auto-opened panel still fits a phone screen
+  const width = `min(${isExpanded ? 680 : 420}px, calc(100vw - 2rem))`
+  const height = `min(${isExpanded ? 900 : 560}px, calc(100dvh - 2rem))`
   const style =
     position.x === 0 && position.y === 0
-      ? { bottom: '1.5rem', right: '1.5rem', width, height }
+      ? { bottom: '1rem', right: '1rem', width, height }
       : { left: position.x, top: position.y, width, height }
 
   return (
@@ -352,6 +373,12 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
           </button>
         </div>
       </div>
+
+      {origin?.label && (
+        <div className="shrink-0 border-b border-brand-navy/10 bg-brand-cream px-4 py-2 text-xs text-brand-navy">
+          Asking about <span className="font-semibold">{origin.label}</span>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
         {messages.map((msg, i) => (

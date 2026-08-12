@@ -25,14 +25,14 @@ function Home() {
   }
 
   // Gives Rou a reference point for "how far is the nearest playground" questions
-  const rouOrigin =
-    selectedListing?.lng != null && selectedListing.lat != null
-      ? {
-          lng: selectedListing.lng,
-          lat: selectedListing.lat,
-          label: selectedListing.address || 'the selected listing',
-        }
-      : null
+  // Coordinates may be missing; the address alone still tells Rou which home is in play
+  const rouOrigin = selectedListing
+    ? {
+        lng: selectedListing.lng,
+        lat: selectedListing.lat,
+        label: selectedListing.address || 'the selected listing',
+      }
+    : null
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -96,6 +96,26 @@ function Home() {
             </span>
           </div>
 
+          {/* Which home Rou is answering about */}
+          {selectedListing && (
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-brand-gold/40 bg-brand-gold/15 px-4 py-2">
+              <span className="truncate text-sm text-brand-navy">
+                Rou is answering about{' '}
+                <span className="font-semibold">
+                  {selectedListing.address || 'the selected home'}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedListing(null)}
+                aria-label="Clear the home Rou is answering about"
+                className="shrink-0 rounded-md border border-brand-navy/25 bg-white px-2.5 py-1 text-xs font-medium text-brand-navy transition hover:bg-brand-navy/5"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+
           {/* Mobile List | Map toggle */}
           <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 shrink-0">
             <div
@@ -148,57 +168,75 @@ function Home() {
                 <div className="p-6 text-slate-500">No homes found</div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
-                  {listings.map((listing) => (
-                    <div
-                      key={listing.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={selectedListing?.id === listing.id}
-                      aria-label={`Select ${listing.address || 'this Aiken listing'} so Rou can answer questions about it`}
-                      onClick={() => setSelectedListing(listing)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          setSelectedListing(listing)
-                        }
-                      }}
-                      className={`group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                        selectedListing?.id === listing.id
-                          ? 'ring-2 ring-brand-gold'
-                          : 'ring-1 ring-slate-200/80'
-                      }`}
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
-                        {listing.primary_photo_url ? (
-                          <img
-                            src={listing.primary_photo_url}
-                            alt={listing.address || 'Listing photo'}
-                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
-                            No photo
+                  {listings.map((listing) => {
+                    const isSelected = selectedListing?.id === listing.id
+                    const listingLabel = listing.address || 'this Aiken listing'
+
+                    return (
+                      <div
+                        key={listing.id}
+                        className={`group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                          isSelected
+                            ? 'ring-2 ring-brand-gold'
+                            : 'ring-1 ring-slate-200/80'
+                        }`}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
+                          {listing.primary_photo_url ? (
+                            <img
+                              src={listing.primary_photo_url}
+                              alt={listing.address || 'Listing photo'}
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                              No photo
+                            </div>
+                          )}
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-2.5 pt-10">
+                            <div className="text-lg font-semibold tracking-tight text-white">
+                              ${Number(listing.price || 0).toLocaleString()}
+                            </div>
                           </div>
-                        )}
-                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-2.5 pt-10">
-                          <div className="text-lg font-semibold tracking-tight text-white">
-                            ${Number(listing.price || 0).toLocaleString()}
+                          {isSelected && (
+                            <div className="pointer-events-none absolute left-2 top-2 rounded-md bg-brand-gold px-2 py-1 text-[11px] font-semibold text-brand-navy shadow">
+                              Rou is on this home
+                            </div>
+                          )}
+                        </div>
+                        <div className="px-3 py-2.5">
+                          <div className="truncate text-[15px] font-semibold leading-snug text-brand-navy">
+                            {listing.address || 'Aiken Listing'}
                           </div>
+                          <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
+                            <span>{listing.beds || 0} bed</span>
+                            <span className="text-slate-300">·</span>
+                            <span>{listing.baths || 0} bath</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedListing(isSelected ? null : listing)
+                            }
+                            aria-pressed={isSelected}
+                            aria-label={
+                              isSelected
+                                ? `Stop asking Rou about ${listingLabel}`
+                                : `Ask Rou about ${listingLabel}`
+                            }
+                            className={`mt-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition ${
+                              isSelected
+                                ? 'bg-brand-navy text-white hover:bg-brand-navy/90'
+                                : 'border border-brand-navy/25 bg-white text-brand-navy hover:bg-brand-navy/5'
+                            }`}
+                          >
+                            {isSelected ? 'Selected — tap to clear' : 'Ask Rou about this home'}
+                          </button>
                         </div>
                       </div>
-                      <div className="px-3 py-2.5">
-                        <div className="truncate text-[15px] font-semibold leading-snug text-brand-navy">
-                          {listing.address || 'Aiken Listing'}
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                          <span>{listing.beds || 0} bed</span>
-                          <span className="text-slate-300">·</span>
-                          <span>{listing.baths || 0} bath</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>

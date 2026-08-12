@@ -196,10 +196,22 @@ export const playgrounds: Playground[] = [
 
 const EARTH_RADIUS_MILES = 3958.8
 const WALK_SPEED_MPH = 3
-const LOCAL_DRIVE_SPEED_MPH = 25
 
 /** Straight-line distance most people will still consider walking. */
 export const COMFORTABLE_WALK_MILES = 1
+
+/** Past this a walk time is noise rather than an option, so we stop quoting one. */
+export const WALK_REPORT_LIMIT_MILES = 2
+
+/** Past this the curated list has probably missed a closer neighborhood site. */
+export const LOCAL_COVERAGE_MILES = 10
+
+/** Short hops crawl on town streets; longer trips pick up main roads and highway. */
+function driveSpeedMph(miles: number): number {
+  if (miles <= 3) return 25
+  if (miles <= 10) return 35
+  return 45
+}
 
 export function straightLineMiles(from: LatLng, to: LatLng): number {
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180
@@ -216,9 +228,12 @@ export function straightLineMiles(from: LatLng, to: LatLng): number {
 export type PlaygroundMatch = {
   playground: Playground
   miles: number
-  walkMinutes: number
+  /** Null once the distance makes walking irrelevant. */
+  walkMinutes: number | null
   driveMinutes: number
   withinWalkRange: boolean
+  /** Far enough out that closer sites likely exist outside this data set. */
+  outsideLocalCoverage: boolean
   /** Arterials a walking trip would likely have to cross or follow. */
   majorRoadsOnFoot: string[]
   recommendation: 'walk' | 'drive'
@@ -236,9 +251,13 @@ export function findNearestPlaygrounds(
       return {
         playground,
         miles,
-        walkMinutes: Math.max(1, Math.round((miles / WALK_SPEED_MPH) * 60)),
-        driveMinutes: Math.max(2, Math.round((miles / LOCAL_DRIVE_SPEED_MPH) * 60)),
+        walkMinutes:
+          miles <= WALK_REPORT_LIMIT_MILES
+            ? Math.max(1, Math.round((miles / WALK_SPEED_MPH) * 60))
+            : null,
+        driveMinutes: Math.max(2, Math.round((miles / driveSpeedMph(miles)) * 60)),
         withinWalkRange,
+        outsideLocalCoverage: miles > LOCAL_COVERAGE_MILES,
         majorRoadsOnFoot,
         recommendation:
           withinWalkRange && majorRoadsOnFoot.length === 0 ? 'walk' : 'drive',
@@ -375,6 +394,8 @@ const ANSWER_RULES = [
   'ACCURACY RULES:',
   '- These distances are straight-line ("as the crow flies"). Real walking and driving routes are longer, so say "about" or "roughly" and never present a distance or time as exact.',
   '- If the closest playground is farther than about a mile, present it as a short drive rather than a walk.',
+  '- Never quote a walk time that was not given to you. If an entry says the trip is drive-only, do not invent or estimate a walking figure — an hours-long walk is not an option worth mentioning.',
+  '- If an entry is flagged OUTSIDE COVERED AREA, say plainly that it is the closest one you have on file, that the home sits outside Aiken and North Augusta, and that there may be closer neighborhood playgrounds you do not have on file.',
   '- When a CLOSEST entry is given to you, that is the answer — state it plainly. Do not hedge it, qualify it away, or ask a question before giving it.',
   '- Never list the backup options before the closest one, and never open with a question like "which area are you looking at?" when a closest option is already given to you.',
   '- Use only the playgrounds listed here. Never invent a playground, its equipment, hours, or amenities. If asked about a specific feature you were not given, say you would need to confirm it.',
@@ -385,10 +406,20 @@ const ANSWER_RULES = [
 function formatMatch(match: PlaygroundMatch): string {
   const distance =
     match.miles < 0.1 ? 'under 0.1 mi' : `${match.miles.toFixed(1)} mi`
+  const timing =
+    match.walkMinutes != null
+      ? `walk ~${match.walkMinutes} min / drive ~${match.driveMinutes} min`
+      : `too far to walk — drive ~${match.driveMinutes} min`
   const line =
     `${match.playground.name} — ${match.playground.area} — ` +
-    `${distance} straight-line — walk ~${match.walkMinutes} min / drive ~${match.driveMinutes} min`
+    `${distance} straight-line — ${timing}`
 
+  if (match.outsideLocalCoverage) {
+    return `${line} | OUTSIDE COVERED AREA: this address is well outside Aiken and North Augusta, so this is only the closest one on file. Say that plainly and offer that there may be closer neighborhood playgrounds you do not have on file. Do not quote a walk time.`
+  }
+  if (match.walkMinutes == null) {
+    return `${line} | Drive only — do not offer a walk time`
+  }
   if (match.majorRoadsOnFoot.length > 0) {
     return `${line} | MAJOR ROAD ON FOOT: ${match.majorRoadsOnFoot.join(', ')} — recommend driving`
   }
