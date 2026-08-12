@@ -506,5 +506,33 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - LOCK #3/#11 first slice: shortest amenity route on map from Rou intents."
+  },
+  {
+    "timestamp": "2026-08-12T21:15:00Z",
+    "task_id": "MAP_LEGEND_BOUNDARIES_START_VISIBLE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": ["artifacts/IDEAS_PARKING_LOT.md"],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Legend and boundaries both default true on all breakpoints so first paint shows city outlines plus legend without hunting controls.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No new data paths. Existing aria-pressed Hide/Show labels already consistent.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Removed mobile-only collapsed legend default. Buttons already read Hide when shown.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #24 shipped: legend and boundaries start visible."
   }
 ]

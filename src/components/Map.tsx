@@ -288,12 +288,7 @@ export default function Map({
   const pendingGeoJSON = useRef<ListingFeatureCollection | null>(null)
   const [status, setStatus] = useState('Loading…')
   const [showBoundaries, setShowBoundaries] = useState(true)
-  // Mobile (< md): start collapsed. Desktop: start open.
-  const [showLegend, setShowLegend] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(min-width: 768px)').matches
-      : true
-  )
+  const [showLegend, setShowLegend] = useState(true)
 
   function ensureRouteLayers(m: mapboxgl.Map) {
     if (!m.getSource(ROUTE_SOURCE_ID)) {

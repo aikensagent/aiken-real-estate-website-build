@@ -43,7 +43,7 @@
 21. Saved search + soft nurture — account/Gholi, opt-in, low pressure.
 
 ### Map chrome
-24. Legend + boundaries start visible; consistent Hide/Show language.
+24. **LOCK (shipped)** — Legend + boundaries start visible on all breakpoints; buttons read Hide… when shown, Show… when hidden.
 
 ---
 
