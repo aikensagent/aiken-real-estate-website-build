@@ -41,7 +41,7 @@
 
 ### Still Remaining in Phase 3
 - Stronger multi-turn conversation history UX
-- Voice / TTS foundation
+- Server / Twilio voice (beyond browser Web Speech)
 - Richer live MLS listing context injection
 - Chat session persistence ↔ lead scoring hook
 - Notion Phase 3 exit checklist
@@ -50,6 +50,7 @@
 
 ### Completed 2026-08-12 (continued)
 - Streaming Grok replies on ChatWidget via `chatStream` (PII + Fair Housing intact; artificial typing delay removed)
+- Browser voice foundation: mute persists in sessionStorage, TTS only after stream completes, mic cancels speech so Gholi never talks over the visitor
 
 ## Architectural Rules Established
 - Public write operations must use SECURITY DEFINER RPCs

@@ -33,3 +33,11 @@ export {
   GHOLI_SYSTEM_PROMPT,
   GHOLI_TITLE,
 } from './gholi-persona'
+export {
+  GHOLI_VOICE_MUTE_STORAGE_KEY,
+  cancelGholiSpeech,
+  getBrowserSpeechRecognition,
+  persistSpeakRepliesPreference,
+  readSpeakRepliesPreference,
+  speakGholiReply,
+} from './voice'

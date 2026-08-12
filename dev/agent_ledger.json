@@ -326,5 +326,51 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Gholi ChatWidget now streams tokens. Proven layout unchanged. Ready for voice foundation or stronger multi-turn UX next."
+  },
+  {
+    "timestamp": "2026-08-12T19:15:00Z",
+    "task_id": "GHOLI_BROWSER_VOICE_FOUNDATION_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/voice.ts",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/voice.test.ts",
+      "src/lib/rou/index.ts",
+      "STATUS.md"
+    ],
+    "failure_modes": [
+      {
+        "id": "tts_talks_over_mic",
+        "detection": "startListening calls cancelGholiSpeech before recognition.start",
+        "isolation": "Mute toggle also cancels speech; speak only after stream done"
+      }
+    ],
+    "test_results": {
+      "suite": "vitest",
+      "passed": 87,
+      "failed": 0,
+      "notes": "voice.test.ts covers sessionStorage mute preference and ChatWidget wiring."
+    },
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Extracted browser voice helpers to src/lib/rou/voice.ts. Mute key searchaikenhomes:gholi:voice:speak:v1 in sessionStorage. ChatWidget speaks only complete replies after stream finalize.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No Twilio, supabase, or localStorage for mute. Tab-scoped sessionStorage only. Voice module has zero memory RPC import path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "voice.test.ts plus full suite green. Dual Typing bubble fix already committed with streaming.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Browser voice foundation locked for Gholi. Twilio server voice remains a later Phase 3 slice."
   }
 ]

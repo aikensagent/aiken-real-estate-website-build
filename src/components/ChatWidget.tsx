@@ -4,6 +4,13 @@ import {
   GHOLI_DISPLAY_NAME,
   GHOLI_TITLE,
 } from '../lib/rou/gholi-persona'
+import {
+  cancelGholiSpeech,
+  getBrowserSpeechRecognition,
+  persistSpeakRepliesPreference,
+  readSpeakRepliesPreference,
+  speakGholiReply,
+} from '../lib/rou/voice'
 import type { ChatOrigin } from '../lib/grok-client'
 import rouAvatar from '../assets/rou-avatar.jpg'
 
@@ -41,17 +48,6 @@ function getRouSessionKey(): string {
   return key
 }
 
-function getSpeechRecognition(): SpeechRecognition | null {
-  if (typeof window === 'undefined') return null
-  const SR =
-    (window as unknown as { SpeechRecognition?: typeof SpeechRecognition })
-      .SpeechRecognition ||
-    (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition })
-      .webkitSpeechRecognition
-  if (!SR) return null
-  return new SR()
-}
-
 export function ChatWidget({ origin }: ChatWidgetProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -62,7 +58,9 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [listening, setListening] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
-  const [speakReplies, setSpeakReplies] = useState(true)
+  const [speakReplies, setSpeakReplies] = useState(() =>
+    readSpeakRepliesPreference(true)
+  )
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const dragOffset = useRef({ x: 0, y: 0 })
@@ -70,12 +68,14 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const announcedOrigin = useRef<string | null>(null)
+  const speakRepliesRef = useRef(speakReplies)
+  speakRepliesRef.current = speakReplies
 
   const originKey = origin ? `${origin.lng},${origin.lat},${origin.label ?? ''}` : ''
   const originStreet = (origin?.label ?? '').split(',')[0].trim() || 'this home'
 
   useEffect(() => {
-    setVoiceSupported(!!getSpeechRecognition())
+    setVoiceSupported(!!getBrowserSpeechRecognition())
   }, [])
 
   useEffect(() => {
@@ -83,14 +83,14 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   }, [messages, loading, isTyping])
 
   function speakText(text: string) {
-    if (!speakReplies || typeof window === 'undefined' || !window.speechSynthesis)
-      return
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.rate = 1
-    u.pitch = 1
-    u.lang = 'en-US'
-    window.speechSynthesis.speak(u)
+    // Speak only complete replies (called after stream `done`), never mid-token.
+    speakGholiReply(text, { enabled: speakRepliesRef.current })
+  }
+
+  function setSpeakRepliesAndPersist(next: boolean) {
+    setSpeakReplies(next)
+    persistSpeakRepliesPreference(next)
+    if (!next) cancelGholiSpeech()
   }
   // Selecting a home from a listing card opens Gholi and has her greet with that address
   useEffect(() => {
@@ -120,7 +120,9 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
 
   function startListening() {
     if (loading || listening) return
-    const recognition = getSpeechRecognition()
+    // Never talk over the visitor while they dictate.
+    cancelGholiSpeech()
+    const recognition = getBrowserSpeechRecognition()
     if (!recognition) {
       setError('Voice input is not supported in this browser. Try Chrome or Edge.')
       return
@@ -189,7 +191,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
   async function handleSend() {
     if (!input.trim() || loading) return
     stopListening()
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
+    cancelGholiSpeech()
 
     const trimmed = input.trim()
     const userMessage: Message = { role: 'user', content: trimmed }
@@ -316,9 +318,11 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
         }, 300)
       }
     }
-  }  function handleClose() {
+  }
+
+  function handleClose() {
     stopListening()
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel()
+    cancelGholiSpeech()
     setMessages([])
     setIsOpen(false)
   }
@@ -378,7 +382,7 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setSpeakReplies((v) => !v)}
+            onClick={() => setSpeakRepliesAndPersist(!speakReplies)}
             className="rounded-full p-1.5 text-white/80 transition hover:bg-white/10 hover:text-white"
             aria-label={speakReplies ? `Mute ${GHOLI_DISPLAY_NAME} voice` : `Unmute ${GHOLI_DISPLAY_NAME} voice`}
             title={speakReplies ? 'Mute spoken replies' : 'Speak replies'}
