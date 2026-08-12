@@ -2,39 +2,34 @@ import { createServerFn } from '@tanstack/react-start'
 import { formatListingsContext, getListingRows } from '../../lib/listings-context'
 import type { ListingSummary } from '../../lib/listings-context'
 import {
+  getGroceryContext,
   getPlaygroundContext,
+  getSchoolContext,
+  mentionsGrocery,
   mentionsPlayground,
+  mentionsSchool,
   resolveOriginFromMessage,
 } from '../../lib/playgrounds'
 import {
   formatMemoryForPrompt,
-  getLeadMemory,
   extractAndSaveNotes,
   extractAndSaveConversationSummary,
 } from '../../lib/lead-memory'
-// Rou — public professional chat only (no private persona on the site)
+import { rouPersonaRouter } from '../../lib/rou/live'
+import {
+  GHOLI_CONVERSATION_STYLE_BLOCK,
+  GHOLI_SYSTEM_PROMPT,
+} from '../../lib/rou/gholi-persona'
+// Node B conversational output is Gholi. Routing stays on this file + companion RPCs.
 
-const CORE_SYSTEM_PROMPT = `You are Rou, Nick Williams’ assistant at Coldwell Banker Best Life Realty in Aiken, South Carolina.
-You work directly for Nick. You are warm, competent, and have a light, natural personality.
-Speak as his assistant — never as a separate agent who needs to “connect” the user to him.
-Always follow Fair Housing law. Never invent listing data.
-Use any personal notes or conversation history you are given so the chat feels continuous.
-When someone is crude or inappropriate, shut it down with light wit and redirect to real estate. Stay classy, never mean.
-Never call yourself an “AI assistant” unprompted. You are simply Nick’s assistant.
-If someone directly asks whether you are AI, a bot, or a real person, answer honestly and briefly: “Yes — I’m an AI assistant that works with Nick.” Then immediately return to helping with their real-estate question. Do not volunteer this information unprompted.
-If a user continues to be sexually aggressive or crude after being told to stop, end the conversation firmly and do not continue engaging with them.`
+const CORE_SYSTEM_PROMPT = GHOLI_SYSTEM_PROMPT
 
 const FAIR_HOUSING_BLOCK = `
 FAIR HOUSING (always active):
 Immediately refuse any request involving protected classes (race, color, national origin, religion, sex, familial status, disability, or any proxy). Do not discuss demographics, “safe neighborhoods for certain people,” etc. Use the standard refusal when needed.`
 
 const CONVERSATION_STYLE_BLOCK = `
-CONVERSATION STYLE:
-- Keep a natural, adult conversational flow. Aim for 2–5 sentences most of the time.
-- Gather useful information without making the conversation feel like an interrogation.
-- Prefer softer, conversational ways of learning things when possible.
-- Sometimes the best way to learn is simply to keep the conversation going.
-- When someone is crude or inappropriate, shut it down with light wit and redirect to real estate. Stay classy.`
+${GHOLI_CONVERSATION_STYLE_BLOCK}`
 
 const MARKET_AND_DATA_BLOCK = `
 MARKET & DATA RULES:
@@ -273,10 +268,13 @@ export const chat = createServerFn({ method: 'POST' })
       lower.includes('pasture')
 
     const wantsPlaygrounds = mentionsPlayground(cleanedInput)
+    const wantsSchools = mentionsSchool(cleanedInput)
+    const wantsGrocery = mentionsGrocery(cleanedInput)
+    const wantsAmenities = wantsPlaygrounds || wantsSchools || wantsGrocery
 
-    // Playground questions need coordinates, so they load listings too
+    // Amenity questions need coordinates, so they load listings too
     let listingRows: ListingSummary[] | null = null
-    if (needsListings || wantsPlaygrounds) {
+    if (needsListings || wantsAmenities) {
       try {
         listingRows = await getListingRows()
       } catch (err) {
@@ -290,25 +288,32 @@ export const chat = createServerFn({ method: 'POST' })
         : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
     }
 
-    // Playground / kids-park questions get precomputed distances from the curated list.
+    // Amenity questions get precomputed distances from the curated lists.
     // A selected listing wins; otherwise resolve an address named in the message itself.
-    if (wantsPlaygrounds) {
-      const playgroundOrigin =
+    if (wantsAmenities) {
+      const amenityOrigin =
         origin ??
         (listingRows ? resolveOriginFromMessage(cleanedInput, listingRows) : null)
-      systemPrompt = `${systemPrompt}\n\n${getPlaygroundContext(playgroundOrigin)}`
+      if (wantsPlaygrounds) {
+        systemPrompt = `${systemPrompt}\n\n${getPlaygroundContext(amenityOrigin)}`
+      }
+      if (wantsSchools) {
+        systemPrompt = `${systemPrompt}\n\n${getSchoolContext(amenityOrigin)}`
+      }
+      if (wantsGrocery) {
+        systemPrompt = `${systemPrompt}\n\n${getGroceryContext(amenityOrigin)}`
+      }
     }
 
-    // Always try to load memory when we have a session
+    // Gholi memory — SECURITY DEFINER RPCs only. A memory outage
+    // must not block the rest of the turn (map + listings stay available).
     if (sessionKey) {
-      try {
-        const memory = await getLeadMemory(sessionKey, leadId)
-        const memoryBlock = formatMemoryForPrompt(memory)
+      const memory = await rouPersonaRouter.companion.readMemory(sessionKey, leadId)
+      if (memory.ok) {
+        const memoryBlock = formatMemoryForPrompt(memory.data)
         if (memoryBlock) {
           systemPrompt = `${systemPrompt}\n\n${memoryBlock}`
         }
-      } catch (err) {
-        console.error('lead memory load failed', err)
       }
     }
 
@@ -355,21 +360,22 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     if (sessionKey) {
-      void extractAndSaveConversationSummary({
-        sessionKey,
-        history,
-        userMessage: cleanedInput,
-        assistantReply: reply,
-        leadId,
-      }).catch((err: unknown) => console.error('extractAndSaveConversationSummary failed', err))
-    }
-    if (sessionKey) {
-      void extractAndSaveNotes({
-        sessionKey,
-        userMessage: cleanedInput,
-        assistantReply: reply,
-        leadId,
-      }).catch((err) => console.error('extractAndSaveNotes failed', err))
+      void rouPersonaRouter.isolateCompanion(async () => {
+        await extractAndSaveConversationSummary({
+          sessionKey,
+          history,
+          userMessage: cleanedInput,
+          assistantReply: reply,
+          leadId,
+        })
+        await extractAndSaveNotes({
+          sessionKey,
+          userMessage: cleanedInput,
+          assistantReply: reply,
+          leadId,
+        })
+        return true
+      }, false)
     }
 
     return { reply }

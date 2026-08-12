@@ -24,8 +24,8 @@ function Home() {
     setMobileView('list') // always start on List when a new search runs
   }
 
-  // Gives Rou a reference point for "how far is the nearest playground" questions
-  // Coordinates may be missing; the address alone still tells Rou which home is in play
+  // Gives Gholi a reference point for "how far is the nearest playground" questions
+  // Coordinates may be missing; the address alone still tells Gholi which home is in play
   const rouOrigin = selectedListing
     ? {
         lng: selectedListing.lng,
@@ -96,11 +96,11 @@ function Home() {
             </span>
           </div>
 
-          {/* Which home Rou is answering about */}
+          {/* Which home Gholi is answering about */}
           {selectedListing && (
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-brand-gold/40 bg-brand-gold/15 px-4 py-2">
               <span className="truncate text-sm text-brand-navy">
-                Rou is answering about{' '}
+                Gholi is answering about{' '}
                 <span className="font-semibold">
                   {selectedListing.address || 'the selected home'}
                 </span>
@@ -108,7 +108,7 @@ function Home() {
               <button
                 type="button"
                 onClick={() => setSelectedListing(null)}
-                aria-label="Clear the home Rou is answering about"
+                aria-label="Clear the home Gholi is answering about"
                 className="shrink-0 rounded-md border border-brand-navy/25 bg-white px-2.5 py-1 text-xs font-medium text-brand-navy transition hover:bg-brand-navy/5"
               >
                 Clear
@@ -201,7 +201,7 @@ function Home() {
                           </div>
                           {isSelected && (
                             <div className="pointer-events-none absolute left-2 top-2 rounded-md bg-brand-gold px-2 py-1 text-[11px] font-semibold text-brand-navy shadow">
-                              Rou is on this home
+                              Gholi is on this home
                             </div>
                           )}
                         </div>
@@ -222,8 +222,8 @@ function Home() {
                             aria-pressed={isSelected}
                             aria-label={
                               isSelected
-                                ? `Stop asking Rou about ${listingLabel}`
-                                : `Ask Rou about ${listingLabel}`
+                                ? `Stop asking Gholi about ${listingLabel}`
+                                : `Ask Gholi about ${listingLabel}`
                             }
                             className={`mt-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition ${
                               isSelected
@@ -231,7 +231,7 @@ function Home() {
                                 : 'border border-brand-navy/25 bg-white text-brand-navy hover:bg-brand-navy/5'
                             }`}
                           >
-                            {isSelected ? 'Selected — tap to clear' : 'Ask Rou about this home'}
+                            {isSelected ? 'Selected — tap to clear' : 'Ask Gholi about this home'}
                           </button>
                         </div>
                       </div>

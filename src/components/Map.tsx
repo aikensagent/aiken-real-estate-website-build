@@ -3,9 +3,15 @@ import mapboxgl from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
-import { supabase } from '../lib/supabase'
-import { trackEvent } from '../lib/leadTracking'
-import { filterListings, type SearchFilters, type Listing } from '../lib/filterListings'
+import { filterListings } from '../lib/filterListings'
+import type { SearchFilters, Listing } from '../lib/filterListings'
+import { rouPersonaRouter } from '../lib/rou/live'
+import {
+  applyTransientFilters,
+  applyTransientViewport,
+  hydrateTransientMapState,
+  persistTransientMapState,
+} from '../lib/rou/transient-map-state'
 import { BOUNDARY_LEGEND } from '../data/boundaryStyles'
 import { setupBoundaryLayers, setBoundaryLayersVisible } from '../lib/boundaryLayers'
 import { GOLF_COURSES } from '../lib/golfCourses'
@@ -35,10 +41,6 @@ const PARK_SOURCE_ID = 'parks-and-rec'
 const PARK_LAYER = 'parks-and-rec-markers'
 const PARK_ICON_PX = 22
 
-// Aiken / North Augusta corridor — dense local market, not statewide
-const AIKEN_CENTER: [number, number] = [-81.84, 33.53]
-const AIKEN_ZOOM = 10.5
-
 type MapProps = {
   filters?: SearchFilters
   /** When false (e.g. mobile List tab), map may be display:none — resize when it becomes true. */
@@ -58,6 +60,40 @@ type ListingFeatureCollection = {
       baths: number
     }
   }>
+}
+
+function searchFiltersToTransientInput(filters?: SearchFilters) {
+  return {
+    searchQuery: filters?.location?.trim() || null,
+    beds: filters?.beds ? Number(filters.beds) : null,
+    baths: filters?.baths ? Number(filters.baths) : null,
+    minPrice: filters?.price ? Number(filters.price) : null,
+    propertyType: 'Residential' as const,
+  }
+}
+
+function searchFiltersFromTransient(
+  state: ReturnType<typeof hydrateTransientMapState>
+): SearchFilters {
+  return {
+    location: state.searchQuery || undefined,
+    beds: state.filters.beds != null ? String(state.filters.beds) : undefined,
+    baths: state.filters.baths != null ? String(state.filters.baths) : undefined,
+    price: state.filters.minPrice != null ? String(state.filters.minPrice) : undefined,
+  }
+}
+
+function persistMapViewport(m: mapboxgl.Map) {
+  const current = hydrateTransientMapState()
+  const center = m.getCenter()
+  persistTransientMapState(
+    applyTransientViewport(current, {
+      center: [center.lng, center.lat],
+      zoom: m.getZoom(),
+      bearing: m.getBearing(),
+      pitch: m.getPitch(),
+    })
+  )
 }
 
 function listingsToGeoJSON(listings: Listing[]): ListingFeatureCollection {
@@ -237,7 +273,12 @@ export default function Map({ filters, visible = true }: MapProps) {
   const pendingGeoJSON = useRef<ListingFeatureCollection | null>(null)
   const [status, setStatus] = useState('Loading…')
   const [showBoundaries, setShowBoundaries] = useState(true)
-  const [showLegend, setShowLegend] = useState(true)
+  // Mobile (< md): start collapsed. Desktop: start open.
+  const [showLegend, setShowLegend] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(min-width: 768px)').matches
+      : true
+  )
 
   function resizeMap() {
     map.current?.resize()
@@ -509,15 +550,19 @@ export default function Map({ filters, visible = true }: MapProps) {
     })
   }
 
-  // Initialize map once
+  // Initialize map once from tab-scoped Interface Rou state
   useEffect(() => {
     if (map.current || !mapContainer.current) return
+
+    const initial = hydrateTransientMapState()
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: AIKEN_CENTER,
-      zoom: AIKEN_ZOOM,
+      center: initial.center,
+      zoom: initial.zoom,
+      bearing: initial.bearing ?? 0,
+      pitch: initial.pitch ?? 0,
     })
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
@@ -530,6 +575,11 @@ export default function Map({ filters, visible = true }: MapProps) {
       setupGolfCourseLayer(map.current)
       setupParksLayer(map.current)
       resizeMap()
+    })
+
+    map.current.on('moveend', () => {
+      if (!map.current) return
+      persistMapViewport(map.current)
     })
 
     return () => {
@@ -575,34 +625,36 @@ export default function Map({ filters, visible = true }: MapProps) {
     }
   }, [visible])
 
-  // Load + filter listings
+  // Load + filter listings through Node A. Camera stays on the last
+  // sessionStorage viewport if the listing RPC drops mid-pan.
   useEffect(() => {
+    persistTransientMapState(
+      applyTransientFilters(
+        hydrateTransientMapState(),
+        searchFiltersToTransientInput(filters)
+      )
+    )
+
     let cancelled = false
 
     async function load() {
       setStatus('Loading listings…')
 
       try {
-        const { data, error } = await supabase.rpc('get_listings_with_coords')
-
+        const data = await rouPersonaRouter.interface.loadPublicListings()
         if (cancelled) return
 
-        if (error || !data) {
-          console.error(error)
-          setStatus('Could not load listings')
-          return
-        }
-
-        console.log('Total listings from RPC:', data.length)
-        if (data[0]) console.log('Sample listing keys:', Object.keys(data[0]))
-
-        const filtered = filterListings(data as Listing[], filters)
+        const state = hydrateTransientMapState()
+        const filtered = filterListings(
+          data as Listing[],
+          searchFiltersFromTransient(state)
+        )
 
         setStatus(`${filtered.length} homes`)
         setListingsData(filtered)
-      } catch (err) {
-        console.error(err)
-        setStatus('Error loading')
+      } catch {
+        if (cancelled) return
+        setStatus('Could not load listings')
       }
     }
 

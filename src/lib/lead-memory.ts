@@ -70,7 +70,7 @@ export function formatMemoryForPrompt(memory: LeadMemory): string {
   }
 
   const parts: string[] = [
-    'KNOWN FACTS ABOUT THIS VISITOR (from prior conversations — use naturally, never invent):',
+    'KNOWN FACTS ABOUT THIS VISITOR (Gholi memory — use naturally, never invent):',
   ]
 
   if (memory.notes && memory.notes.length > 0) {
@@ -190,7 +190,7 @@ export async function extractAndSaveNotes(opts: {
 }): Promise<void> {
   if (!process.env.GROK_API_KEY) return
 
-  const extractionPrompt = `You are a precise fact extractor for a real-estate chat assistant named Rou.
+  const extractionPrompt = `You are a precise fact extractor for Gholi, the Best Life Realty personal advisor (Node B companion memory).
 Extract ONLY clear, explicit facts the USER stated in this turn. Never invent or assume.
 
 Return a JSON array of objects. Each object must have:
@@ -324,10 +324,10 @@ export async function extractAndSaveConversationSummary(opts: {
     { role: 'user' as const, content: opts.userMessage },
     { role: 'assistant' as const, content: opts.assistantReply },
   ]
-    .map((m) => `${m.role === 'user' ? 'User' : 'Rou'}: ${m.content}`)
+    .map((m) => `${m.role === 'user' ? 'User' : 'Gholi'}: ${m.content}`)
     .join('\n')
 
-  const summaryPrompt = `You are a precise conversation summarizer for a real-estate chat assistant named Rou (Nick Williams’ assistant in Aiken, SC).
+  const summaryPrompt = `You are a precise conversation summarizer for Gholi, the Best Life Realty personal advisor working with Nick Williams in Aiken, SC.
 
 Write a short, high-signal summary of the conversation so far (2–4 sentences max, under 400 characters).
 
