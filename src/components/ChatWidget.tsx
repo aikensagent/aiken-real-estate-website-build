@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { sendCompanionChat } from '../lib/rou/companion-chat'
+import { streamCompanionChat } from '../lib/rou/companion-chat'
 import {
   GHOLI_DISPLAY_NAME,
   GHOLI_TITLE,
@@ -205,23 +205,47 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
         role: m.role,
         content: m.content,
       }))
-      const result = await sendCompanionChat(
+
+      // Placeholder bubble — tokens append as the stream arrives.
+      setMessages([...newMessages, { role: 'assistant', content: '' }])
+      setIsTyping(false)
+
+      const result = await streamCompanionChat(
         trimmed,
         historyForApi,
         getRouSessionKey(),
         undefined,
-        origin
+        origin,
+        (chunk) => {
+          if (chunk.type === 'delta') {
+            setMessages((prev) => {
+              const next = [...prev]
+              const last = next[next.length - 1]
+              if (last?.role === 'assistant') {
+                next[next.length - 1] = {
+                  role: 'assistant',
+                  content: last.content + chunk.text,
+                }
+              }
+              return next
+            })
+          } else if (chunk.type === 'done') {
+            // Canonical final text (covers Fair Housing replace after partial stream).
+            setMessages((prev) => {
+              const next = [...prev]
+              const last = next[next.length - 1]
+              if (last?.role === 'assistant') {
+                next[next.length - 1] = {
+                  role: 'assistant',
+                  content: chunk.reply,
+                }
+              }
+              return next
+            })
+          }
+        }
       )
 
-      // Typing duration scales with reply length
-      const typingMs = Math.min(3200, 900 + result.reply.length * 35)
-      await new Promise((r) => setTimeout(r, typingMs))
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: result.reply,
-      }
-      setMessages([...newMessages, assistantMessage])
       speakText(result.reply)
 
       // If the server refused (crude / Fair Housing escalation), make the human path obvious
@@ -385,7 +409,16 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
       )}
 
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
-        {messages.map((msg, i) => (
+        {messages.map((msg, i) => {
+          const isLiveAssistant =
+            msg.role === 'assistant' &&
+            i === messages.length - 1 &&
+            loading
+          const display =
+            msg.content ||
+            (isLiveAssistant ? 'Typing…' : '')
+          if (msg.role === 'assistant' && !display) return null
+          return (
           <div
             key={i}
             className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -404,11 +437,14 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
                   : 'bg-white text-brand-slate'
               }`}
             >
-              {msg.content}
+              {display}
             </div>
           </div>
-        ))}
-        {(loading || isTyping) && (
+          )
+        })}
+        {/* Only show a separate Typing row before the streaming assistant bubble exists. */}
+        {(loading || isTyping) &&
+          messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex gap-3 justify-start">
             <img
               src={rouAvatar}

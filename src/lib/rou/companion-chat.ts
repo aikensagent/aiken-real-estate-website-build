@@ -1,5 +1,5 @@
-import { sendChatMessage } from '../grok-client'
-import type { ChatOrigin } from '../grok-client'
+import { sendChatMessage, streamChatMessage } from '../grok-client'
+import type { ChatOrigin, ChatStreamChunk } from '../grok-client'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -23,6 +23,7 @@ const COMPANION_FALLBACK_REPLY =
  * - enforces Fair Housing
  * - reads/writes memory exclusively through Node B SECURITY DEFINER RPCs
  * - speaks as Gholi (see gholi-persona.ts)
+ * - streams tokens when using `streamCompanionChat`
  *
  * This module must never import Node A, supabase, or listing RPCs.
  */
@@ -35,6 +36,28 @@ export async function sendCompanionChat(
 ): Promise<CompanionChatResult> {
   try {
     return await sendChatMessage(message, history, sessionKey, leadId, origin)
+  } catch {
+    return { reply: COMPANION_FALLBACK_REPLY, refused: false }
+  }
+}
+
+export async function streamCompanionChat(
+  message: string,
+  history: ChatMessage[] = [],
+  sessionKey?: string,
+  leadId?: string,
+  origin?: ChatOrigin | null,
+  onChunk?: (chunk: ChatStreamChunk) => void
+): Promise<CompanionChatResult> {
+  try {
+    return await streamChatMessage(
+      message,
+      history,
+      sessionKey,
+      leadId,
+      origin,
+      onChunk
+    )
   } catch {
     return { reply: COMPANION_FALLBACK_REPLY, refused: false }
   }

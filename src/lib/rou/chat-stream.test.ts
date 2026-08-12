@@ -1,0 +1,31 @@
+import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const here = dirname(fileURLToPath(import.meta.url))
+
+describe('Gholi chat streaming path', () => {
+  it('exposes chatStream beside the non-streaming chat server fn', () => {
+    const chat = readFileSync(join(here, '../../routes/api/-chat.ts'), 'utf8')
+    expect(chat).toMatch(/export const chatStream/)
+    expect(chat).toMatch(/stream:\s*true/)
+    expect(chat).toMatch(/redactPII/)
+    expect(chat).toMatch(/checkFairHousing/)
+    expect(chat).toMatch(/GHOLI_SYSTEM_PROMPT/)
+  })
+
+  it('routes ChatWidget through streamCompanionChat without Node A imports', () => {
+    const widget = readFileSync(
+      join(here, '../../components/ChatWidget.tsx'),
+      'utf8'
+    )
+    const companion = readFileSync(join(here, 'companion-chat.ts'), 'utf8')
+    expect(widget).toMatch(/streamCompanionChat/)
+    expect(widget).not.toMatch(/from ['"][^'"]*supabase['"]/)
+    expect(widget).not.toMatch(/from ['"][^'"]*rou\/node-a['"]/)
+    expect(companion).toMatch(/streamChatMessage/)
+    expect(companion).not.toMatch(/from ['"][^'"]*supabase['"]/)
+    expect(companion).not.toMatch(/from ['"][^'"]*lead-memory['"]/)
+  })
+})

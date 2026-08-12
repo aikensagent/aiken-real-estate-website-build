@@ -270,7 +270,7 @@ describe('UI wiring: Map session state and ChatWidget isolation', () => {
       join(here, '../../components/ChatWidget.tsx'),
       'utf8'
     )
-    expect(src).toMatch(/sendCompanionChat/)
+    expect(src).toMatch(/streamCompanionChat/)
     expect(src).not.toMatch(/from ['"][^'"]*supabase['"]/)
     expect(src).not.toMatch(/get_listings_with_coords/)
     expect(src).not.toMatch(/from ['"][^'"]*rou\/live['"]/)

@@ -51,6 +51,45 @@ type ChatMessage = {
   content: string
 }
 
+export type ChatRequestData = {
+  message: string
+  history?: ChatMessage[]
+  sessionKey?: string
+  leadId?: string
+  origin?: { lng?: number | null; lat?: number | null; label?: string }
+}
+
+export type ChatStreamChunk =
+  | { type: 'delta'; text: string }
+  | {
+      type: 'done'
+      reply: string
+      refused?: boolean
+      reason?: string
+    }
+  | { type: 'error'; message: string }
+
+type GrokMessage = {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+type PreparedTurn =
+  | {
+      kind: 'early'
+      reply: string
+      refused: true
+      reason?: string
+    }
+  | {
+      kind: 'model'
+      cleanedInput: string
+      history: ChatMessage[]
+      sessionKey: string | null
+      leadId: string | null
+      messages: GrokMessage[]
+    }
+
 function redactPII(text: string): string {
   return text
     .replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[phone]')
@@ -107,7 +146,8 @@ function isCrudeMessage(text: string): boolean {
 }
 
 function countCrudeInHistory(history: ChatMessage[]): number {
-  return history.filter((m) => m.role === 'user' && isCrudeMessage(m.content)).length
+  return history.filter((m) => m.role === 'user' && isCrudeMessage(m.content))
+    .length
 }
 
 function buildSystemPrompt(userMessage: string): string {
@@ -115,13 +155,9 @@ function buildSystemPrompt(userMessage: string): string {
 
   let prompt = CORE_SYSTEM_PROMPT
 
-  // Fair Housing is always on
   prompt += `\n\n${FAIR_HOUSING_BLOCK}`
-
-  // Conversation style is almost always useful
   prompt += `\n\n${CONVERSATION_STYLE_BLOCK}`
 
-  // Market & data rules when the message is about homes, location, budget, or moving
   if (
     lower.includes('house') ||
     lower.includes('home') ||
@@ -147,185 +183,271 @@ function buildSystemPrompt(userMessage: string): string {
   return prompt
 }
 
-export const chat = createServerFn({ method: 'POST' })
-  .validator(
-    (data: {
-      message: string
-      history?: ChatMessage[]
-      sessionKey?: string
-      leadId?: string
-      origin?: { lng?: number | null; lat?: number | null; label?: string }
-    }) => data
-  )
-  .handler(async ({ data }) => {
-    if (!process.env.GROK_API_KEY) {
-      throw new Error('GROK_API_KEY is missing — configuration error')
-    }
+function parseOrigin(data: ChatRequestData) {
+  const originLng =
+    typeof data.origin?.lng === 'number' && Number.isFinite(data.origin.lng)
+      ? data.origin.lng
+      : null
+  const originLat =
+    typeof data.origin?.lat === 'number' && Number.isFinite(data.origin.lat)
+      ? data.origin.lat
+      : null
+  if (originLng === null || originLat === null) return null
+  return {
+    lng: originLng,
+    lat: originLat,
+    label:
+      typeof data.origin?.label === 'string' && data.origin.label.trim()
+        ? data.origin.label.trim()
+        : undefined,
+  }
+}
 
-    const userMessage = data.message.trim()
-    const history = Array.isArray(data.history) ? data.history : []
-    const sessionKey =
-      typeof data.sessionKey === 'string' && data.sessionKey.trim().length > 0
-        ? data.sessionKey.trim()
-        : null
-    const leadId =
-      typeof data.leadId === 'string' && data.leadId.trim().length > 0
-        ? data.leadId.trim()
-        : null
+async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
+  if (!process.env.GROK_API_KEY) {
+    throw new Error('GROK_API_KEY is missing — configuration error')
+  }
 
-    // Reference point for distance questions — the listing currently selected on screen.
-    // A selected listing can arrive without coordinates, so require real numbers here:
-    // Number(null) is 0, which would otherwise pass as a point in the Atlantic.
-    const originLng =
-      typeof data.origin?.lng === 'number' && Number.isFinite(data.origin.lng)
-        ? data.origin.lng
-        : null
-    const originLat =
-      typeof data.origin?.lat === 'number' && Number.isFinite(data.origin.lat)
-        ? data.origin.lat
-        : null
-    const origin =
-      originLng !== null && originLat !== null
-        ? {
-            lng: originLng,
-            lat: originLat,
-            label:
-              typeof data.origin?.label === 'string' && data.origin.label.trim()
-                ? data.origin.label.trim()
-                : undefined,
-          }
-        : null
+  const userMessage = data.message.trim()
+  const history = Array.isArray(data.history) ? data.history : []
+  const sessionKey =
+    typeof data.sessionKey === 'string' && data.sessionKey.trim().length > 0
+      ? data.sessionKey.trim()
+      : null
+  const leadId =
+    typeof data.leadId === 'string' && data.leadId.trim().length > 0
+      ? data.leadId.trim()
+      : null
+  const origin = parseOrigin(data)
 
-    const cleanedInput = redactPII(userMessage)
-    const lower = cleanedInput.toLowerCase()
+  const cleanedInput = redactPII(userMessage)
+  const lower = cleanedInput.toLowerCase()
 
-    // Escalation for persistently crude users
-    const previousCrudeCount = countCrudeInHistory(history)
-    const currentIsCrude = isCrudeMessage(cleanedInput)
+  const previousCrudeCount = countCrudeInHistory(history)
+  const currentIsCrude = isCrudeMessage(cleanedInput)
 
-    if (currentIsCrude) {
-      const totalCrude = previousCrudeCount + 1
+  if (currentIsCrude) {
+    const totalCrude = previousCrudeCount + 1
+    console.warn('[CRUDE ESCALATION]', {
+      sessionKey,
+      leadId,
+      totalCrude,
+      message: cleanedInput.slice(0, 120),
+    })
 
-      // Log for Nick (visible in server logs)
-      console.warn('[CRUDE ESCALATION]', {
-        sessionKey,
-        leadId,
-        totalCrude,
-        message: cleanedInput.slice(0, 120),
-      })
-
-      if (totalCrude >= 3) {
-        // Third time — end the conversation
-        return {
-          reply: CRUDE_ESCALATION_REPLIES[2],
-          refused: true,
-          reason: 'persistent_crude',
-        }
-      }
-
-      if (totalCrude === 2) {
-        return {
-          reply: CRUDE_ESCALATION_REPLIES[1],
-          refused: true,
-          reason: 'crude_second',
-        }
-      }
-
-      // First time — still let the model handle with the prompt rules, but we could also short-circuit
-    }
-
-    // Dynamic system prompt based on the message
-    let systemPrompt = buildSystemPrompt(cleanedInput)
-
-    const fhCheck = checkFairHousing(cleanedInput)
-    if (!fhCheck.allowed) {
+    if (totalCrude >= 3) {
       return {
-        reply: FAIR_HOUSING_REFUSAL,
+        kind: 'early',
+        reply: CRUDE_ESCALATION_REPLIES[2],
         refused: true,
-        reason: fhCheck.reason,
+        reason: 'persistent_crude',
       }
     }
+    if (totalCrude === 2) {
+      return {
+        kind: 'early',
+        reply: CRUDE_ESCALATION_REPLIES[1],
+        refused: true,
+        reason: 'crude_second',
+      }
+    }
+  }
 
-    // Only load listings when the message is clearly about homes / search
-    const needsListings =
-      lower.includes('house') ||
-      lower.includes('home') ||
-      lower.includes('bedroom') ||
-      lower.includes('bath') ||
-      lower.includes('listing') ||
-      lower.includes('available') ||
-      lower.includes('show me') ||
-      lower.includes('looking for') ||
-      lower.includes('any homes') ||
-      lower.includes('under $') ||
-      lower.includes('budget') ||
-      lower.includes('relocating') ||
-      lower.includes('srs') ||
-      lower.includes('miles') ||
-      lower.includes('near') ||
-      lower.includes('acre') ||
-      lower.includes('barn') ||
-      lower.includes('pasture')
+  let systemPrompt = buildSystemPrompt(cleanedInput)
 
-    const wantsPlaygrounds = mentionsPlayground(cleanedInput)
-    const wantsSchools = mentionsSchool(cleanedInput)
-    const wantsGrocery = mentionsGrocery(cleanedInput)
-    const wantsAmenities = wantsPlaygrounds || wantsSchools || wantsGrocery
+  const fhCheck = checkFairHousing(cleanedInput)
+  if (!fhCheck.allowed) {
+    return {
+      kind: 'early',
+      reply: FAIR_HOUSING_REFUSAL,
+      refused: true,
+      reason: fhCheck.reason,
+    }
+  }
 
-    // Amenity questions need coordinates, so they load listings too
-    let listingRows: ListingSummary[] | null = null
-    if (needsListings || wantsAmenities) {
+  const needsListings =
+    lower.includes('house') ||
+    lower.includes('home') ||
+    lower.includes('bedroom') ||
+    lower.includes('bath') ||
+    lower.includes('listing') ||
+    lower.includes('available') ||
+    lower.includes('show me') ||
+    lower.includes('looking for') ||
+    lower.includes('any homes') ||
+    lower.includes('under $') ||
+    lower.includes('budget') ||
+    lower.includes('relocating') ||
+    lower.includes('srs') ||
+    lower.includes('miles') ||
+    lower.includes('near') ||
+    lower.includes('acre') ||
+    lower.includes('barn') ||
+    lower.includes('pasture')
+
+  const wantsPlaygrounds = mentionsPlayground(cleanedInput)
+  const wantsSchools = mentionsSchool(cleanedInput)
+  const wantsGrocery = mentionsGrocery(cleanedInput)
+  const wantsAmenities = wantsPlaygrounds || wantsSchools || wantsGrocery
+
+  let listingRows: ListingSummary[] | null = null
+  if (needsListings || wantsAmenities) {
+    try {
+      listingRows = await getListingRows()
+    } catch (err) {
+      console.error('listings load failed', err)
+    }
+  }
+
+  if (needsListings) {
+    systemPrompt = listingRows
+      ? `${systemPrompt}\n\n${formatListingsContext(listingRows, 25)}`
+      : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+  }
+
+  if (wantsAmenities) {
+    const amenityOrigin =
+      origin ??
+      (listingRows ? resolveOriginFromMessage(cleanedInput, listingRows) : null)
+    if (wantsPlaygrounds) {
+      systemPrompt = `${systemPrompt}\n\n${getPlaygroundContext(amenityOrigin)}`
+    }
+    if (wantsSchools) {
+      systemPrompt = `${systemPrompt}\n\n${getSchoolContext(amenityOrigin)}`
+    }
+    if (wantsGrocery) {
+      systemPrompt = `${systemPrompt}\n\n${getGroceryContext(amenityOrigin)}`
+    }
+  }
+
+  // Gholi memory — SECURITY DEFINER RPCs only. A memory outage
+  // must not block the rest of the turn (map + listings stay available).
+  if (sessionKey) {
+    const memory = await rouPersonaRouter.companion.readMemory(
+      sessionKey,
+      leadId
+    )
+    if (memory.ok) {
+      const memoryBlock = formatMemoryForPrompt(memory.data)
+      if (memoryBlock) {
+        systemPrompt = `${systemPrompt}\n\n${memoryBlock}`
+      }
+    }
+  }
+
+  const messages: GrokMessage[] = [
+    { role: 'system', content: systemPrompt },
+    ...history.map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: redactPII(m.content),
+    })),
+    { role: 'user', content: cleanedInput },
+  ]
+
+  return {
+    kind: 'model',
+    cleanedInput,
+    history,
+    sessionKey,
+    leadId,
+    messages,
+  }
+}
+
+function finalizeReply(raw: string): {
+  reply: string
+  refused?: boolean
+  reason?: string
+} {
+  let reply = redactPII(
+    raw.trim() || 'I apologize, I could not generate a response.'
+  )
+  const outputCheck = checkFairHousing(reply)
+  if (!outputCheck.allowed) {
+    return {
+      reply: FAIR_HOUSING_REFUSAL,
+      refused: true,
+      reason: outputCheck.reason ?? 'output_fair_housing',
+    }
+  }
+  return { reply }
+}
+
+function saveMemoryAfterTurn(opts: {
+  sessionKey: string | null
+  leadId: string | null
+  history: ChatMessage[]
+  cleanedInput: string
+  reply: string
+}) {
+  if (!opts.sessionKey) return
+  void rouPersonaRouter.isolateCompanion(async () => {
+    await extractAndSaveConversationSummary({
+      sessionKey: opts.sessionKey!,
+      history: opts.history,
+      userMessage: opts.cleanedInput,
+      assistantReply: opts.reply,
+      leadId: opts.leadId,
+    })
+    await extractAndSaveNotes({
+      sessionKey: opts.sessionKey!,
+      userMessage: opts.cleanedInput,
+      assistantReply: opts.reply,
+      leadId: opts.leadId,
+    })
+    return true
+  }, false)
+}
+
+async function* readGrokSseDeltas(
+  body: ReadableStream<Uint8Array>
+): AsyncGenerator<string> {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim()
+      if (!line.startsWith('data:')) continue
+      const payload = line.slice(5).trim()
+      if (!payload || payload === '[DONE]') continue
       try {
-        listingRows = await getListingRows()
-      } catch (err) {
-        console.error('listings load failed', err)
-      }
-    }
-
-    if (needsListings) {
-      systemPrompt = listingRows
-        ? `${systemPrompt}\n\n${formatListingsContext(listingRows, 25)}`
-        : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
-    }
-
-    // Amenity questions get precomputed distances from the curated lists.
-    // A selected listing wins; otherwise resolve an address named in the message itself.
-    if (wantsAmenities) {
-      const amenityOrigin =
-        origin ??
-        (listingRows ? resolveOriginFromMessage(cleanedInput, listingRows) : null)
-      if (wantsPlaygrounds) {
-        systemPrompt = `${systemPrompt}\n\n${getPlaygroundContext(amenityOrigin)}`
-      }
-      if (wantsSchools) {
-        systemPrompt = `${systemPrompt}\n\n${getSchoolContext(amenityOrigin)}`
-      }
-      if (wantsGrocery) {
-        systemPrompt = `${systemPrompt}\n\n${getGroceryContext(amenityOrigin)}`
-      }
-    }
-
-    // Gholi memory — SECURITY DEFINER RPCs only. A memory outage
-    // must not block the rest of the turn (map + listings stay available).
-    if (sessionKey) {
-      const memory = await rouPersonaRouter.companion.readMemory(sessionKey, leadId)
-      if (memory.ok) {
-        const memoryBlock = formatMemoryForPrompt(memory.data)
-        if (memoryBlock) {
-          systemPrompt = `${systemPrompt}\n\n${memoryBlock}`
+        const parsed = JSON.parse(payload) as {
+          choices?: Array<{ delta?: { content?: string } }>
         }
+        const delta = parsed.choices?.[0]?.delta?.content
+        if (typeof delta === 'string' && delta.length > 0) {
+          yield delta
+        }
+      } catch {
+        // Skip malformed SSE frames
       }
     }
+  }
+}
 
-    const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] =
-      [
-        { role: 'system', content: systemPrompt },
-        ...history.map((m) => ({
-          role: m.role as 'user' | 'assistant',
-          content: redactPII(m.content),
-        })),
-        { role: 'user', content: cleanedInput },
-      ]
+const chatValidator = (data: ChatRequestData) => data
+
+/** Non-streaming fallback (tools / older callers). */
+export const chat = createServerFn({ method: 'POST' })
+  .validator(chatValidator)
+  .handler(async ({ data }) => {
+    const prepared = await prepareChatTurn(data)
+    if (prepared.kind === 'early') {
+      return {
+        reply: prepared.reply,
+        refused: true as const,
+        reason: prepared.reason,
+      }
+    }
 
     const grokResponse = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -335,7 +457,7 @@ export const chat = createServerFn({ method: 'POST' })
       },
       body: JSON.stringify({
         model: 'grok-4.5',
-        messages,
+        messages: prepared.messages,
         temperature: 0.4,
         max_tokens: 1024,
         stream: false,
@@ -349,34 +471,91 @@ export const chat = createServerFn({ method: 'POST' })
     }
 
     const result = await grokResponse.json()
-    let reply =
+    const raw =
       result?.choices?.[0]?.message?.content?.trim() ??
       'I apologize, I could not generate a response.'
-    reply = redactPII(reply)
+    const finalized = finalizeReply(raw)
+    saveMemoryAfterTurn({
+      sessionKey: prepared.sessionKey,
+      leadId: prepared.leadId,
+      history: prepared.history,
+      cleanedInput: prepared.cleanedInput,
+      reply: finalized.reply,
+    })
+    return finalized
+  })
 
-    const outputCheck = checkFairHousing(reply)
-    if (!outputCheck.allowed) {
-      reply = FAIR_HOUSING_REFUSAL
+/**
+ * Primary ChatWidget path — streams Grok tokens with the same prep,
+ * PII redaction, Fair Housing, and Node B memory rules as `chat`.
+ */
+export const chatStream = createServerFn({ method: 'POST' })
+  .validator(chatValidator)
+  .handler(async function* ({ data }): AsyncGenerator<ChatStreamChunk> {
+    try {
+      const prepared = await prepareChatTurn(data)
+      if (prepared.kind === 'early') {
+        yield {
+          type: 'done',
+          reply: prepared.reply,
+          refused: true,
+          reason: prepared.reason,
+        }
+        return
+      }
+
+      const grokResponse = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'grok-4.5',
+          messages: prepared.messages,
+          temperature: 0.4,
+          max_tokens: 1024,
+          stream: true,
+        }),
+      })
+
+      if (!grokResponse.ok || !grokResponse.body) {
+        const errText = grokResponse.body
+          ? await grokResponse.text()
+          : 'missing body'
+        console.error('Grok API stream error', grokResponse.status, errText)
+        yield { type: 'error', message: 'Upstream model error' }
+        return
+      }
+
+      let assembled = ''
+      for await (const delta of readGrokSseDeltas(grokResponse.body)) {
+        const cleaned = redactPII(delta)
+        assembled += cleaned
+        yield { type: 'delta', text: cleaned }
+      }
+
+      const finalized = finalizeReply(assembled)
+      // If output Fair Housing fires after tokens already streamed, the client
+      // replaces the bubble with the refusal from this done chunk.
+      saveMemoryAfterTurn({
+        sessionKey: prepared.sessionKey,
+        leadId: prepared.leadId,
+        history: prepared.history,
+        cleanedInput: prepared.cleanedInput,
+        reply: finalized.reply,
+      })
+      yield {
+        type: 'done',
+        reply: finalized.reply,
+        refused: finalized.refused,
+        reason: finalized.reason,
+      }
+    } catch (err) {
+      console.error('chatStream failed', err)
+      yield {
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Chat stream failed',
+      }
     }
-
-    if (sessionKey) {
-      void rouPersonaRouter.isolateCompanion(async () => {
-        await extractAndSaveConversationSummary({
-          sessionKey,
-          history,
-          userMessage: cleanedInput,
-          assistantReply: reply,
-          leadId,
-        })
-        await extractAndSaveNotes({
-          sessionKey,
-          userMessage: cleanedInput,
-          assistantReply: reply,
-          leadId,
-        })
-        return true
-      }, false)
-    }
-
-    return { reply }
   })

@@ -273,5 +273,58 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Step 1 stabilize complete on disk: STATUS.md current. Commit slices ready; waiting for Nick to authorize commits."
+  },
+  {
+    "timestamp": "2026-08-12T19:05:00Z",
+    "task_id": "GHOLI_CHAT_STREAMING_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/api/-chat.ts",
+    "supporting_files": [
+      "src/lib/grok-client.ts",
+      "src/lib/rou/companion-chat.ts",
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/chat-stream.test.ts",
+      "src/lib/rou/rou-persona.test.ts",
+      "STATUS.md"
+    ],
+    "failure_modes": [
+      {
+        "id": "stream_fair_housing_late_hit",
+        "detection": "finalizeReply runs checkFairHousing on assembled text; done chunk can replace streamed bubble",
+        "isolation": "ChatWidget applies chunk.reply on done so refusal overwrites partial unsafe text"
+      },
+      {
+        "id": "stream_upstream_drop",
+        "detection": "chatStream yields type error; companion-chat catch returns COMPANION_FALLBACK_REPLY",
+        "isolation": "Non-streaming chat() retained as fallback path; map remains independent"
+      }
+    ],
+    "test_results": {
+      "suite": "vitest",
+      "passed": 85,
+      "failed": 0,
+      "notes": "Added chat-stream isolation tests; ChatWidget now expects streamCompanionChat."
+    },
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Extracted prepareChatTurn shared by chat and chatStream. Streaming uses Grok SSE (stream:true) via TanStack Start async generator. ChatWidget grows the assistant bubble on delta and canonicalizes on done.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Input PII redact and Fair Housing still gate before model call. Delta text is redactPII'd; final reply re-checked for Fair Housing. Memory writes still Node B isolateCompanion only. No sandbox/orb wiring.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "chat-stream.test.ts locks chatStream export and ChatWidget streamCompanionChat path. Updated rou-persona UI audit. 85/85 vitest. No new tsc errors on chat files.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Gholi ChatWidget now streams tokens. Proven layout unchanged. Ready for voice foundation or stronger multi-turn UX next."
   }
 ]

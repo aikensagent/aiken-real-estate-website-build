@@ -40,7 +40,6 @@
 - Specialist ledger receipts in `dev/agent_ledger.json` (83/83 vitest at last gate)
 
 ### Still Remaining in Phase 3
-- Streaming responses (next capability slice after stabilize)
 - Stronger multi-turn conversation history UX
 - Voice / TTS foundation
 - Richer live MLS listing context injection
@@ -48,6 +47,9 @@
 - Notion Phase 3 exit checklist
 - Visual design polish (parked for specialized visual agents)
 - Floating-orb private conversion testing (kill-switch stays off until then)
+
+### Completed 2026-08-12 (continued)
+- Streaming Grok replies on ChatWidget via `chatStream` (PII + Fair Housing intact; artificial typing delay removed)
 
 ## Architectural Rules Established
 - Public write operations must use SECURITY DEFINER RPCs
