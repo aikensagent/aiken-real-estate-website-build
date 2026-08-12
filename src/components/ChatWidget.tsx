@@ -12,6 +12,11 @@ import {
   speakGholiReply,
 } from '../lib/rou/voice'
 import type { ChatOrigin } from '../lib/grok-client'
+import {
+  mentionsGrocery,
+  mentionsPlayground,
+  mentionsSchool,
+} from '../lib/playgrounds'
 import rouAvatar from '../assets/rou-avatar.jpg'
 
 type Message = {
@@ -22,6 +27,8 @@ type Message = {
 type ChatWidgetProps = {
   /** Selected listing coordinates, so Rou can answer distance questions against it. */
   origin?: ChatOrigin | null
+  /** Draw shortest Mapbox route on the map for amenity intents. */
+  onAmenityIntent?: (kind: 'playground' | 'school' | 'grocery') => void
 }
 
 const SESSION_KEY = 'rou-session-key'
@@ -55,7 +62,7 @@ function getRouSessionKey(): string {
   return key
 }
 
-export function ChatWidget({ origin }: ChatWidgetProps) {
+export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
@@ -204,6 +211,10 @@ export function ChatWidget({ origin }: ChatWidgetProps) {
     setSuggestionChips([])
 
     const trimmed = raw.trim()
+    if (mentionsPlayground(trimmed)) onAmenityIntent?.('playground')
+    else if (mentionsSchool(trimmed)) onAmenityIntent?.('school')
+    else if (mentionsGrocery(trimmed)) onAmenityIntent?.('grocery')
+
     const userMessage: Message = { role: 'user', content: trimmed }
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)

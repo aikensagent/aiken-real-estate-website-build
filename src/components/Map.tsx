@@ -21,10 +21,12 @@ import {
   PARK_LEGEND,
   type ParkType,
 } from '../lib/parksAndRec'
+import type { AmenityRouteOverlay } from '../lib/rou/map-directions'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
 const BRAND_NAVY = '#0F2B5B'
+const BRAND_GOLD = '#C9A84C'
 const BRAND_SLATE = '#1E1E2E'
 const SOURCE_ID = 'listings'
 const CLUSTER_LAYER = 'clusters'
@@ -41,10 +43,18 @@ const PARK_SOURCE_ID = 'parks-and-rec'
 const PARK_LAYER = 'parks-and-rec-markers'
 const PARK_ICON_PX = 22
 
+const ROUTE_SOURCE_ID = 'rou-amenity-route'
+const ROUTE_LAYER = 'rou-amenity-route-line'
+const ROUTE_ENDPOINTS_SOURCE = 'rou-amenity-route-ends'
+const ROUTE_ENDPOINTS_LAYER = 'rou-amenity-route-ends-layer'
+
 type MapProps = {
   filters?: SearchFilters
   /** When false (e.g. mobile List tab), map may be display:none — resize when it becomes true. */
   visible?: boolean
+  /** Shortest amenity route from Ask Rou — drawn as a line with endpoints. */
+  routeOverlay?: AmenityRouteOverlay | null
+  onClearRoute?: () => void
 }
 
 type ListingFeatureCollection = {
@@ -262,7 +272,12 @@ function popupHtml(props: {
   `
 }
 
-export default function Map({ filters, visible = true }: MapProps) {
+export default function Map({
+  filters,
+  visible = true,
+  routeOverlay = null,
+  onClearRoute,
+}: MapProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -279,6 +294,88 @@ export default function Map({ filters, visible = true }: MapProps) {
       ? window.matchMedia('(min-width: 768px)').matches
       : true
   )
+
+  function ensureRouteLayers(m: mapboxgl.Map) {
+    if (!m.getSource(ROUTE_SOURCE_ID)) {
+      m.addSource(ROUTE_SOURCE_ID, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      m.addLayer({
+        id: ROUTE_LAYER,
+        type: 'line',
+        source: ROUTE_SOURCE_ID,
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': BRAND_NAVY,
+          'line-width': 4,
+          'line-opacity': 0.9,
+        },
+      })
+    }
+    if (!m.getSource(ROUTE_ENDPOINTS_SOURCE)) {
+      m.addSource(ROUTE_ENDPOINTS_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      m.addLayer({
+        id: ROUTE_ENDPOINTS_LAYER,
+        type: 'circle',
+        source: ROUTE_ENDPOINTS_SOURCE,
+        paint: {
+          'circle-radius': 7,
+          'circle-color': BRAND_GOLD,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#FFFFFF',
+        },
+      })
+    }
+  }
+
+  function applyRouteOverlay(overlay: AmenityRouteOverlay | null) {
+    const m = map.current
+    if (!m?.isStyleLoaded()) return
+    ensureRouteLayers(m)
+
+    const lineSource = m.getSource(ROUTE_SOURCE_ID) as mapboxgl.GeoJSONSource
+    const endsSource = m.getSource(ROUTE_ENDPOINTS_SOURCE) as mapboxgl.GeoJSONSource
+
+    if (!overlay) {
+      lineSource.setData({ type: 'FeatureCollection', features: [] })
+      endsSource.setData({ type: 'FeatureCollection', features: [] })
+      return
+    }
+
+    lineSource.setData({
+      type: 'Feature',
+      properties: {},
+      geometry: overlay.geometry,
+    })
+    endsSource.setData({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { role: 'origin' },
+          geometry: { type: 'Point', coordinates: overlay.origin },
+        },
+        {
+          type: 'Feature',
+          properties: { role: 'destination' },
+          geometry: { type: 'Point', coordinates: overlay.destination },
+        },
+      ],
+    })
+
+    const bounds = new mapboxgl.LngLatBounds(overlay.origin, overlay.origin)
+    for (const c of overlay.geometry.coordinates) {
+      bounds.extend(c as [number, number])
+    }
+    m.fitBounds(bounds, { padding: 64, maxZoom: 15, duration: 600 })
+  }
 
   function resizeMap() {
     map.current?.resize()
@@ -670,9 +767,54 @@ export default function Map({ filters, visible = true }: MapProps) {
     setBoundaryLayersVisible(map.current, showBoundaries)
   }, [showBoundaries])
 
+  useEffect(() => {
+    const m = map.current
+    if (!m) return
+
+    const paint = () => applyRouteOverlay(routeOverlay)
+    if (m.isStyleLoaded()) paint()
+    else m.once('load', paint)
+  }, [routeOverlay])
+
   return (
     <div ref={rootRef} className="relative h-full w-full min-h-0">
       <div ref={mapContainer} className="absolute inset-0 h-full w-full" />
+      {routeOverlay && (
+        <div className="absolute bottom-3 left-3 right-3 z-10 mx-auto max-w-md rounded-md border border-brand-navy/15 bg-brand-cream/95 px-3 py-2 shadow md:left-3 md:right-auto">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 text-sm text-brand-navy">
+              <div className="truncate font-semibold">
+                Route to {routeOverlay.destinationLabel}
+              </div>
+              <div className="mt-0.5 text-xs text-brand-slate">
+                {routeOverlay.driveMinutes != null && (
+                  <span>~{routeOverlay.driveMinutes} min drive</span>
+                )}
+                {routeOverlay.driveMinutes != null &&
+                  routeOverlay.walkMinutes != null && <span> · </span>}
+                {routeOverlay.walkMinutes != null && (
+                  <span>~{routeOverlay.walkMinutes} min walk</span>
+                )}
+              </div>
+              {routeOverlay.hazardNote && (
+                <div className="mt-1 text-xs text-brand-slate">
+                  Note: involves {routeOverlay.hazardNote}
+                </div>
+              )}
+            </div>
+            {onClearRoute && (
+              <button
+                type="button"
+                onClick={onClearRoute}
+                className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-navy hover:bg-brand-navy/5"
+                aria-label="Clear route from map"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         <div className="rounded-md bg-white/95 px-3 py-1.5 text-sm font-medium text-brand-navy shadow">
           {status}

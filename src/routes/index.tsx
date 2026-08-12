@@ -10,6 +10,15 @@ import {
   hasSeenRouCardIntro,
   markRouCardIntroSeen,
 } from '../lib/rou/card-intro'
+import {
+  buildAmenityRouteOverlay,
+  type AmenityRouteOverlay,
+} from '../lib/rou/map-directions'
+import {
+  findNearestGroceryStores,
+  findNearestPlaygrounds,
+  findNearestSchools,
+} from '../lib/playgrounds'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -25,12 +34,16 @@ function Home() {
   /** Listing the visitor opened/focused without activating Rou. */
   const [focusedListingId, setFocusedListingId] = useState<string | null>(null)
   const [showRouIntro, setShowRouIntro] = useState(false)
+  const [routeOverlay, setRouteOverlay] = useState<AmenityRouteOverlay | null>(
+    null
+  )
 
   function handleHeroSearch(newFilters: SearchFilters) {
     setFilters(newFilters)
     setShowResults(true)
     setSelectedListing(null)
     setFocusedListingId(null)
+    setRouteOverlay(null)
     setMobileView('list')
   }
 
@@ -53,6 +66,53 @@ function Home() {
 
   function handleClearRou() {
     setSelectedListing(null)
+    setRouteOverlay(null)
+  }
+
+  async function handleAmenityIntent(kind: 'playground' | 'school' | 'grocery') {
+    const listing = selectedListing
+    if (
+      listing?.lng == null ||
+      listing?.lat == null ||
+      !Number.isFinite(listing.lng) ||
+      !Number.isFinite(listing.lat)
+    ) {
+      return
+    }
+
+    const origin = { lng: listing.lng, lat: listing.lat }
+    const nearest =
+      kind === 'playground'
+        ? findNearestPlaygrounds(origin, 1)[0]
+        : kind === 'school'
+          ? findNearestSchools(origin, 1)[0]
+          : findNearestGroceryStores(origin, 1)[0]
+
+    if (!nearest) return
+
+    const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
+    if (!token) return
+
+    const major = nearest.majorRoadsOnFoot
+    const hazardNote =
+      major.length > 0
+        ? major.join(', ')
+        : null
+
+    const overlay = await buildAmenityRouteOverlay({
+      from: origin,
+      to: {
+        lng: nearest.amenity.lng,
+        lat: nearest.amenity.lat,
+      },
+      destinationLabel: nearest.amenity.name,
+      accessToken: token,
+      hazardNote,
+    })
+
+    if (!overlay) return
+    setRouteOverlay(overlay)
+    setMobileView('map')
   }
 
   // Public Rou uses selected listing as distance origin
@@ -300,6 +360,8 @@ function Home() {
                 <Map
                   filters={filters || undefined}
                   visible={isDesktop || mobileView === 'map'}
+                  routeOverlay={routeOverlay}
+                  onClearRoute={() => setRouteOverlay(null)}
                 />
               </div>
             </div>
@@ -308,7 +370,7 @@ function Home() {
       )}
 
       <RouCardIntroDialog open={showRouIntro} onDismiss={handleDismissRouIntro} />
-      <ChatWidget origin={rouOrigin} />
+      <ChatWidget origin={rouOrigin} onAmenityIntent={handleAmenityIntent} />
     </div>
   )
 }
