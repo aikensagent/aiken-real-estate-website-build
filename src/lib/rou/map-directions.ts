@@ -117,3 +117,27 @@ export async function buildAmenityRouteOverlay(opts: {
     hazardNote: opts.hazardNote?.trim() || null,
   }
 }
+
+export function formatRoutedTimesBlock(overlay: {
+  destinationLabel: string
+  driveMinutes: number | null
+  walkMinutes: number | null
+  hazardNote: string | null
+}): string {
+  const drive =
+    overlay.driveMinutes != null
+      ? `~${overlay.driveMinutes} min drive`
+      : 'drive time unavailable'
+  const walk =
+    overlay.walkMinutes != null
+      ? `~${overlay.walkMinutes} min walk`
+      : 'walk time unavailable'
+  const hazard = overlay.hazardNote
+    ? ` Obvious road on the way: ${overlay.hazardNote}. Mention it only if it is an interstate or a major multi-lane road.`
+    : ''
+  return [
+    'MAPBOX ROUTE TIMES (authoritative for this turn — prefer these over straight-line estimates):',
+    `Closest amenity: ${overlay.destinationLabel}. ${drive}. ${walk}.${hazard}`,
+    'Say "about" / "roughly". Do not quote the straight-line minutes when these Mapbox times are present.',
+  ].join('\n')
+}

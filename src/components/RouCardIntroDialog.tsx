@@ -59,8 +59,9 @@ export function RouCardIntroDialog({ open, onDismiss }: RouCardIntroDialogProps)
             </ul>
           </div>
           <p className="text-xs text-brand-slate/80">
-            Tap the small <span className="font-medium text-brand-navy">Ask Rou</span>{' '}
-            control on any card when you want help with that listing.
+            Tap <span className="font-medium text-brand-navy">Ask Rou</span> on
+            a card to pick that home. Rou is the navy orb in the corner — answers
+            show next to it. The page stays usable while you talk.
           </p>
         </div>
         <button

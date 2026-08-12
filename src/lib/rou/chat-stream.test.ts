@@ -13,6 +13,8 @@ describe('Rou chat streaming path', () => {
     expect(chat).toMatch(/redactPII/)
     expect(chat).toMatch(/checkFairHousing/)
     expect(chat).toMatch(/ROU_SYSTEM_PROMPT/)
+    expect(chat).toMatch(/formatRoutedTimesBlock/)
+    expect(chat).toMatch(/buildAmenityRouteOverlay/)
   })
 
   it('routes ChatWidget through streamCompanionChat without Node A imports', () => {

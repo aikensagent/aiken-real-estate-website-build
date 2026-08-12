@@ -25,7 +25,7 @@
 ### Map / amenities
 1. Lean visible map — no more always-on amenity clutter unless necessary.
 2. Hybrid POI — invisible curated list for grocery/schools/playgrounds/retail; named-place geocode when user supplies a place (e.g. “Bridgestone”); no broad unsupervised web crawl for amenity answers.
-3. Walk + drive times + shortest route on the map; hazard note only if obvious (interstate / multi-lane). **First slice shipped 2026-08-12** — Mapbox Directions overlay when Rou amenity chips/questions fire from a selected home (`map-directions.ts` + Map route layer). Chat text distances still straight-line until a follow-up feeds Mapbox times into the prompt.
+3. Walk + drive times + shortest route on the map; hazard note only if obvious (interstate / multi-lane). **Shipped 2026-08-12** — Mapbox overlay on the map *and* Mapbox times injected into Rou’s spoken amenity prompt (`formatRoutedTimesBlock` in `-chat.ts`). Straight-line remains fallback if Directions fails.
 18b. School answers must label **public / private / charter**; prefer nearest **public** unless user asks otherwise; never imply private = zoning. **Implemented 2026-08-12** in `playgrounds.ts` (+ Rou public prompt).
 
 ### Rou public UX

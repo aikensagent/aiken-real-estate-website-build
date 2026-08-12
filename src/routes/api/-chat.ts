@@ -9,7 +9,14 @@ import {
   mentionsPlayground,
   mentionsSchool,
   resolveOriginFromMessage,
+  findNearestGroceryStores,
+  findNearestPlaygrounds,
+  findNearestSchools,
 } from '../../lib/playgrounds'
+import {
+  buildAmenityRouteOverlay,
+  formatRoutedTimesBlock,
+} from '../../lib/rou/map-directions'
 import {
   formatMemoryForPrompt,
   extractAndSaveNotes,
@@ -317,6 +324,36 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
     }
     if (wantsGrocery) {
       systemPrompt = `${systemPrompt}\n\n${getGroceryContext(amenityOrigin)}`
+    }
+
+    const token = process.env.VITE_MAPBOX_TOKEN
+    if (
+      amenityOrigin &&
+      Number.isFinite(amenityOrigin.lng) &&
+      Number.isFinite(amenityOrigin.lat) &&
+      token
+    ) {
+      const from = { lng: amenityOrigin.lng, lat: amenityOrigin.lat }
+      const nearest = wantsPlaygrounds
+        ? findNearestPlaygrounds(from, 1)[0]
+        : wantsSchools
+          ? findNearestSchools(from, 1)[0]
+          : findNearestGroceryStores(from, 1)[0]
+      if (nearest) {
+        const overlay = await buildAmenityRouteOverlay({
+          from,
+          to: { lng: nearest.amenity.lng, lat: nearest.amenity.lat },
+          destinationLabel: nearest.amenity.name,
+          accessToken: token,
+          hazardNote:
+            nearest.majorRoadsOnFoot.length > 0
+              ? nearest.majorRoadsOnFoot.join(', ')
+              : null,
+        })
+        if (overlay) {
+          systemPrompt = `${systemPrompt}\n\n${formatRoutedTimesBlock(overlay)}`
+        }
+      }
     }
   }
 

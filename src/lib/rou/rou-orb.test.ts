@@ -12,11 +12,12 @@ describe('RouOrb public visual', () => {
     expect(orb).toContain('bg-brand-gold')
     expect(orb).toContain('bg-brand-cream')
     expect(orb).toContain('rou-eq')
+    expect(orb).not.toMatch(/rou-orb-portrait/)
     expect(orb).not.toMatch(/rou-avatar/)
     expect(orb).not.toMatch(/<img/)
   })
 
-  it('ChatWidget closed state uses RouOrb and does not import the sandbox experiment', () => {
+  it('ChatWidget uses RouOrb as the public surface and does not import the sandbox experiment', () => {
     const widget = readFileSync(
       join(here, '../../components/ChatWidget.tsx'),
       'utf8'
@@ -26,5 +27,6 @@ describe('RouOrb public visual', () => {
     expect(widget).not.toMatch(/rou-avatar/)
     expect(widget).not.toMatch(/floating-orb-experiment/)
     expect(widget).not.toMatch(/isFloatingOrbExperimentEnabled/)
+    expect(widget).not.toMatch(/onOpenChat/)
   })
 })
