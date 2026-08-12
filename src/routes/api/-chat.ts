@@ -1,5 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
-import { getListingsContext } from '../../lib/listings-context'
+import { formatListingsContext, getListingRows } from '../../lib/listings-context'
+import type { ListingSummary } from '../../lib/listings-context'
+import {
+  getPlaygroundContext,
+  mentionsPlayground,
+  resolveOriginFromMessage,
+} from '../../lib/playgrounds'
 import {
   formatMemoryForPrompt,
   getLeadMemory,
@@ -153,6 +159,7 @@ export const chat = createServerFn({ method: 'POST' })
       history?: ChatMessage[]
       sessionKey?: string
       leadId?: string
+      origin?: { lng: number; lat: number; label?: string }
     }) => data
   )
   .handler(async ({ data }) => {
@@ -169,6 +176,21 @@ export const chat = createServerFn({ method: 'POST' })
     const leadId =
       typeof data.leadId === 'string' && data.leadId.trim().length > 0
         ? data.leadId.trim()
+        : null
+
+    // Reference point for distance questions — the listing currently selected on screen
+    const origin =
+      data.origin &&
+      Number.isFinite(Number(data.origin.lng)) &&
+      Number.isFinite(Number(data.origin.lat))
+        ? {
+            lng: Number(data.origin.lng),
+            lat: Number(data.origin.lat),
+            label:
+              typeof data.origin.label === 'string' && data.origin.label.trim()
+                ? data.origin.label.trim()
+                : undefined,
+          }
         : null
 
     const cleanedInput = redactPII(userMessage)
@@ -242,14 +264,31 @@ export const chat = createServerFn({ method: 'POST' })
       lower.includes('barn') ||
       lower.includes('pasture')
 
-    if (needsListings) {
+    const wantsPlaygrounds = mentionsPlayground(cleanedInput)
+
+    // Playground questions need coordinates, so they load listings too
+    let listingRows: ListingSummary[] | null = null
+    if (needsListings || wantsPlaygrounds) {
       try {
-        const listingsContext = await getListingsContext(25)
-        systemPrompt = `${systemPrompt}\n\n${listingsContext}`
+        listingRows = await getListingRows()
       } catch (err) {
-        console.error('listings context failed', err)
-        systemPrompt = `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+        console.error('listings load failed', err)
       }
+    }
+
+    if (needsListings) {
+      systemPrompt = listingRows
+        ? `${systemPrompt}\n\n${formatListingsContext(listingRows, 25)}`
+        : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+    }
+
+    // Playground / kids-park questions get precomputed distances from the curated list.
+    // A selected listing wins; otherwise resolve an address named in the message itself.
+    if (wantsPlaygrounds) {
+      const playgroundOrigin =
+        origin ??
+        (listingRows ? resolveOriginFromMessage(cleanedInput, listingRows) : null)
+      systemPrompt = `${systemPrompt}\n\n${getPlaygroundContext(playgroundOrigin)}`
     }
 
     // Always try to load memory when we have a session

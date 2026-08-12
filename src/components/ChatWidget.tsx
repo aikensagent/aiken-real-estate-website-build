@@ -1,10 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../lib/grok-client'
+import type { ChatOrigin } from '../lib/grok-client'
 import rouAvatar from '../assets/rou-avatar.jpg'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
+}
+
+type ChatWidgetProps = {
+  /** Selected listing coordinates, so Rou can answer distance questions against it. */
+  origin?: ChatOrigin | null
 }
 
 const SESSION_KEY = 'rou-session-key'
@@ -42,7 +48,7 @@ function getSpeechRecognition(): SpeechRecognition | null {
   return new SR()
 }
 
-export function ChatWidget() {
+export function ChatWidget({ origin }: ChatWidgetProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
@@ -178,7 +184,9 @@ export function ChatWidget() {
       const result = await sendChatMessage(
         trimmed,
         historyForApi,
-        getRouSessionKey()
+        getRouSessionKey(),
+        undefined,
+        origin
       )
 
       // Typing duration scales with reply length

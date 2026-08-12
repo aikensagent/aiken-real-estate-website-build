@@ -15,12 +15,24 @@ function Home() {
   const [loading, setLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
   const [isDesktop, setIsDesktop] = useState(false)
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
 
   function handleHeroSearch(newFilters: SearchFilters) {
     setFilters(newFilters)
     setShowResults(true)
+    setSelectedListing(null)
     setMobileView('list') // always start on List when a new search runs
   }
+
+  // Gives Rou a reference point for "how far is the nearest playground" questions
+  const rouOrigin =
+    selectedListing?.lng != null && selectedListing.lat != null
+      ? {
+          lng: selectedListing.lng,
+          lat: selectedListing.lat,
+          label: selectedListing.address || 'the selected listing',
+        }
+      : null
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)')
@@ -139,7 +151,22 @@ function Home() {
                   {listings.map((listing) => (
                     <div
                       key={listing.id}
-                      className="group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={selectedListing?.id === listing.id}
+                      aria-label={`Select ${listing.address || 'this Aiken listing'} so Rou can answer questions about it`}
+                      onClick={() => setSelectedListing(listing)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSelectedListing(listing)
+                        }
+                      }}
+                      className={`group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                        selectedListing?.id === listing.id
+                          ? 'ring-2 ring-brand-gold'
+                          : 'ring-1 ring-slate-200/80'
+                      }`}
                     >
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
                         {listing.primary_photo_url ? (
@@ -193,7 +220,7 @@ function Home() {
         </div>
       )}
 
-      <ChatWidget />
+      <ChatWidget origin={rouOrigin} />
     </div>
   )
 }

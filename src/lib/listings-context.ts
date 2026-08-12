@@ -11,20 +11,27 @@ export type ListingSummary = {
   lat?: number | null
 }
 
-/** Fetch current listings and format a short context block for Rou (server-safe). */
-export async function getListingsContext(limit = 25): Promise<string> {
+/** Raw listing rows, for callers that need coordinates rather than prose. */
+export async function getListingRows(): Promise<ListingSummary[]> {
   const { data, error } = await supabase.rpc('get_listings_with_coords')
 
   if (error) {
-    console.error('listings-context RPC error:', error.message)
-    return 'LISTING DATA UNAVAILABLE: could not load current inventory.'
+    throw new Error(`get_listings_with_coords failed: ${error.message}`)
   }
 
-  if (!data || data.length === 0) {
+  return (data as ListingSummary[] | null) ?? []
+}
+
+/** Format already-loaded rows into a short context block for Rou. */
+export function formatListingsContext(
+  listings: ListingSummary[],
+  limit = 25
+): string {
+  if (listings.length === 0) {
     return 'LISTING DATA: no active listings currently loaded.'
   }
 
-  const rows = (data as ListingSummary[]).slice(0, limit)
+  const rows = listings.slice(0, limit)
 
   const lines = rows.map((l, i) => {
     const price =
@@ -39,6 +46,6 @@ export async function getListingsContext(limit = 25): Promise<string> {
   return [
     'CURRENT LOCAL LISTINGS (from our live inventory — use only these facts; do not invent prices or addresses):',
     ...lines,
-    `Total shown: ${rows.length} of ${data.length} loaded.`,
+    `Total shown: ${rows.length} of ${listings.length} loaded.`,
   ].join('\n')
 }
