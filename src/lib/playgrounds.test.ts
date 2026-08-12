@@ -4,11 +4,19 @@ import {
   COMFORTABLE_WALK_MILES,
   LOCAL_COVERAGE_MILES,
   WALK_REPORT_LIMIT_MILES,
+  findNearestGroceryStores,
   findNearestPlaygrounds,
+  findNearestSchools,
+  getGroceryContext,
   getPlaygroundContext,
+  getSchoolContext,
+  groceryStores,
+  mentionsGrocery,
   mentionsPlayground,
+  mentionsSchool,
   playgrounds,
   resolveOriginFromMessage,
+  schools,
   straightLineMiles,
 } from './playgrounds'
 
@@ -49,7 +57,7 @@ describe('findNearestPlaygrounds', () => {
 
   it('recommends walking to a close site with no arterial beside it', () => {
     const [nearest] = findNearestPlaygrounds(KALMIA_HILL, 1)
-    expect(nearest.playground.id).toBe('kalmia-hill-playground')
+    expect(nearest.amenity.id).toBe('kalmia-hill-playground')
     expect(nearest.withinWalkRange).toBe(true)
     expect(nearest.majorRoadsOnFoot).toEqual([])
     expect(nearest.recommendation).toBe('walk')
@@ -57,7 +65,7 @@ describe('findNearestPlaygrounds', () => {
 
   it('recommends driving to a close site that sits on a major road', () => {
     const [nearest] = findNearestPlaygrounds(LIBRARY_PARK, 1)
-    expect(nearest.playground.id).toBe('library-park')
+    expect(nearest.amenity.id).toBe('library-park')
     expect(nearest.withinWalkRange).toBe(true)
     expect(nearest.majorRoadsOnFoot).toContain('Whiskey Road (SC 19)')
     expect(nearest.recommendation).toBe('drive')
@@ -255,5 +263,104 @@ describe('playground data', () => {
 
   it('includes sites that are not on the map', () => {
     expect(playgrounds.some((p) => !p.mapFacilityId)).toBe(true)
+  })
+})
+
+describe('school and grocery data', () => {
+  const lists = { schools, groceryStores }
+
+  it.each(Object.entries(lists))('%s have unique ids', (_name, list) => {
+    const ids = list.map((item) => item.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it.each(Object.entries(lists))(
+    '%s sit inside the Aiken County bounding box',
+    (_name, list) => {
+      for (const item of list) {
+        expect(item.lng).toBeGreaterThan(-82.06)
+        expect(item.lng).toBeLessThan(-81.2)
+        expect(item.lat).toBeGreaterThan(33.19)
+        expect(item.lat).toBeLessThan(33.9)
+      }
+    }
+  )
+
+  it('ids never collide across the three curated lists', () => {
+    const all = [...playgrounds, ...schools, ...groceryStores].map((i) => i.id)
+    expect(new Set(all).size).toBe(all.length)
+  })
+
+  it('labels every school with a level', () => {
+    for (const school of schools) {
+      expect(['elementary', 'middle', 'high', 'other']).toContain(school.level)
+    }
+  })
+
+  it('finds the closest school and grocery store to a downtown origin', () => {
+    const [school] = findNearestSchools(LIBRARY_PARK, 1)
+    const [store] = findNearestGroceryStores(LIBRARY_PARK, 1)
+    expect(school.amenity.id).toBe('st-mary-help-of-christians-school')
+    expect(store.miles).toBeLessThan(5)
+    expect(store.amenity.name).toContain('(')
+  })
+})
+
+describe('mentionsSchool and mentionsGrocery', () => {
+  it.each(['closest elementary school?', 'what schools serve this address'])(
+    'school intent matches %j',
+    (text) => expect(mentionsSchool(text)).toBe(true)
+  )
+
+  it.each(['that kitchen is old school', 'how far to a playground'])(
+    'school intent skips %j',
+    (text) => expect(mentionsSchool(text)).toBe(false)
+  )
+
+  it.each(['nearest grocery store?', 'is there a Publix nearby'])(
+    'grocery intent matches %j',
+    (text) => expect(mentionsGrocery(text)).toBe(true)
+  )
+
+  it('grocery intent skips unrelated questions', () => {
+    expect(mentionsGrocery('what is the property tax rate')).toBe(false)
+  })
+})
+
+describe('getSchoolContext', () => {
+  it('leads with a computed closest school and its level', () => {
+    const context = getSchoolContext({ ...LIBRARY_PARK, label: '123 Test Street' })
+    expect(context).toContain('CLOSEST — lead with this one')
+    expect(context).toContain('123 Test Street')
+    expect(context).toMatch(/\[(elementary|middle|high)\]/)
+  })
+
+  it('always carries the Fair Housing and zoning guardrails', () => {
+    for (const context of [getSchoolContext(null), getSchoolContext(LIBRARY_PARK)]) {
+      expect(context).toContain('FAIR HOUSING — NON-NEGOTIABLE')
+      expect(context).toContain('no ratings, rankings, test scores')
+      expect(context).toContain('Aiken County Public Schools sets attendance zones')
+    }
+  })
+
+  it('never claims the closest school is the assigned one', () => {
+    expect(getSchoolContext(LIBRARY_PARK)).toContain(
+      'the closest school is not automatically the assigned one'
+    )
+  })
+})
+
+describe('getGroceryContext', () => {
+  it('leads with a computed closest store', () => {
+    const context = getGroceryContext({ ...LIBRARY_PARK, label: '123 Test Street' })
+    expect(context).toContain('CLOSEST — lead with this one')
+    expect(context).toContain('123 Test Street')
+    expect(context).toContain('BACKUP OPTIONS')
+  })
+
+  it('falls back to the list when no origin is known', () => {
+    const context = getGroceryContext(null)
+    expect(context).toContain('NO COORDINATES FOR THIS QUESTION')
+    expect(context).toContain('Publix')
   })
 })
