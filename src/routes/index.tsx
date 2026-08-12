@@ -214,6 +214,7 @@ function Home() {
                           onClick={() => handleCardOpen(listing)}
                           className="w-full text-left"
                           aria-label={`Open listing ${listingLabel}`}
+                          aria-pressed={isFocused || isRouActive}
                         >
                           <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
                             {listing.primary_photo_url ? (
@@ -239,7 +240,7 @@ function Home() {
                               </div>
                             )}
                           </div>
-                          <div className="px-3 pt-2.5">
+                          <div className="px-3 py-2.5">
                             <div className="truncate text-[15px] font-semibold leading-snug text-brand-navy">
                               {listing.address || 'Aiken Listing'}
                             </div>
@@ -250,35 +251,39 @@ function Home() {
                             </div>
                           </div>
                         </button>
-                        <div className="flex items-center justify-end px-3 pb-2.5 pt-1.5">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              isRouActive
-                                ? handleClearRou()
-                                : handleActivateRou(listing)
-                            }
-                            aria-pressed={isRouActive}
-                            aria-label={
-                              isRouActive
-                                ? `Stop asking Rou about ${listingLabel}`
-                                : `Ask Rou about ${listingLabel}`
-                            }
-                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition ${
-                              isRouActive
-                                ? 'bg-brand-navy text-white hover:bg-brand-navy/90'
-                                : 'text-brand-navy/70 hover:bg-brand-navy/5 hover:text-brand-navy'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-1.5 w-1.5 rounded-full ${
-                                isRouActive ? 'bg-brand-gold' : 'bg-brand-gold/80'
+                        {(isFocused || isRouActive) && (
+                          <div className="flex items-center justify-end border-t border-brand-navy/10 px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                isRouActive
+                                  ? handleClearRou()
+                                  : handleActivateRou(listing)
+                              }
+                              aria-pressed={isRouActive}
+                              aria-label={
+                                isRouActive
+                                  ? `Stop asking Rou about ${listingLabel}`
+                                  : `Ask Rou about ${listingLabel}`
+                              }
+                              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
+                                isRouActive
+                                  ? 'bg-brand-navy text-white hover:bg-brand-navy/90'
+                                  : 'border border-brand-navy/20 bg-white text-brand-navy hover:bg-brand-navy/5'
                               }`}
-                              aria-hidden
-                            />
-                            {isRouActive ? 'Rou active · clear' : 'Ask Rou'}
-                          </button>
-                        </div>
+                            >
+                              <span
+                                className={`inline-block h-1.5 w-1.5 rounded-full ${
+                                  isRouActive
+                                    ? 'bg-brand-gold'
+                                    : 'bg-brand-gold/80'
+                                }`}
+                                aria-hidden
+                              />
+                              {isRouActive ? 'Rou active · clear' : 'Ask Rou'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )
                   })}

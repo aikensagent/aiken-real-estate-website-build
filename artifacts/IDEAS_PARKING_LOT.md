@@ -29,11 +29,11 @@
 18b. School answers must label **public / private / charter**; prefer nearest **public** unless user asks otherwise; never imply private = zoning. **Implemented 2026-08-12** in `playgrounds.ts` (+ Rou public prompt).
 
 ### Rou public UX
-4. First open of a property card → one-time intro of what Rou can do; dismissible.
-5. **REVISE → in progress (2026-08-12)** — Removed full-width “Ask Gholi about this home” on every card. First open shows one-time Rou intro; subtle in-card **Ask Rou** activates listing context + chips.
+4. **LOCK (shipped)** — First open of a property card → one-time **Introducing Rou** dialog (neighborhood-fit framing + example asks); dismissible; localStorage so it does not nag every card.
+5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Will feel cleaner once full property-card detail exists.
 11. Visual walk/drive route lines (with #3).
 12. Public Rou = abstract orb + EQ-while-speaking (not face, not bars-on-photo).
-13. Clickable chips after activate (schools / grocery / park…).
+13. Clickable chips after activate (schools / grocery / park…). **Shipped** with activate greeting.
 14. Dual presence — Rou public / Gholi dashboard (Gholi may be warm/visual in-dashboard only).
 15. Orb-first UI over time; captions + transcript hybrid; contrast-safe text; visuals adjustable.
 

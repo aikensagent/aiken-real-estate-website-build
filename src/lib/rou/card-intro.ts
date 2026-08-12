@@ -4,7 +4,7 @@
  */
 
 export const ROU_CARD_INTRO_STORAGE_KEY =
-  'searchaikenhomes:rou:card-intro:v2' as const
+  'searchaikenhomes:rou:card-intro:v3' as const
 
 export function hasSeenRouCardIntro(): boolean {
   if (typeof window === 'undefined') return true
