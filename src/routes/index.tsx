@@ -13,11 +13,22 @@ function Home() {
   const [showResults, setShowResults] = useState(false)
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(false)
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
+  const [isDesktop, setIsDesktop] = useState(false)
 
   function handleHeroSearch(newFilters: SearchFilters) {
     setFilters(newFilters)
     setShowResults(true)
+    setMobileView('list') // always start on List when a new search runs
   }
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const update = () => setIsDesktop(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
   useEffect(() => {
     if (!showResults) return
@@ -59,7 +70,7 @@ function Home() {
       {!showResults ? (
         <Hero onSearch={handleHeroSearch} />
       ) : (
-        <div className="flex flex-col h-screen">
+        <div className="flex h-dvh flex-col overflow-hidden">
           {/* Top bar */}
           <div className="bg-brand-navy text-white px-4 py-3 flex items-center justify-between shrink-0">
             <button
@@ -73,10 +84,52 @@ function Home() {
             </span>
           </div>
 
+          {/* Mobile List | Map toggle */}
+          <div className="md:hidden bg-white border-b border-slate-200 px-3 py-2 shrink-0">
+            <div
+              className="flex rounded-lg bg-slate-100 p-1"
+              role="tablist"
+              aria-label="View mode"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileView === 'list'}
+                aria-pressed={mobileView === 'list'}
+                onClick={() => setMobileView('list')}
+                className={`flex-1 rounded-md py-2.5 text-sm font-medium transition ${
+                  mobileView === 'list'
+                    ? 'bg-brand-navy text-white shadow-sm'
+                    : 'text-slate-600 hover:text-brand-navy'
+                }`}
+              >
+                List
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileView === 'map'}
+                aria-pressed={mobileView === 'map'}
+                onClick={() => setMobileView('map')}
+                className={`flex-1 rounded-md py-2.5 text-sm font-medium transition ${
+                  mobileView === 'map'
+                    ? 'bg-brand-navy text-white shadow-sm'
+                    : 'text-slate-600 hover:text-brand-navy'
+                }`}
+              >
+                Map
+              </button>
+            </div>
+          </div>
+
           {/* Main results area */}
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
             {/* Results list */}
-            <div className="w-full md:w-[420px] lg:w-[480px] overflow-y-auto border-r border-slate-200 bg-white">
+            <div
+              className={`w-full md:w-[420px] lg:w-[480px] min-h-0 overflow-y-auto border-r border-slate-200 bg-white ${
+                mobileView === 'list' ? 'block' : 'hidden'
+              } md:block`}
+            >
               {loading ? (
                 <div className="p-6 text-slate-500">Loading homes…</div>
               ) : listings.length === 0 ? (
@@ -124,8 +177,17 @@ function Home() {
             </div>
 
             {/* Map */}
-            <div className="hidden md:block flex-1 relative">
-              <Map filters={filters || undefined} />
+            <div
+              className={`relative min-h-0 flex-1 ${
+                mobileView === 'map' ? 'block' : 'hidden'
+              } md:block`}
+            >
+              <div className="absolute inset-0 min-h-0">
+                <Map
+                  filters={filters || undefined}
+                  visible={isDesktop || mobileView === 'map'}
+                />
+              </div>
             </div>
           </div>
         </div>

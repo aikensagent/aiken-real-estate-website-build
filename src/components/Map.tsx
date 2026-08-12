@@ -9,10 +9,17 @@ import { filterListings, type SearchFilters, type Listing } from '../lib/filterL
 import { BOUNDARY_LEGEND } from '../data/boundaryStyles'
 import { setupBoundaryLayers, setBoundaryLayersVisible } from '../lib/boundaryLayers'
 import { GOLF_COURSES } from '../lib/golfCourses'
+import {
+  parksAndRec,
+  parkIconMap,
+  PARK_LEGEND,
+  type ParkType,
+} from '../lib/parksAndRec'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
 const BRAND_NAVY = '#0F2B5B'
+const BRAND_SLATE = '#1E1E2E'
 const SOURCE_ID = 'listings'
 const CLUSTER_LAYER = 'clusters'
 const CLUSTER_COUNT_LAYER = 'cluster-count'
@@ -24,12 +31,18 @@ const GOLF_ICON_ID = 'golf-flag'
 const GOLF_ICON_PX = 20
 const GOLF_FLAG_RED = '#D92D20'
 
+const PARK_SOURCE_ID = 'parks-and-rec'
+const PARK_LAYER = 'parks-and-rec-markers'
+const PARK_ICON_PX = 22
+
 // Aiken / North Augusta corridor — dense local market, not statewide
 const AIKEN_CENTER: [number, number] = [-81.84, 33.53]
 const AIKEN_ZOOM = 10.5
 
 type MapProps = {
   filters?: SearchFilters
+  /** When false (e.g. mobile List tab), map may be display:none — resize when it becomes true. */
+  visible?: boolean
 }
 
 type ListingFeatureCollection = {
@@ -112,6 +125,86 @@ function golfPopupContent(name: string) {
   return el
 }
 
+type ParkFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<{
+    type: 'Feature'
+    geometry: { type: 'Point'; coordinates: [number, number] }
+    properties: { id: string; name: string; note: string; icon: string }
+  }>
+}
+
+const parkIconId = (type: ParkType) => `park-${type}`
+
+function parksToGeoJSON(): ParkFeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: parksAndRec.map((facility) => ({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [facility.lng, facility.lat] as [number, number],
+      },
+      properties: {
+        id: facility.id,
+        name: facility.name,
+        note: facility.note ?? '',
+        icon: parkIconId(facility.type),
+      },
+    })),
+  }
+}
+
+/**
+ * Mapbox glyph fonts carry no emoji coverage, so each type icon is rasterized
+ * with the system emoji font and registered as a map image. Drawn at 2x and
+ * registered with pixelRatio 2 to stay sharp on retina.
+ */
+function renderParkIcon(emoji: string): ImageData | null {
+  const size = PARK_ICON_PX * 2
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  const center = size / 2
+  ctx.beginPath()
+  ctx.arc(center, center, center - 2, 0, Math.PI * 2)
+  ctx.fillStyle = '#FFFFFF'
+  ctx.fill()
+  ctx.lineWidth = 2
+  ctx.strokeStyle = BRAND_NAVY
+  ctx.stroke()
+
+  ctx.font = `${size * 0.52}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(emoji, center, center + size * 0.03)
+
+  return ctx.getImageData(0, 0, size, size)
+}
+
+function parkPopupContent(name: string, note: string) {
+  const el = document.createElement('div')
+  el.style.cssText = 'font-family: system-ui, -apple-system, sans-serif; max-width: 190px;'
+
+  const title = document.createElement('div')
+  title.style.cssText = `font-size: 13px; font-weight: 700; color: ${BRAND_NAVY};`
+  title.textContent = name
+  el.appendChild(title)
+
+  if (note) {
+    const detail = document.createElement('div')
+    detail.style.cssText = `margin-top: 2px; font-size: 12px; line-height: 1.35; color: ${BRAND_SLATE};`
+    detail.textContent = note
+    el.appendChild(detail)
+  }
+
+  return el
+}
+
 function popupHtml(props: {
   address?: string
   price?: number
@@ -133,15 +226,22 @@ function popupHtml(props: {
   `
 }
 
-export default function Map({ filters }: MapProps) {
+export default function Map({ filters, visible = true }: MapProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const draw = useRef<MapboxDraw | null>(null)
   const popup = useRef<mapboxgl.Popup | null>(null)
   const golfPopup = useRef<mapboxgl.Popup | null>(null)
+  const parkPopup = useRef<mapboxgl.Popup | null>(null)
   const pendingGeoJSON = useRef<ListingFeatureCollection | null>(null)
   const [status, setStatus] = useState('Loading…')
   const [showBoundaries, setShowBoundaries] = useState(true)
+  const [showLegend, setShowLegend] = useState(true)
+
+  function resizeMap() {
+    map.current?.resize()
+  }
 
   function setListingsData(listings: Listing[]) {
     const geojson = listingsToGeoJSON(listings)
@@ -217,6 +317,79 @@ export default function Map({ filters }: MapProps) {
     }
 
     image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(GOLF_FLAG_SVG)}`
+  }
+
+  function setupParksLayer(m: mapboxgl.Map) {
+    if (m.getSource(PARK_SOURCE_ID)) return
+
+    m.addSource(PARK_SOURCE_ID, {
+      type: 'geojson',
+      data: parksToGeoJSON(),
+    })
+
+    const usedTypes = parksAndRec
+      .map((facility) => facility.type)
+      .filter((type, i, all) => all.indexOf(type) === i)
+
+    for (const type of usedTypes) {
+      const iconId = parkIconId(type)
+      if (m.hasImage(iconId)) continue
+
+      const icon = renderParkIcon(parkIconMap[type])
+      if (icon) m.addImage(iconId, icon, { pixelRatio: 2 })
+    }
+
+    // Beneath the golf flags and listing pins so real estate stays primary.
+    // Golf adds itself before the clusters once its SVG decodes, which leaves
+    // it above the parks regardless of which layer lands first.
+    let beforeId: string | undefined
+    if (m.getLayer(GOLF_LAYER)) beforeId = GOLF_LAYER
+    else if (m.getLayer(CLUSTER_LAYER)) beforeId = CLUSTER_LAYER
+
+    m.addLayer(
+      {
+        id: PARK_LAYER,
+        type: 'symbol',
+        source: PARK_SOURCE_ID,
+        layout: {
+          'icon-image': ['get', 'icon'],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      },
+      beforeId
+    )
+
+    const showFacility = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0]
+      if (!feature || feature.geometry.type !== 'Point') return
+
+      m.getCanvas().style.cursor = 'pointer'
+      parkPopup.current?.remove()
+      parkPopup.current = new mapboxgl.Popup({
+        offset: PARK_ICON_PX / 2 + 6,
+        closeButton: false,
+        closeOnClick: false,
+      })
+        .setLngLat(feature.geometry.coordinates as [number, number])
+        .setDOMContent(
+          parkPopupContent(
+            String(feature.properties?.name ?? 'Park'),
+            String(feature.properties?.note ?? '')
+          )
+        )
+        .addTo(m)
+    }
+
+    const hideFacility = () => {
+      m.getCanvas().style.cursor = ''
+      parkPopup.current?.remove()
+      parkPopup.current = null
+    }
+
+    m.on('mouseenter', PARK_LAYER, showFacility)
+    m.on('mouseleave', PARK_LAYER, hideFacility)
+    m.on('click', PARK_LAYER, showFacility)
   }
 
   function setupClusterLayers(m: mapboxgl.Map) {
@@ -355,7 +528,8 @@ export default function Map({ filters }: MapProps) {
       setupBoundaryLayers(map.current)
       setupClusterLayers(map.current)
       setupGolfCourseLayer(map.current)
-      map.current.resize()
+      setupParksLayer(map.current)
+      resizeMap()
     })
 
     return () => {
@@ -363,10 +537,43 @@ export default function Map({ filters }: MapProps) {
       popup.current = null
       golfPopup.current?.remove()
       golfPopup.current = null
+      parkPopup.current?.remove()
+      parkPopup.current = null
       map.current?.remove()
       map.current = null
     }
   }, [])
+
+  // Recalculate Mapbox size when the container is shown or its box changes
+  // (mobile List | Map toggle uses display:none, which leaves a stale canvas size).
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+
+    const observer = new ResizeObserver(() => {
+      resizeMap()
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!visible) return
+
+    let cancelled = false
+    const frame = requestAnimationFrame(() => {
+      if (cancelled) return
+      resizeMap()
+      // Second pass after paint — layout from display:none → visible can lag one frame
+      requestAnimationFrame(() => {
+        if (!cancelled) resizeMap()
+      })
+    })
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
+    }
+  }, [visible])
 
   // Load + filter listings
   useEffect(() => {
@@ -412,8 +619,8 @@ export default function Map({ filters }: MapProps) {
   }, [showBoundaries])
 
   return (
-    <div className="relative w-full h-full min-h-[500px]">
-      <div ref={mapContainer} className="w-full h-full min-h-[500px] rounded-lg" />
+    <div ref={rootRef} className="relative h-full w-full min-h-0">
+      <div ref={mapContainer} className="absolute inset-0 h-full w-full" />
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         <div className="rounded-md bg-white/95 px-3 py-1.5 text-sm font-medium text-brand-navy shadow">
           {status}
@@ -422,51 +629,83 @@ export default function Map({ filters }: MapProps) {
           type="button"
           onClick={() => setShowBoundaries((v) => !v)}
           aria-pressed={showBoundaries}
-          aria-label={showBoundaries ? 'Hide area boundaries' : 'Show area boundaries'}
+          aria-label={showBoundaries ? 'Hide boundaries' : 'Show boundaries'}
           className="rounded-md bg-white/95 px-3 py-1.5 text-left text-sm font-medium text-brand-navy shadow hover:bg-white"
         >
           {showBoundaries ? 'Hide boundaries' : 'Show boundaries'}
         </button>
-        <ul className="rounded-md bg-white/95 px-3 py-2 shadow space-y-1" aria-label="Map legend">
-          {showBoundaries &&
-            BOUNDARY_LEGEND.map((item) => (
-              <li key={item.id} className="flex items-center gap-2 text-xs text-brand-navy">
-                {item.swatch === 'fill' ? (
-                  <span
-                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm ring-1 ring-black/10"
-                    style={{ backgroundColor: item.color }}
-                    aria-hidden
+        <button
+          type="button"
+          onClick={() => setShowLegend((v) => !v)}
+          aria-pressed={showLegend}
+          aria-label={showLegend ? 'Hide legend' : 'Show legend'}
+          className="rounded-md bg-white/95 px-3 py-1.5 text-left text-sm font-medium text-brand-navy shadow hover:bg-white"
+        >
+          {showLegend ? 'Hide legend' : 'Show legend'}
+        </button>
+        {showLegend && (
+          <div
+            role="group"
+            aria-label="Map legend"
+            className="rounded-md bg-white/95 px-3 py-2 shadow"
+          >
+            <ul className="space-y-1">
+              {showBoundaries &&
+                BOUNDARY_LEGEND.map((item) => (
+                  <li key={item.id} className="flex items-center gap-2 text-xs text-brand-navy">
+                    {item.swatch === 'fill' ? (
+                      <span
+                        className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm ring-1 ring-black/10"
+                        style={{ backgroundColor: item.color }}
+                        aria-hidden
+                      />
+                    ) : (
+                      <span
+                        className="inline-block h-[2px] w-3 shrink-0"
+                        style={{
+                          backgroundImage: `repeating-linear-gradient(to right, ${item.color} 0 2px, transparent 2px 4px)`,
+                        }}
+                        aria-hidden
+                      />
+                    )}
+                    {item.name}
+                  </li>
+                ))}
+              <li className="flex items-center gap-2 text-xs text-brand-navy">
+                <svg viewBox="0 0 20 20" className="h-3 w-3 shrink-0" aria-hidden>
+                  <path
+                    d="M6.6 18.2V2.4"
+                    fill="none"
+                    stroke={BRAND_NAVY}
+                    strokeWidth="2.6"
+                    strokeLinecap="round"
                   />
-                ) : (
-                  <span
-                    className="inline-block h-[2px] w-3 shrink-0"
-                    style={{
-                      backgroundImage: `repeating-linear-gradient(to right, ${item.color} 0 2px, transparent 2px 4px)`,
-                    }}
-                    aria-hidden
+                  <path
+                    d="M6.6 3.1 14.8 5.8 6.6 8.5 Z"
+                    fill={GOLF_FLAG_RED}
+                    strokeWidth="0"
                   />
-                )}
-                {item.name}
+                </svg>
+                Golf course
               </li>
-            ))}
-          <li className="flex items-center gap-2 text-xs text-brand-navy">
-            <svg viewBox="0 0 20 20" className="h-3 w-3 shrink-0" aria-hidden>
-              <path
-                d="M6.6 18.2V2.4"
-                fill="none"
-                stroke={BRAND_NAVY}
-                strokeWidth="2.6"
-                strokeLinecap="round"
-              />
-              <path
-                d="M6.6 3.1 14.8 5.8 6.6 8.5 Z"
-                fill={GOLF_FLAG_RED}
-                strokeWidth="0"
-              />
-            </svg>
-            Golf course
-          </li>
-        </ul>
+            </ul>
+            <details className="mt-2 border-t border-slate-200 pt-1.5" open>
+              <summary className="cursor-pointer text-xs font-semibold text-brand-navy">
+                Parks &amp; recreation
+              </summary>
+              <ul className="mt-1 space-y-1">
+                {PARK_LEGEND.map((item) => (
+                  <li key={item.type} className="flex items-center gap-2 text-xs text-brand-navy">
+                    <span className="w-3.5 shrink-0 text-center text-[11px] leading-none" aria-hidden>
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        )}
       </div>
     </div>
   )
