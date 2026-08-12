@@ -1,0 +1,277 @@
+[
+  {
+    "timestamp": "2026-08-12T12:35:00Z",
+    "task_id": "ARCHITECTURE_INITIALIZATION",
+    "target_file": "dev/agent_ledger.json",
+    "contributions": [
+      {
+        "agent": "Aria Sovereign Core v2.0",
+        "input_provided": "Initialized domain-agnostic sandbox directory tracks and empty file architecture.",
+        "status": "INITIALIZED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - System container initialized. Awaiting Phase 3 configuration payloads."
+  },
+  {
+    "timestamp": "2026-08-12T17:18:00Z",
+    "task_id": "CONTEXT_MATRIX_REAL_ESTATE_CORE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "context-matrix/real_estate_core.json",
+    "supporting_files": [
+      "src/lib/context-matrix.ts",
+      "src/lib/context-matrix.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Locked SRID 4326 geography(Point,4326) as the canonical store, hybrid GiST/BRIN indexes, get_listings_with_coords as the anonymous map pipeline, get_nearby_listings at 8046.72 m default / 16093.44 m max, Redis GEO hot cache with PostGIS fallback, and TransientMapState v1 sessionStorage defaults from the locked blueprint.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Hardcoded FHA protected-class tokens and the live checkFairHousing forbidden list. Routed PII redaction and Fair Housing guards through src/routes/api/-chat.ts (redactPII / checkFairHousing). Enforced STRICT RLS, SECURITY DEFINER-only anonymous writes, vault-first secrets, and isolation of personal_notes from the public map path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Added schema_assertions on the sheet plus a compile-time Widen<ContextMatrixV1> satisfies lock and a Zod boot assertion. A malformed sheet fails tsc; a foreign industry_id fails module load and the vitest gate (5/5 passing).",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - real_estate_core.json is the first industry sheet. Engine binds to aria.context-matrix.v1, not to real estate. Ready for the next Phase 3 turn."
+  },
+  {
+    "timestamp": "2026-08-12T17:33:00Z",
+    "task_id": "ROU_PERSONA_ROUTING_LAYER_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/router.ts",
+    "supporting_files": [
+      "src/lib/rou/perimeter.ts",
+      "src/lib/rou/transient-map-state.ts",
+      "src/lib/rou/node-a.ts",
+      "src/lib/rou/node-b.ts",
+      "src/lib/rou/live.ts",
+      "src/lib/rou/rou-persona.test.ts",
+      "src/routes/api/-listings.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "node_a_memory_rpc",
+        "detection": "assertNodeARpc throws on get_lead_memory / upsert_personal_note / save_conversation_summary",
+        "isolation": "Node A has no supabase or lead-memory import path; public listings route is get_listings_with_coords only"
+      },
+      {
+        "id": "node_b_supabase_disconnect",
+        "detection": "Companion deps throw on RPC error",
+        "isolation": "createCompanionRou returns { ok: false, degraded: true } and isolateCompanion supplies a fallback; Interface Rou sessionStorage map state remains writable"
+      },
+      {
+        "id": "transient_map_malformed_payload",
+        "detection": "Zod parse failure on sessionStorage hydrate",
+        "isolation": "Falls back to locked Aiken safe default; never throws into the public map"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Mapped Node A to TransientMapState v1 in sessionStorage (key searchaikenhomes:rou:transient:map:v1) and Node B to a dedicated Companion factory. Live supabase wiring is isolated in src/lib/rou/live.ts so the public map path never shares a client with memory RPCs.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Aegis perimeter: Node A allowlist is get_listings_with_coords + get_nearby_listings; Node B allowlist is get_lead_memory + save_conversation_summary + upsert_personal_note. Overlap is a compile-time never. Node A is blocked from personal_notes / conversation_summaries. src/routes/api/-listings.ts asserts the public PostGIS RPC before load.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "12 persona isolation tests plus 5 matrix tests (17/17). Covers memory-RPC rejection, malformed sessionStorage fallback, Companion mutation failure while Node A map persist/hydrate still works, and isolateCompanion fallback. Lint clean on src/lib/rou and -listings.ts.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Two-tier Rou routing layer is live. Node A (stateless interface) and Node B (companion memory) are isolated. Companion outage cannot stall the public map. Ready for the next Phase 3 turn."
+  },
+  {
+    "timestamp": "2026-08-12T17:44:00Z",
+    "task_id": "AEGIS_UI_WIRING_MAP_CHAT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/Map.tsx",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/companion-chat.ts",
+      "src/lib/rou/transient-map-state.ts",
+      "src/routes/api/-chat.ts",
+      "src/lib/rou/rou-persona.test.ts"
+    ],
+    "test_results": {
+      "suite": "vitest",
+      "passed": 73,
+      "failed": 0,
+      "notes": "Prior 17 matrix+persona tests still pass. Added 4 UI-wiring cases including mid-pan listing RPC drop."
+    },
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Map.tsx now initializes center/zoom/bearing/pitch from hydrateTransientMapState, persists viewport on moveend, writes hero price/beds/baths/propertyType into sessionStorage, and loads pins through rouPersonaRouter.interface.loadPublicListings. Direct supabase.rpc was removed from the map.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "ChatWidget sends only through sendCompanionChat -> -chat.ts. PII redaction still runs on input, history, and output. Memory reads use Node B readMemory (get_lead_memory SECURITY DEFINER). Memory writes are isolated via isolateCompanion. ChatWidget has no supabase, Node A, or get_listings_with_coords import path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Simulated a listing RPC throw after a camera persist (zoom 14, center downtown Aiken). Hydrated state kept the pan. Source audits lock Map to Node A session state and ChatWidget to companion-chat. 73/73 tests passing.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Map and ChatWidget now consume the Aegis router. Public visual design unchanged. Companion or listing outage cannot stall the tab-scoped map camera. Ready for the next Phase 3 turn."
+  },
+  {
+    "timestamp": "2026-08-12T18:00:00Z",
+    "task_id": "GHOLI_PERSONA_PROMPT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/gholi-persona.ts",
+    "supporting_files": [
+      "context-matrix/real_estate_core.json",
+      "src/lib/context-matrix.ts",
+      "src/routes/api/-chat.ts",
+      "src/lib/lead-memory.ts",
+      "src/lib/rou/node-b.ts",
+      "src/lib/rou/companion-chat.ts",
+      "src/lib/rou/index.ts",
+      "src/components/ChatWidget.tsx",
+      "src/routes/index.tsx",
+      "src/lib/rou/gholi-persona.test.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "spoken_identity_drift_to_rou",
+        "detection": "GHOLI_SYSTEM_PROMPT forbids introducing as Rou; ChatWidget intro and listing CTAs use GHOLI_DISPLAY_NAME",
+        "isolation": "Backend module names stay Rou (-chat.ts, createCompanionRou, getRouSessionKey). Spoken identity is Gholi only."
+      },
+      {
+        "id": "empathy_as_familial_status_steering",
+        "detection": "Prompt block: empathy is not an excuse to imply who belongs; Fair Housing middleware still checkFairHousing in -chat.ts",
+        "isolation": "PII still redactPII on input/history/output. Memory RPCs remain Node B SECURITY DEFINER allowlist."
+      }
+    ],
+    "test_results": {
+      "suite": "vitest",
+      "passed": 77,
+      "failed": 0,
+      "notes": "Prior 73 plus 4 Gholi identity/matrix/injection tests. Node B still exports createCompanionRou with id gholi."
+    },
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Split spoken identity from routing. Node A remains Rou (stateless map/PostGIS/POI, sessionStorage key searchaikenhomes:rou:transient:map:v1). Node B spoken identity is Gholi; factory remains createCompanionRou. Prompt source of truth is src/lib/rou/gholi-persona.ts, injected as CORE_SYSTEM_PROMPT in -chat.ts. Context matrix locks utility.display_name Rou and relationship.id gholi with prompt_module.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Gholi prompt keeps Fair Housing, no invented memory, and human handoff for showings/offers/contracts. Empathy must not become familial-status steering. PII redaction stays in -chat.ts (redactPII). Memory reads/writes stay on Node B SECURITY DEFINER RPCs (get_lead_memory, save_conversation_summary, upsert_personal_note). ChatWidget still has no supabase or Node A import path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "gholi-persona.test.ts locks display name, Fair Housing copy, matrix literals, -chat.ts injection, lead-memory Gholi labels, and Node B createCompanionRou id gholi. 77/77 vitest passing. New persona files lint clean; ChatWidget/lead-memory/-chat.ts lint noise is pre-existing.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Gholi is the spoken Node B companion. Rou remains the utility node and the backend routing name. -chat.ts and Node B endpoints are unchanged. Ready for the next Phase 3 turn."
+  },
+  {
+    "timestamp": "2026-08-12T18:25:00Z",
+    "task_id": "FLOATING_ORB_SANDBOX_COMPAT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/sandbox/floating-orb-experiment.ts",
+    "supporting_files": [
+      "context-matrix/real_estate_core.json",
+      "src/lib/context-matrix.ts",
+      "src/lib/context-matrix.test.ts",
+      "src/lib/rou/sandbox/floating-orb-experiment.test.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "orb_wired_while_kill_switch_off",
+        "detection": "Vitest asserts live modules never import floating-orb-experiment or isFloatingOrbExperimentEnabled; matrix.enabled defaults false",
+        "isolation": "Production continues on ChatWidget. Sandbox has memory_binding none_in_sandbox and no supabase/lead-memory/node-b imports."
+      },
+      {
+        "id": "sandbox_touches_personal_notes",
+        "detection": "assertFloatingOrbSandboxIsolation rejects lead-memory, supabase, Node B RPCs, and -chat imports",
+        "isolation": "Sandbox draft text forbids live personal_notes wiring; live Gholi prompt remains in gholi-persona.ts / -chat.ts only."
+      }
+    ],
+    "test_results": {
+      "suite": "vitest",
+      "passed": 83,
+      "failed": 0,
+      "notes": "Prior 77 plus floating-orb isolation suite and matrix kill-switch assertion. Live surfaces remain on ChatWidget."
+    },
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Added experiments.floating_orb to the industry sheet with enabled=false, kill_switch=true, fallback_ui ChatWidget, and sandbox_module path. Sandbox lives under src/lib/rou/sandbox/ and is not re-exported from rou/index.ts, so the live bundle does not pull the experiment.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Forbidden-while-disabled list covers index, ChatWidget, Map, companion-chat, live, node-b, lead-memory, supabase, and -chat. Sandbox assertFloatingOrbSandboxIsolation blocks those import paths and memory RPCs. No personal_notes binding in the sandbox surface.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "floating-orb-experiment.test.ts plus matrix kill-switch assertion. Confirms enabled=false, ChatWidget fallback, sandbox has no imports, and live surfaces do not import the sandbox.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Floating-orb / Gholi orb UI is a gated sandbox only. Live site stays on ChatWidget until experiments.floating_orb.enabled is deliberately flipped after private conversion testing."
+  },
+  {
+    "timestamp": "2026-08-12T18:55:00Z",
+    "task_id": "STABILIZE_STEP1_STATUS_AND_SLICE_PLAN_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "STATUS.md",
+    "supporting_files": [
+      "dev/agent_ledger.json"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Categorized the dirty working tree into four commit slices: (1) context matrix + Aegis rou layer + listings route + TransientMapState blueprint, (2) Gholi persona + chat/UI identity wiring, (3) amenity data expansion + playground tests, (4) leave vite.config.ts Cloudflare hosts and optional session journal out unless Nick opts in. STATUS.md updated to Rou/Gholi reality.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Confirmed no commit of secrets. Keep kill-switch false documentation in STATUS. Session journal may contain personal naming context; treat as optional/local unless Nick explicitly includes it.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Stabilize gate is STATUS refresh + slice plan only. No git commit executed in this turn (prior Nick instruction: dont commit). Awaiting explicit commit approval per slice.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Step 1 stabilize complete on disk: STATUS.md current. Commit slices ready; waiting for Nick to authorize commits."
+  }
+]

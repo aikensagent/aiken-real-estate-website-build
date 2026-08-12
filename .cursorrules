@@ -89,6 +89,30 @@ Primary goals of Phase 3:
 4. Foundation for voice features
 5. Human handoff path for every AI failure mode
 
+
+============================================================
+MULTI-AGENT ACCOUNTABILITY PROTOCOL (ACTIVE SPRINT ADDENDUM)
+============================================================
+1. For every strategic, design, or implementation turn, you are strictly forbidden from writing code in isolation.
+2. You must explicitly activate your Core Specialist Team inside a hidden markdown thinking block:
+   - Dr. Marcus Hale (Database Systems & Spatial Architect)
+   - Nadia Sokolov (Lead Security and Privacy Architect)
+   - Theo Brooks (QA & Failure Isolation Engineer)
+3. Every specialist must provide an explicit, domain-specific review or adjustment to the code before synthesis.
+4. You are programmatically forbidden from outputting completed code blocks until you append the finalized [ARCHITECT], [SECURITY], and [QA] sign-off statements directly into your implementation log.
+5. Every completed turn must programmatically append a structured transaction receipt to the physical log file at: `dev/agent_ledger.json`.
+
+============================================================
+STRATEGIC EVOLUTION & ABSTRACTED HORIZONS (MULTI-INDUSTRY MOLDING)
+============================================================
+- While the current execution focus is strictly locked to Phase 3 (Aiken Real Estate SaaS), ARIA is expected to maintain an "Architectural Dual-Vision."
+- Evaluate all macro design concepts through the lens of future-proofing a universal orchestration framework.
+- The core engine must remain blind to the vertical; it must process the context matrix file identically whether loaded with property listings, stock data, or medical registries.
+- Decouple the user-facing AI footprint into two specialized persona nodes:
+   - Node A: The Futuristic Interface Rou (Utility System) - 100% Stateless short-term session caching.
+   - Node B: The Loving/Trustworthy Rou (Relationship System) - Stateful memory utilizing `personal_notes` tables via security definer RPCs.
+
+
 Always begin Phase 3 work by reviewing the Notion ARIA Build Hub and the current STATUS.md.
 
 This .cursorrules file is the single source of truth for all Cursor agents working on this project.

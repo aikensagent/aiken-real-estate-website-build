@@ -1,0 +1,207 @@
+{
+  "engine_contract": "aria.context-matrix.v1",
+  "matrix_version": 1,
+  "industry_id": "real_estate.aiken_sc",
+  "industry_label": "Aiken Real Estate SaaS",
+  "locale": {
+    "market_name": "Aiken, South Carolina",
+    "default_city": "Aiken",
+    "default_region": "SC",
+    "country": "US",
+    "coverage_note": "Aiken County MLS coverage area. Out-of-area requests are referred, never invented."
+  },
+  "spatial": {
+    "crs": {
+      "srid": 4326,
+      "epsg": "EPSG:4326",
+      "axis_order": ["lng", "lat"]
+    },
+    "storage": {
+      "canonical_type": "geography(Point,4326)",
+      "coordinate_extraction_rpc": "public.get_listings_with_coords",
+      "anonymous_map_pipeline": "public.get_listings_with_coords"
+    },
+    "indexes": [
+      {
+        "method": "GiST",
+        "purpose": "kNN operator (<->) and ST_DWithin hot-path radius lookups"
+      },
+      {
+        "method": "BRIN",
+        "purpose": "append-only MLS ingest scans on large listing tables"
+      }
+    ],
+    "lookups": {
+      "proximity_rpc": "public.get_nearby_listings",
+      "default_radius_meters": 8046.72,
+      "max_radius_meters": 16093.44,
+      "result_limit": 50,
+      "cache": {
+        "hot": "vercel_kv_redis_geo",
+        "fallback": "postgis"
+      }
+    },
+    "transient_map_state": {
+      "version": 1,
+      "storage_key": "searchaikenhomes:rou:transient:map:v1",
+      "storage_scope": "sessionStorage",
+      "forbidden_stores": ["localStorage", "vercel_kv", "database", "personal_notes"],
+      "safe_default": {
+        "version": 1,
+        "center": [-81.7198, 33.5604],
+        "zoom": 11,
+        "bearing": 0,
+        "pitch": 0,
+        "filters": {
+          "minPrice": null,
+          "maxPrice": null,
+          "beds": null,
+          "baths": null,
+          "propertyType": null,
+          "status": "Active"
+        },
+        "drawnPolygon": null,
+        "searchQuery": "",
+        "lastUpdated": 0
+      }
+    }
+  },
+  "compliance": {
+    "rls": {
+      "enforcement_level": "STRICT",
+      "anonymous_writes": "security_definer_rpc_only",
+      "isolated_from_anonymous": ["personal_notes", "conversation_summaries"]
+    },
+    "authorized_public_rpc_methods": [
+      "public.capture_lead",
+      "public.get_listings_with_coords",
+      "public.get_nearby_listings"
+    ],
+    "fair_housing": {
+      "strict_enforcement": true,
+      "protected_classes": [
+        "race",
+        "color",
+        "national_origin",
+        "religion",
+        "sex",
+        "familial_status",
+        "disability"
+      ],
+      "forbidden_tokens": [
+        "race",
+        "racial",
+        "black neighborhood",
+        "white neighborhood",
+        "hispanic area",
+        "asian community",
+        "good schools for",
+        "safe for families of",
+        "demographics",
+        "ethnic",
+        "ethnic profiling",
+        "religion",
+        "church nearby for",
+        "synagogue",
+        "mosque",
+        "neighborhood safety"
+      ],
+      "refusal_copy": "I can't discuss that topic — it could violate Fair Housing guidelines. I'm happy to help with homes, neighborhoods, schools, or the buying process in Aiken though. What would you like to know?",
+      "middleware_route": "src/routes/api/-chat.ts",
+      "guard_function": "checkFairHousing"
+    },
+    "pii": {
+      "middleware_route": "src/routes/api/-chat.ts",
+      "redaction_function": "redactPII",
+      "apply_to": ["chat_input", "chat_history", "chat_output"],
+      "patterns": [
+        { "id": "phone", "replacement": "[phone]" },
+        { "id": "email", "replacement": "[email]" },
+        { "id": "ssn", "replacement": "[ssn]" }
+      ]
+    },
+    "secrets": {
+      "policy": "vault_first",
+      "stores": ["supabase_vault", "vercel_env"],
+      "hardcoded_keys": false
+    },
+    "human_handoff": {
+      "required_on": ["ai_failure", "fair_housing_refusal_followup", "showings", "offers", "contracts"],
+      "cta_label": "Talk to Nick Williams"
+    }
+  },
+  "ui_tokens": {
+    "framework": "Tailwind v4",
+    "theme_injection": "@theme",
+    "forbid_raw_hex_in_components": true,
+    "primary_brand_tokens": {
+      "navy": "#0F2B5B",
+      "gold": "#C9A84C",
+      "cream": "#F7F8FA",
+      "slate": "#1E1E2E",
+      "cb_navy": "#012169"
+    },
+    "logo": "/nick-williams-logo.jpg"
+  },
+  "persona_nodes": {
+    "utility": {
+      "id": "rou_interface",
+      "display_name": "Rou",
+      "state": "stateless_session",
+      "cache": "transient_map_state_only"
+    },
+    "relationship": {
+      "id": "gholi",
+      "display_name": "Gholi",
+      "state": "stateful",
+      "store": "personal_notes",
+      "access": "security_definer_rpc_only",
+      "prompt_module": "src/lib/rou/gholi-persona.ts"
+    }
+  },
+  "experiments": {
+    "floating_orb": {
+      "enabled": false,
+      "kill_switch": true,
+      "fallback_ui": "src/components/ChatWidget.tsx",
+      "sandbox_module": "src/lib/rou/sandbox/floating-orb-experiment.ts",
+      "forbidden_while_disabled": [
+        "src/routes/index.tsx",
+        "src/components/ChatWidget.tsx",
+        "src/components/Map.tsx",
+        "src/lib/rou/companion-chat.ts",
+        "src/lib/rou/live.ts",
+        "src/lib/rou/node-b.ts",
+        "src/lib/lead-memory.ts",
+        "src/lib/supabase.ts",
+        "src/routes/api/-chat.ts"
+      ],
+      "notes": "Private sandbox only. Flip enabled to true only after conversion-safe private testing. Disabled = proven ChatWidget path."
+    }
+  },
+  "entity_catalog": {
+    "primary_entity": "listing",
+    "coordinate_fields": ["lng", "lat"],
+    "public_read_statuses": ["active"]
+  },
+  "schema_assertions": {
+    "required_top_level_keys": [
+      "engine_contract",
+      "matrix_version",
+      "industry_id",
+      "spatial",
+      "compliance",
+      "ui_tokens",
+      "persona_nodes",
+      "experiments",
+      "entity_catalog",
+      "schema_assertions"
+    ],
+    "engine_contract_must_equal": "aria.context-matrix.v1",
+    "industry_id_must_equal": "real_estate.aiken_sc",
+    "matrix_version_must_equal": 1,
+    "spatial_srid_must_equal": 4326,
+    "halt_compilation_on_mismatch": true,
+    "halt_runtime_on_mismatch": true
+  }
+}
