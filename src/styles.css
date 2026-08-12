@@ -321,3 +321,13 @@ a {
     color: var(--foreground);
   }
 }
+
+@keyframes rou-eq {
+  0%,
+  100% {
+    height: 22%;
+  }
+  50% {
+    height: 92%;
+  }
+}

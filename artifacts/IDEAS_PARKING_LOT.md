@@ -32,10 +32,10 @@
 4. **LOCK (shipped)** — First open of a property card → one-time **Introducing Rou** dialog (neighborhood-fit framing + example asks); dismissible; localStorage so it does not nag every card.
 5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Will feel cleaner once full property-card detail exists.
 11. Visual walk/drive route lines (with #3). **First slice shipped** — navy route line + gold endpoints + clearable caption bar on map.
-12. Public Rou = abstract orb + EQ-while-speaking (not face, not bars-on-photo).
+12. Public Rou = abstract orb + EQ-while-speaking (not face, not bars-on-photo). **First slice shipped 2026-08-12** — closed ChatWidget is `RouOrb` (navy/gold EQ). Chat panel still exists until full orb replacement.
 13. Clickable chips after activate (schools / grocery / park…). **Shipped** with activate greeting.
 14. Dual presence — Rou public / Gholi dashboard (Gholi may be warm/visual in-dashboard only).
-15. Orb-first UI over time; captions + transcript hybrid; contrast-safe text; visuals adjustable.
+15. Orb-first UI over time; captions + transcript hybrid; contrast-safe text; visuals adjustable. **Partial** — cream caption scrim on orb when speaking or muted. Full transcript-drawer still later.
 
 ### Account / Gholi / preference
 7. Thumbs up/down — max 5 varying questions per listing, no typing required; account/Gholi.

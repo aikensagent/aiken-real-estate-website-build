@@ -534,5 +534,37 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - LOCK #24 shipped: legend and boundaries start visible."
+  },
+  {
+    "timestamp": "2026-08-12T21:17:00Z",
+    "task_id": "ROU_ORB_PUBLIC_VISUAL_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/styles.css",
+      "src/lib/rou/rou-orb.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Closed FAB is RouOrb (EQ bars, brand tokens). ChatWidget remains conversation engine. Did not flip experiments.floating_orb.enabled or import sandbox module.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No face photo on public Rou. Captions on cream scrim. Kill-switch isolation tests still require live modules not to import sandbox.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "rou-orb.test.ts plus full suite 99/99. Photo import removed from ChatWidget.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - LOCK #12/#15 first visual slice: public Rou orb + captions; chat panel still behind tap."
   }
 ]

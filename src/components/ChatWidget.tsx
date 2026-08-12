@@ -1,23 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { streamCompanionChat } from '../lib/rou/companion-chat'
 import {
-  ROU_DISPLAY_NAME,
-  ROU_TITLE,
-} from '../lib/rou/rou-public-persona'
-import {
   cancelGholiSpeech,
   getBrowserSpeechRecognition,
   persistSpeakRepliesPreference,
   readSpeakRepliesPreference,
   speakGholiReply,
 } from '../lib/rou/voice'
+import { RouOrb } from './RouOrb'
 import type { ChatOrigin } from '../lib/grok-client'
 import {
   mentionsGrocery,
   mentionsPlayground,
   mentionsSchool,
 } from '../lib/playgrounds'
-import rouAvatar from '../assets/rou-avatar.jpg'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -97,9 +93,22 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading, isTyping])
 
+  const [speaking, setSpeaking] = useState(false)
+  const [caption, setCaption] = useState<string | null>(null)
+
   function speakText(text: string) {
-    // Speak only complete replies (called after stream `done`), never mid-token.
-    speakGholiReply(text, { enabled: speakRepliesRef.current })
+    const trimmed = text.trim()
+    if (!trimmed) return
+    setCaption(trimmed)
+    if (!speakRepliesRef.current) {
+      setSpeaking(false)
+      return
+    }
+    setSpeaking(true)
+    speakGholiReply(trimmed, { enabled: true })
+    const words = trimmed.split(/\s+/).length
+    const ms = Math.min(20000, Math.max(2500, words * 380))
+    window.setTimeout(() => setSpeaking(false), ms)
   }
 
   function setSpeakRepliesAndPersist(next: boolean) {
@@ -355,28 +364,18 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
     cancelGholiSpeech()
     setMessages([])
     setSuggestionChips([])
+    setSpeaking(false)
     setIsOpen(false)
   }
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-1.5 md:bottom-6 md:right-6 md:gap-2">
-        <div className="relative rounded-lg bg-brand-navy px-3 py-1.5 text-sm font-medium text-white shadow-lg md:rounded-xl md:px-4 md:py-2">
-          Meet {ROU_DISPLAY_NAME}
-          <div className="absolute -bottom-1.5 right-4 h-2.5 w-2.5 rotate-45 bg-brand-navy md:right-6 md:h-3 md:w-3" />
-        </div>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-navy shadow-lg transition hover:scale-105 md:h-28 md:w-28"
-          aria-label={`Open chat with ${ROU_DISPLAY_NAME}`}
-        >
-          <img
-            src={rouAvatar}
-            alt={ROU_DISPLAY_NAME}
-            className="h-[4.5rem] w-[4.5rem] rounded-full border-2 border-white object-cover md:h-24 md:w-24"
-          />
-        </button>
-      </div>
+      <RouOrb
+        speaking={speaking}
+        caption={caption}
+        muted={!speakReplies}
+        onOpenChat={() => setIsOpen(true)}
+      />
     )
   }
 
@@ -398,11 +397,25 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
         className="flex cursor-move items-center justify-between rounded-t-xl bg-brand-navy px-4 py-3 select-none"
       >
         <div className="flex items-center gap-3">
-          <img
-            src={rouAvatar}
-            alt={ROU_DISPLAY_NAME}
-            className="h-[6.5rem] w-[6.5rem] rounded-full object-cover border border-white/30"
-          />
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-brand-gold/50"
+            aria-hidden
+          >
+            <span className="flex h-5 items-end gap-0.5">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className="w-1 rounded-full bg-brand-gold"
+                  style={{
+                    height: speaking ? undefined : '30%',
+                    animation: speaking
+                      ? `rou-eq 0.9s ease-in-out ${i * 0.12}s infinite`
+                      : undefined,
+                  }}
+                />
+              ))}
+            </span>
+          </div>
           <div className="flex flex-col leading-tight">
             <span className="text-lg font-semibold text-white">{ROU_DISPLAY_NAME}</span>
             <span className="text-sm text-white/80">{ROU_TITLE}</span>
@@ -459,11 +472,12 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
             className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && (
-              <img
-                src={rouAvatar}
-                alt={ROU_DISPLAY_NAME}
-                className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
-              />
+              <div
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy ring-1 ring-brand-gold/50"
+                aria-hidden
+              >
+                <span className="h-2 w-2 rounded-full bg-brand-gold" />
+              </div>
             )}
             <div
               className={`rounded-lg p-3 text-sm shadow-sm max-w-[80%] ${
@@ -481,11 +495,12 @@ export function ChatWidget({ origin, onAmenityIntent }: ChatWidgetProps) {
         {(loading || isTyping) &&
           messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex gap-3 justify-start">
-            <img
-              src={rouAvatar}
-              alt={ROU_DISPLAY_NAME}
-              className="h-10 w-10 flex-shrink-0 rounded-full object-cover border border-brand-navy/20"
-            />
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy ring-1 ring-brand-gold/50"
+              aria-hidden
+            >
+              <span className="h-2 w-2 rounded-full bg-brand-gold" />
+            </div>
             <div className="rounded-lg bg-white p-3 text-sm text-brand-slate shadow-sm">
               Typing…
             </div>
