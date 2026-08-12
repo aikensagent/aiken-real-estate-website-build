@@ -6,13 +6,14 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 
 describe('RouOrb public visual', () => {
-  it('uses brand tokens and EQ animation, not a face photo', () => {
+  it('uses brand tokens and EQ animation; TEMP workbench portrait is Gholi only', () => {
     const orb = readFileSync(join(here, '../../components/RouOrb.tsx'), 'utf8')
     expect(orb).toContain('bg-brand-navy')
     expect(orb).toContain('bg-brand-gold')
     expect(orb).toContain('bg-brand-cream')
     expect(orb).toContain('rou-eq')
-    expect(orb).not.toMatch(/rou-orb-portrait/)
+    expect(orb).toContain('gholi-avatar')
+    expect(orb).toContain('TEMP workbench')
     expect(orb).not.toMatch(/rou-avatar/)
     expect(orb).toContain('max-h-20')
     expect(orb).toContain('askEnabled')

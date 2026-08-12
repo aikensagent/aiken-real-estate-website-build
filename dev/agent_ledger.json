@@ -951,5 +951,36 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Left property cards follow the map camera as the visitor pans and zooms."
+  },
+  {
+    "timestamp": "2026-08-12T22:42:00Z",
+    "task_id": "TEMP_GHOLI_PORTRAIT_IN_ROU_ORB_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/assets/gholi-avatar.jpg",
+      "src/lib/rou/rou-orb.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Workbench-only: Gholi portrait fills the existing Rou circle. Gold ring and EQ overlay stay. No dashboard or public-identity change.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Local asset import only. No new RPC, PII, or identity leak into chat. Marked TEMP; not a public-ship face.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Orb test now locks gholi-avatar + TEMP comment. ChatWidget still must not import rou-avatar.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Temporary Gholi portrait inside Rou orb for Nick's local workbench. Revert before public ship."
   }
 ]

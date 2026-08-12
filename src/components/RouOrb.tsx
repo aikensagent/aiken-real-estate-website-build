@@ -1,3 +1,5 @@
+import gholiPortrait from '@/assets/gholi-avatar.jpg'
+
 type RouOrbProps = {
   speaking: boolean
   caption: string | null
@@ -9,8 +11,9 @@ type RouOrbProps = {
 }
 
 /**
- * Public Rou visual: abstract orb, EQ while speaking, captions on a cream scrim.
- * No portrait — grey-hoodie image is Cursor chat only, not the public site.
+ * Public Rou visual: orb + EQ while speaking, captions on a cream scrim.
+ * TEMP workbench: Gholi portrait inside the circle so Nick can see her while building.
+ * Revert to abstract navy/gold before any public ship.
  */
 export function RouOrb({
   speaking,
@@ -84,16 +87,24 @@ export function RouOrb({
         </div>
       )}
       <div
-        className="relative flex h-16 w-16 items-center justify-center rounded-full bg-brand-navy shadow-lg ring-2 ring-brand-gold/70 md:h-20 md:w-20"
+        className="relative h-20 w-20 overflow-hidden rounded-full bg-brand-navy shadow-lg ring-2 ring-brand-gold/70 md:h-24 md:w-24"
         role="img"
         aria-label="Rou"
       >
+        <img
+          src={gholiPortrait}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-[center_18%]"
+        />
         <span
-          className={`absolute inset-1 rounded-full border border-brand-gold/40 ${
+          className={`pointer-events-none absolute inset-1 rounded-full border border-brand-gold/40 ${
             speaking ? 'animate-pulse' : ''
           }`}
         />
-        <span className="flex h-7 items-end gap-0.5 md:h-8" aria-hidden>
+        <span
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex h-7 items-end justify-center gap-0.5 bg-gradient-to-t from-brand-navy/80 to-transparent pb-1.5 md:h-8"
+          aria-hidden
+        >
           {[0, 1, 2, 3, 4].map((i) => (
             <span
               key={i}
