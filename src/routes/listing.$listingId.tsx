@@ -4,6 +4,7 @@ import { ChatWidget } from '../components/ChatWidget'
 import { LeadCaptureForm } from '../components/LeadCaptureForm'
 import { ListingPinMap } from '../components/ListingPinMap'
 import { RouThumbs } from '../components/RouThumbs'
+import { SiteAccountLink } from '../components/SiteAccountLink'
 import { readAccessToken, useBuyerSignedIn } from '../lib/auth-browser'
 import { requestBuyerShowing } from './api/-showing-requests'
 import type { PriceSnapshot } from '../lib/price-history'
@@ -72,7 +73,7 @@ function ListingPage() {
       result.ok
         ? result.already
           ? 'Nick already has this request.'
-          : 'Nick will follow up about this home.'
+          : 'Nick will submit this showing request.'
         : 'Could not send that request.'
     )
   }
@@ -109,13 +110,7 @@ function ListingPage() {
           >
             ← Back to search
           </Link>
-          <Link
-            to="/account"
-            aria-label="Open your dashboard"
-            className="text-sm font-semibold text-brand-cream transition hover:text-brand-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
-          >
-            Dashboard
-          </Link>
+          <SiteAccountLink />
         </div>
       </header>
 
@@ -172,7 +167,7 @@ function ListingPage() {
           <SpecList listing={listing} />
 
           {courtesy && (
-            <p className="text-sm text-brand-slate">{courtesy}</p>
+            <p className="text-sm text-brand-navy">{courtesy}</p>
           )}
 
           {listing.inAikenCounty && (
@@ -230,7 +225,7 @@ function ListingPage() {
               <LeadCaptureForm
                 source={`listing:${listing.id}`}
                 heading="Schedule a showing"
-                description="Nick will follow up about this home."
+                description="Nick will submit the showing request."
                 defaultMessage={`I'd like to schedule a showing at ${address}.`}
               />
             )}
@@ -269,7 +264,7 @@ function ListingPage() {
         onShowingIntent={handleShowingIntent}
         showingHint={
           signedIn
-            ? 'I sent Nick a showing request for this home.'
+            ? 'Nick will submit this showing request.'
             : 'The showing form is on this page. I’ll scroll you there.'
         }
       />

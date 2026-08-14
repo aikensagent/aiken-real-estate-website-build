@@ -44,6 +44,7 @@ describe('saved search wiring', () => {
   it('saves from the map and lists on /account through SECURITY DEFINER RPCs', () => {
     const home = readFileSync(join(here, '../routes/index.tsx'), 'utf8')
     const account = readFileSync(join(here, '../routes/account.tsx'), 'utf8')
+    const savedMod = readFileSync(join(here, 'saved-search.ts'), 'utf8')
     const migration = readFileSync(
       join(here, '../../supabase/migrations/20260813_saved_buyer_searches.sql'),
       'utf8'
@@ -51,6 +52,9 @@ describe('saved search wiring', () => {
     expect(home).toContain('Save this search')
     expect(home).toContain('saveBuyerSearch')
     expect(home).toContain('savedSearchId')
+    expect(home).toContain("next: 'home'")
+    expect(home).toContain('rememberPendingSaveSearch')
+    expect(savedMod).toContain('PENDING_SAVE_SEARCH_KEY')
     expect(account).toContain('listBuyerSearches')
     expect(account).toContain('search={{ saved: row.id }}')
     expect(account).not.toMatch(/from ['"][^'"]*supabase['"]/)

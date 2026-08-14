@@ -145,6 +145,38 @@ export function formatListingCourtesy(
   return `Listing courtesy of ${name}.`
 }
 
+export type ListingOfficeRow = {
+  id: string
+  list_office_name: string
+}
+
+export function parseListingOfficeRows(data: unknown): ListingOfficeRow[] {
+  if (!Array.isArray(data)) return []
+  const rows: ListingOfficeRow[] = []
+  for (const item of data) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+    const rec = item as Record<string, unknown>
+    const id = typeof rec.id === 'string' ? rec.id.trim() : ''
+    const name =
+      typeof rec.list_office_name === 'string' ? rec.list_office_name.trim() : ''
+    if (!id || !name) continue
+    rows.push({ id, list_office_name: name.slice(0, 120) })
+  }
+  return rows
+}
+
+export function mergeListingOfficeNames<
+  T extends { id: string; list_office_name?: string | null },
+>(listings: T[], offices: ListingOfficeRow[]): T[] {
+  if (offices.length === 0) return listings
+  const byId = new Map(offices.map((row) => [row.id, row.list_office_name]))
+  return listings.map((listing) => {
+    const name = byId.get(listing.id)
+    if (!name) return listing
+    return { ...listing, list_office_name: name }
+  })
+}
+
 function finiteNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string' && value.trim()) {

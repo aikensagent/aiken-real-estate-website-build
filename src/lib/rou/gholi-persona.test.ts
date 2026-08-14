@@ -26,6 +26,9 @@ describe('Gholi persona profile', () => {
     expect(GHOLI_SYSTEM_PROMPT).toContain('Fair Housing')
     expect(GHOLI_SYSTEM_PROMPT).toContain('protected classes')
     expect(GHOLI_SYSTEM_PROMPT).toContain('Never invent')
+    expect(GHOLI_SYSTEM_PROMPT).toContain('Nick will submit the showing request')
+    expect(GHOLI_SYSTEM_PROMPT).toContain('Do not ask if they want to speak to Nick')
+    expect(GHOLI_SYSTEM_PROMPT).not.toContain('hand off to Nick')
   })
 
   it('is locked on the context matrix as Node B', () => {

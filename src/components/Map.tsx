@@ -30,6 +30,7 @@ import {
   pointAlongLine,
   type AmenityRouteOverlay,
 } from '../lib/rou/map-directions'
+import { formatListingCourtesy } from '../lib/listing-facts'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -142,6 +143,7 @@ type ListingFeatureCollection = {
       price: number
       beds: number
       baths: number
+      courtesy: string
     }
   }>
 }
@@ -197,6 +199,7 @@ function listingsToGeoJSON(listings: Listing[]): ListingFeatureCollection {
           price: Number(l.price || 0),
           beds: l.beds || 0,
           baths: l.baths || 0,
+          courtesy: formatListingCourtesy(l.list_office_name) || '',
         },
       })),
   }
@@ -325,23 +328,36 @@ function parkPopupContent(name: string, note: string) {
   return el
 }
 
+function escapePopupText(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 function popupHtml(props: {
   address?: string
   price?: number
   beds?: number
   baths?: number
+  courtesy?: string
 }) {
+  const courtesy = props.courtesy?.trim()
+    ? `<div style="margin-top: 6px; font-size: 14px; line-height: 1.35; color: ${BRAND_NAVY};">${escapePopupText(props.courtesy)}</div>`
+    : ''
   return `
     <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 180px;">
       <div style="font-size: 15px; font-weight: 700; color: ${BRAND_NAVY}; margin-bottom: 4px;">
-        ${props.address || 'Aiken Listing'}
+        ${escapePopupText(props.address || 'Aiken Listing')}
       </div>
       <div style="font-size: 14px; font-weight: 600; color: #C9A84C; margin-bottom: 6px;">
         $${Number(props.price || 0).toLocaleString()}
       </div>
       <div style="font-size: 13px; color: #1E1E2E;">
-        ${props.beds || 0} bed · ${props.baths || 0} bath
+        ${Number(props.beds || 0)} bed · ${Number(props.baths || 0)} bath
       </div>
+      ${courtesy}
     </div>
   `
 }
@@ -824,6 +840,7 @@ export default function Map({
             price: Number(props.price || 0),
             beds: Number(props.beds || 0),
             baths: Number(props.baths || 0),
+            courtesy: String(props.courtesy || ''),
           })
         )
         .addTo(m)

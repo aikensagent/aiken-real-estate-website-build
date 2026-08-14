@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { ChatWidget } from '../components/ChatWidget'
 import { RouCardIntroDialog } from '../components/RouCardIntroDialog'
+import { RouThumbs } from '../components/RouThumbs'
 import { Hero } from '@/components/Hero'
 import { SiteAccountLink } from '../components/SiteAccountLink'
 import Map from '../components/Map'
@@ -17,6 +18,11 @@ import {
   type Listing,
   type MapViewportBounds,
 } from '../lib/filterListings'
+import {
+  formatListingCourtesy,
+  mergeListingOfficeNames,
+  parseListingOfficeRows,
+} from '../lib/listing-facts'
 import {
   hasSeenRouCardIntro,
   markRouCardIntroSeen,
@@ -49,12 +55,17 @@ import {
 import { trackEvent } from '../lib/leadTracking'
 import { isListingId } from '../lib/listing-facts'
 import { readAccessToken, useBuyerSignedIn } from '../lib/auth-browser'
+import { rememberAuthNext } from '../lib/auth-next'
 import {
   buildSavedSearchPayload,
+  clearPendingSaveSearch,
   filtersFromPayload,
   labelSavedSearch,
+  readPendingSaveSearch,
+  rememberPendingSaveSearch,
 } from '../lib/saved-search'
 import { listBuyerSearches, saveBuyerSearch } from './api/-saved-searches'
+import { requestBuyerShowing } from './api/-showing-requests'
 
 type HomeSearch = {
   listingId?: string
@@ -85,6 +96,8 @@ function Home() {
   )
   const [saveNote, setSaveNote] = useState<string | null>(null)
   const [saveBusy, setSaveBusy] = useState(false)
+  const [showingNote, setShowingNote] = useState<string | null>(null)
+  const [showingBusy, setShowingBusy] = useState(false)
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
@@ -115,6 +128,8 @@ function Home() {
   const skipHiddenBoundsRef = useRef(false)
   const appliedReturnRef = useRef<string | null>(null)
   const appliedSavedRef = useRef<string | null>(null)
+  const pendingSaveRestoredRef = useRef(false)
+  const pendingSaveSentRef = useRef(false)
   mobileViewRef.current = mobileView
   isDesktopRef.current = isDesktop
 
@@ -151,24 +166,64 @@ function Home() {
 
   async function handleSaveSearch() {
     if (saveBusy) return
+    const payload = buildSavedSearchPayload(filters, activeArea)
+    const label = labelSavedSearch(payload)
     if (!signedIn) {
-      void navigate({ to: '/login', search: { next: '/account' } })
+      rememberPendingSaveSearch(label, payload)
+      rememberAuthNext('home')
+      void navigate({ to: '/login', search: { next: 'home' } })
       return
     }
     const token = await readAccessToken()
     if (!token) {
-      void navigate({ to: '/login', search: { next: '/account' } })
+      rememberPendingSaveSearch(label, payload)
+      rememberAuthNext('home')
+      void navigate({ to: '/login', search: { next: 'home' } })
       return
     }
-    const payload = buildSavedSearchPayload(filters, activeArea)
-    const label = labelSavedSearch(payload)
     setSaveBusy(true)
     setSaveNote(null)
     const result = await saveBuyerSearch({
       data: { accessToken: token, label, payload },
     })
     setSaveBusy(false)
+    if (result.ok) clearPendingSaveSearch()
     setSaveNote(result.ok ? 'Search saved.' : 'Could not save that search.')
+  }
+
+  async function handleShowingIntent() {
+    const listing = selectedListing
+    if (!listing || showingBusy) return
+    if (!signedIn) {
+      void navigate({
+        to: '/listing/$listingId',
+        params: { listingId: listing.id },
+      })
+      return
+    }
+    setShowingBusy(true)
+    setShowingNote(null)
+    const token = await readAccessToken()
+    if (!token) {
+      setShowingBusy(false)
+      rememberAuthNext(`listing:${listing.id}`)
+      void navigate({
+        to: '/login',
+        search: { next: `listing:${listing.id}` },
+      })
+      return
+    }
+    const result = await requestBuyerShowing({
+      data: { accessToken: token, listingId: listing.id },
+    })
+    setShowingBusy(false)
+    setShowingNote(
+      result.ok
+        ? result.already
+          ? 'Nick already has this request.'
+          : 'Nick will submit this showing request.'
+        : 'Could not send that request.'
+    )
   }
 
   function applyAreaFocus(focus: AikenAreaFocus) {
@@ -324,6 +379,7 @@ function Home() {
 
   function handleActivateRou(listing: Listing) {
     setSelectedListing(listing)
+    setShowingNote(null)
     if (!hasSeenRouCardIntro()) {
       setShowRouIntro(true)
     }
@@ -332,6 +388,7 @@ function Home() {
   function handleClearRou() {
     setSelectedListing(null)
     setRouteOverlay(null)
+    setShowingNote(null)
   }
 
   async function handleAmenityIntent(kind: 'playground' | 'school' | 'grocery') {
@@ -442,19 +499,27 @@ function Home() {
     async function load() {
       setLoading(true)
       try {
-        const { data, error } = await supabase.rpc('get_listings_with_coords', {
-          p_property_type: 'Residential',
-        })
+        const [listResult, officeResult] = await Promise.all([
+          supabase.rpc('get_listings_with_coords', {
+            p_property_type: 'Residential',
+          }),
+          supabase.rpc('get_listing_office_names'),
+        ])
         if (cancelled) return
 
-        if (error || !data) {
-          console.error(error)
+        if (listResult.error || !listResult.data) {
+          console.error(listResult.error)
           setListings([])
           return
         }
 
-        const filtered = filterListings(data as Listing[], filters)
-        setListings(filtered)
+        const filtered = filterListings(listResult.data as Listing[], filters)
+        setListings(
+          mergeListingOfficeNames(
+            filtered,
+            parseListingOfficeRows(officeResult.data)
+          )
+        )
       } catch (err) {
         console.error(err)
         setListings([])
@@ -496,12 +561,64 @@ function Home() {
   }, [returnListingId, listings])
 
   useEffect(() => {
+    if (pendingSaveRestoredRef.current) return
+    const pending = readPendingSaveSearch()
+    if (!pending) return
+    pendingSaveRestoredRef.current = true
+    setFilters(filtersFromPayload(pending.payload))
+    setShowResults(true)
+    setSelectedListing(null)
+    setRouteOverlay(null)
+    if (pending.payload.area) applyAreaFocus(pending.payload.area)
+  }, [])
+
+  useEffect(() => {
+    if (!signedIn || pendingSaveSentRef.current) return
+    const pending = readPendingSaveSearch()
+    if (!pending) return
+    pendingSaveSentRef.current = true
+    let cancelled = false
+    void (async () => {
+      const token = await readAccessToken()
+      if (!token || cancelled) {
+        pendingSaveSentRef.current = false
+        return
+      }
+      setSaveBusy(true)
+      setSaveNote(null)
+      const result = await saveBuyerSearch({
+        data: {
+          accessToken: token,
+          label: pending.label,
+          payload: pending.payload,
+        },
+      })
+      if (cancelled) return
+      setSaveBusy(false)
+      if (result.ok) {
+        clearPendingSaveSearch()
+        setSaveNote('Search saved.')
+      } else {
+        pendingSaveSentRef.current = false
+        setSaveNote('Could not save that search.')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [signedIn])
+
+  useEffect(() => {
     if (!savedSearchId || appliedSavedRef.current === savedSearchId) return
     let cancelled = false
     void (async () => {
       const token = await readAccessToken()
       if (!token) {
-        void navigate({ to: '/login', search: { next: '/account' } })
+        rememberAuthNext(`saved:${savedSearchId}`)
+        void navigate({
+          to: '/login',
+          search: { next: `saved:${savedSearchId}` },
+        })
         return
       }
       const rows = await listBuyerSearches({ data: { accessToken: token } })
@@ -794,6 +911,7 @@ function Home() {
                   {visibleListings.map((listing) => {
                     const isRouActive = selectedListing?.id === listing.id
                     const listingLabel = listing.address || 'this Aiken listing'
+                    const courtesy = formatListingCourtesy(listing.list_office_name)
 
                     return (
                       <div
@@ -844,6 +962,11 @@ function Home() {
                               <span className="text-slate-300">·</span>
                               <span>{listing.baths || 0} bath</span>
                             </div>
+                            {courtesy && (
+                              <p className="mt-1 truncate text-sm text-brand-navy">
+                                {courtesy}
+                              </p>
+                            )}
                           </div>
                         </Link>
                         <div className="flex items-center justify-end border-t border-brand-navy/10 px-3 py-2">
@@ -877,6 +1000,42 @@ function Home() {
                               {isRouActive ? 'Rou active · clear' : 'Ask Rou'}
                             </button>
                           </div>
+                        {isRouActive && (
+                          <div className="border-t border-brand-navy/10 px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={() => void handleShowingIntent()}
+                              disabled={showingBusy}
+                              aria-label={
+                                signedIn
+                                  ? `Request a showing of ${listingLabel}`
+                                  : `Schedule a showing of ${listingLabel}`
+                              }
+                              className="w-full rounded-md border border-brand-navy/20 bg-brand-cream px-3 py-2 text-sm font-semibold text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold disabled:opacity-60"
+                            >
+                              {showingBusy
+                                ? 'Sending…'
+                                : signedIn
+                                  ? 'Request a showing'
+                                  : 'Schedule a showing'}
+                            </button>
+                            {showingNote && (
+                              <p
+                                className="mt-2 text-sm text-brand-navy"
+                                role="status"
+                              >
+                                {showingNote}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {isRouActive && (
+                          <RouThumbs
+                            variant="card"
+                            listingId={listing.id}
+                            address={listingLabel}
+                          />
+                        )}
                       </div>
                     )
                   })}
@@ -909,6 +1068,12 @@ function Home() {
         origin={rouOrigin}
         onAmenityIntent={handleAmenityIntent}
         onNamedPlaceQuery={handleNamedPlaceQuery}
+        onShowingIntent={() => void handleShowingIntent()}
+        showingHint={
+          signedIn
+            ? 'Nick will submit this showing request.'
+            : 'I’ll open this home so you can schedule with Nick.'
+        }
       />
     </div>
   )

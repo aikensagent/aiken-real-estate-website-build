@@ -2,15 +2,22 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState, type FormEvent } from 'react'
 import { requestMagicLink, useBuyerSignedIn } from '../lib/auth-browser'
 import { isLikelyEmail } from '../lib/auth-email'
+import {
+  authNextTarget,
+  parseAuthNext,
+  rememberAuthNext,
+  serializeAuthNext,
+} from '../lib/auth-next'
 
 type LoginSearch = {
   next?: string
 }
 
 export const Route = createFileRoute('/login')({
-  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-    next: search.next === '/account' ? '/account' : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): LoginSearch => {
+    if (typeof search.next !== 'string' || !search.next.trim()) return {}
+    return { next: serializeAuthNext(parseAuthNext(search.next)) }
+  },
   head: () => ({
     meta: [{ title: 'Sign in | Nick Williams' }],
   }),
@@ -29,8 +36,8 @@ function LoginPage() {
 
   useEffect(() => {
     if (!signedIn) return
-    void navigate({ to: '/account' })
-  }, [signedIn, navigate])
+    void navigate(authNextTarget(next))
+  }, [signedIn, navigate, next])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -45,9 +52,12 @@ function LoginPage() {
     }
     setBusy(true)
     setError(null)
+    rememberAuthNext(next)
     const redirectTo =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/auth/callback${next ? `?next=${next}` : ''}`
+        ? `${window.location.origin}/auth/callback${
+            next ? `?next=${encodeURIComponent(next)}` : ''
+          }`
         : ''
     const result = await requestMagicLink(email, redirectTo)
     setBusy(false)
@@ -84,10 +94,9 @@ function LoginPage() {
           Open your dashboard
         </h1>
         <p className="mt-2 text-brand-slate">
-          We’ll email a sign-in link. If you already clicked one in this
-          browser, this page opens the dashboard — you don’t need another
-          email. Gholi keeps rated homes and trash with this account; Rou
-          stays on the public map.
+          We’ll email a sign-in link. No password. After you tap it, we bring
+          you back to where you left off. Gholi keeps rated homes and trash
+          with this account; Rou stays on the public map.
         </p>
 
         {sent ? (

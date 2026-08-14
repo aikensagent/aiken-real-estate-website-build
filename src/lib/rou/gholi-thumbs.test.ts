@@ -27,6 +27,9 @@ describe('Gholi account thumbs', () => {
     expect(blob.toLowerCase()).not.toContain('family')
     expect(blob.toLowerCase()).not.toContain('safe neighborhood')
     expect(blob.toLowerCase()).not.toContain('demographic')
+    expect(blob.toLowerCase()).not.toContain('want nick')
+    expect(blob.toLowerCase()).not.toContain('speak to nick')
+    expect(blob.toLowerCase()).not.toContain('follow up on this')
   })
 
   it('stores an explicit up/down excerpt and reads it back', () => {
@@ -65,15 +68,30 @@ describe('Gholi account thumbs', () => {
     expect(book.ratedListingIds).toEqual([keep])
     expect(book.trashedListingIds).toEqual([dump])
   })
+
+  it('restores a trashed home when the trash excerpt is no longer a down vote', () => {
+    const listing = listingId
+    const book = notebookFromNotes([
+      { note_key: `thumb:${listing}:keep_favorite`, excerpt: 'up | keep', is_active: true },
+      {
+        note_key: `trash:${listing}`,
+        excerpt: 'up | Restored this listing',
+        is_active: true,
+      },
+    ])
+    expect(book.trashedListingIds).toEqual([])
+    expect(book.ratedListingIds).toEqual([listing])
+  })
 })
 
 describe('Rou listing thumbs isolation', () => {
-  it('puts Yes/No on the listing page as Rou, not on /account or ChatWidget', () => {
+  it('puts Yes/No on the listing page and opened map card as Rou, not on /account or ChatWidget', () => {
     const account = readFileSync(join(here, '../../routes/account.tsx'), 'utf8')
     const listing = readFileSync(
       join(here, '../../routes/listing.$listingId.tsx'),
       'utf8'
     )
+    const cards = readFileSync(join(here, '../../routes/index.tsx'), 'utf8')
     const thumbs = readFileSync(
       join(here, '../../components/RouThumbs.tsx'),
       'utf8'
@@ -88,17 +106,28 @@ describe('Rou listing thumbs isolation', () => {
     expect(account).toContain('Rated homes')
     expect(account).toContain('Trash')
     expect(account).toContain('Saved searches')
+    expect(account).toContain('Showing requests')
+    expect(account).toContain('listBuyerShowings')
     expect(account).toContain('listGholiNotebook')
     expect(account).toContain('resolveBuyerAccount')
     expect(account).toContain("to: '/login'")
     expect(account).not.toContain('recordGholiThumb')
+    expect(account).toContain('restoreGholiListing')
+    expect(account).toContain('Restore')
     expect(account).not.toMatch(/from ['"][^'"]*ChatWidget['"]/)
     expect(account).not.toMatch(/from ['"][^'"]*RouThumbs['"]/)
     expect(account).not.toMatch(/from ['"][^'"]*rou\/node-a['"]/)
     expect(account).not.toMatch(/from ['"][^'"]*supabase['"]/)
     expect(listing).toContain('RouThumbs')
     expect(listing).not.toContain('Tell Gholi')
+    expect(cards).toContain('RouThumbs')
+    expect(cards).toContain('variant="card"')
+    expect(cards).toContain('isRouActive &&')
+    expect(cards).not.toMatch(/from ['"][^'"]*rou\/node-a['"]/)
     expect(thumbs).toContain('Tell Rou what you think')
+    expect(thumbs).toContain("variant?: 'page' | 'card'")
+    expect(thumbs).toContain('Save this home')
+    expect(thumbs).toContain("vote('keep_favorite', 'up')")
     expect(thumbs).toContain('Back to search')
     expect(thumbs).toContain('search={{ listingId }}')
     expect(thumbs).toContain('recordGholiThumb')
@@ -106,6 +135,7 @@ describe('Rou listing thumbs isolation', () => {
     expect(thumbs).not.toContain('Tell Gholi')
     expect(thumbs).not.toContain('GHOLI_DISPLAY_NAME')
     expect(widget).not.toContain('recordGholiThumb')
+    expect(widget).not.toContain('restoreGholiListing')
     expect(widget).not.toContain('GHOLI_THUMB_QUESTION_POOL')
     expect(widget).not.toContain('RouThumbs')
   })

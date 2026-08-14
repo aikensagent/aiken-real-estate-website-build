@@ -61,7 +61,7 @@ export function RouOrb({
         }}
         aria-label={panelsOpen ? 'Rou' : 'Open Rou'}
         aria-expanded={panelsOpen}
-        className="pointer-events-auto relative h-20 w-20 overflow-hidden rounded-full bg-brand-navy shadow-lg ring-2 ring-brand-gold/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold md:h-24 md:w-24"
+        className="pointer-events-auto relative h-20 w-20 overflow-hidden rounded-full bg-brand-navy shadow-lg ring-2 ring-brand-gold/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold md:h-28 md:w-28"
       >
         <img
           src={gholiPortrait}

@@ -1,6 +1,7 @@
 /**
  * Shared listing-thumb notebook.
- * Rou asks Yes/No on the public listing page. Gholi reads the same notes
+ * Rou asks Yes/No on the public listing page and the opened map card.
+ * Gholi reads the same notes
  * on /account. ChatWidget must not import this into the map chat path.
  * Max 5 questions per home, no free-text, no Fair Housing probes.
  */
@@ -23,7 +24,7 @@ export const GHOLI_THUMB_QUESTION_POOL: ThumbQuestion[] = [
   { id: 'keep_favorite', prompt: 'Should I keep this one as a favorite?' },
   { id: 'layout', prompt: 'Do the beds and baths fit what you need?' },
   { id: 'condition', prompt: 'Does this home feel like the right condition?' },
-  { id: 'nick_followup', prompt: 'Want Nick to follow up on this one?' },
+  { id: 'nick_followup', prompt: 'Is the commute from here workable for you?' },
 ]
 
 export function isThumbQuestionId(value: string): boolean {
@@ -87,6 +88,17 @@ export function votesFromNotes(
   return votes
 }
 
+export function formatTrashExcerpt(trashed: boolean): string {
+  return trashed
+    ? formatThumbExcerpt('down', 'Trashed this listing')
+    : formatThumbExcerpt('up', 'Restored this listing')
+}
+
+export function isActiveTrashExcerpt(excerpt: string | undefined): boolean {
+  if (excerpt == null || excerpt.trim() === '') return true
+  return excerpt.startsWith('down |')
+}
+
 export type GholiNotebook = {
   ratedListingIds: string[]
   trashedListingIds: string[]
@@ -98,7 +110,7 @@ const TRASH_IN_KEY =
   /^trash:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
 
 export function notebookFromNotes(
-  notes: Array<{ note_key: string; is_active?: boolean }>
+  notes: Array<{ note_key: string; excerpt?: string; is_active?: boolean }>
 ): GholiNotebook {
   const rated = new Set<string>()
   const trashed = new Set<string>()
@@ -107,7 +119,7 @@ export function notebookFromNotes(
     const thumb = note.note_key.match(LISTING_IN_KEY)
     if (thumb?.[1]) rated.add(thumb[1])
     const dump = note.note_key.match(TRASH_IN_KEY)
-    if (dump?.[1]) trashed.add(dump[1])
+    if (dump?.[1] && isActiveTrashExcerpt(note.excerpt)) trashed.add(dump[1])
   }
   const trashedListingIds = [...trashed]
   return {

@@ -72,6 +72,7 @@ describe('Aegis perimeter', () => {
   it('allows Node A public PostGIS RPCs and blocks memory RPCs', () => {
     expect(() => assertNodeARpc('get_listings_with_coords')).not.toThrow()
     expect(() => assertNodeARpc('public.get_nearby_listings')).not.toThrow()
+    expect(() => assertNodeARpc('get_listing_office_names')).not.toThrow()
     expect(() => assertNodeARpc('get_lead_memory')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('upsert_personal_note')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('save_conversation_summary')).toThrow(/blocked from memory RPC/)
@@ -142,12 +143,20 @@ describe('Node A transient map state', () => {
 })
 
 describe('two-tier isolation and degradation', () => {
-  it('loads public listings through get_listings_with_coords only', async () => {
+  it('loads public listings through get_listings_with_coords and office names', async () => {
     const calls: string[] = []
     const rpc: RpcCaller = async (name) => {
       calls.push(name)
       if (name === 'get_lead_memory') {
         throw new Error('memory rpc must not be reachable')
+      }
+      if (name === 'get_listing_office_names') {
+        return {
+          data: [
+            { id: '1', list_office_name: 'Example Realty Group' },
+          ],
+          error: null,
+        }
       }
       return {
         data: [{ id: '1', address: '215 Barnard Avenue SE', lng: -81.72, lat: 33.55 }],
@@ -156,8 +165,9 @@ describe('two-tier isolation and degradation', () => {
     }
     const nodeA = createInterfaceRou(rpc)
     const listings = await nodeA.loadPublicListings()
-    expect(calls).toEqual(['get_listings_with_coords'])
+    expect(calls).toEqual(['get_listings_with_coords', 'get_listing_office_names'])
     expect(listings[0]?.address).toContain('Barnard')
+    expect(listings[0]?.list_office_name).toBe('Example Realty Group')
   })
 
   it('rejects a Node A caller that tries to hit a memory RPC', async () => {

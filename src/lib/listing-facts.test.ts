@@ -5,6 +5,8 @@ import {
   extractListingPhotos,
   extractPublicListingFacts,
   formatListingCourtesy,
+  mergeListingOfficeNames,
+  parseListingOfficeRows,
   isListingId,
   PUBLIC_RESO_SELECT,
   formatCountyRecordsBlock,
@@ -137,6 +139,23 @@ describe('listing office courtesy', () => {
     expect(formatListingCourtesy('Example Realty Group')).not.toContain(
       'Best Life'
     )
+  })
+
+  it('merges office names onto listings and ignores empty rows', () => {
+    const merged = mergeListingOfficeNames(
+      [
+        { id: 'a', list_office_name: null },
+        { id: 'b', list_office_name: null },
+      ],
+      parseListingOfficeRows([
+        { id: 'a', list_office_name: 'Example Realty Group' },
+        { id: 'c', list_office_name: 'Other' },
+        { id: '', list_office_name: 'Nope' },
+        { list_office_name: 'Nope' },
+      ])
+    )
+    expect(merged[0]?.list_office_name).toBe('Example Realty Group')
+    expect(merged[1]?.list_office_name).toBeNull()
   })
 
   it('ignores agent and owner names in the MLS blob', () => {

@@ -9,13 +9,19 @@ import {
 } from '../lib/rou/gholi-thumbs'
 import { GHOLI_DISPLAY_NAME, GHOLI_TITLE } from '../lib/rou/gholi-persona'
 import { getListingDetail } from './api/-listing-detail'
-import { listGholiNotebook } from './api/-gholi-thumbs'
+import { listGholiNotebook, restoreGholiListing } from './api/-gholi-thumbs'
 import { deleteBuyerSearch, listBuyerSearches } from './api/-saved-searches'
+import { listBuyerShowings } from './api/-showing-requests'
+import { formatShowingRequestedAt } from '../lib/showing-requests'
 
 type ListingCard = {
   id: string
   address: string | null
   price: number | null
+}
+
+type ShowingCard = ListingCard & {
+  requestedAt: string
 }
 
 export const Route = createFileRoute('/account')({
@@ -37,6 +43,9 @@ function GholiDashboardPage() {
   const [ratedCards, setRatedCards] = useState<ListingCard[]>([])
   const [trashCards, setTrashCards] = useState<ListingCard[]>([])
   const [savedSearches, setSavedSearches] = useState<SavedSearchRow[]>([])
+  const [showingCards, setShowingCards] = useState<ShowingCard[]>([])
+  const [restoringId, setRestoringId] = useState<string | null>(null)
+  const [notebookTick, setNotebookTick] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -51,8 +60,25 @@ function GholiDashboardPage() {
       setReady(true)
       void readAccessToken().then((token) => {
         if (!token || cancelled) return
-        return listBuyerSearches({ data: { accessToken: token } }).then((rows) => {
-          if (!cancelled) setSavedSearches(rows)
+        return Promise.all([
+          listBuyerSearches({ data: { accessToken: token } }),
+          listBuyerShowings({ data: { accessToken: token } }),
+        ]).then(async ([rows, showings]) => {
+          if (cancelled) return
+          setSavedSearches(rows)
+          const cards = await loadCards(showings.map((row) => row.listingId))
+          if (cancelled) return
+          const byId = new Map(cards.map((card) => [card.id, card]))
+          setShowingCards(
+            showings.map((row) => ({
+              ...(byId.get(row.listingId) ?? {
+                id: row.listingId,
+                address: null,
+                price: null,
+              }),
+              requestedAt: row.createdAt,
+            }))
+          )
         })
       })
     })
@@ -78,7 +104,17 @@ function GholiDashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [sessionKey])
+  }, [sessionKey, notebookTick])
+
+  async function handleRestore(listingId: string) {
+    if (!sessionKey || restoringId) return
+    setRestoringId(listingId)
+    const result = await restoreGholiListing({
+      data: { sessionKey, listingId },
+    })
+    setRestoringId(null)
+    if (result.ok) setNotebookTick((n) => n + 1)
+  }
 
   return (
     <div className="min-h-screen bg-brand-cream">
@@ -134,8 +170,8 @@ function GholiDashboardPage() {
               Your dashboard
             </h1>
             <p className="mt-2 text-brand-slate">
-              Gholi keeps what you already told Rou — rated homes and a trash
-              bin. The public map stays with Rou.
+              Gholi keeps what you already told Rou — rated homes, showing
+              requests, and a trash bin. The public map stays with Rou.
             </p>
             {email && (
               <p className="mt-2 text-sm text-brand-slate">Signed in as {email}</p>
@@ -148,11 +184,59 @@ function GholiDashboardPage() {
             empty="No rated homes yet. Open a listing and answer Rou’s yes-or-no questions."
             cards={ratedCards}
           />
+          <section
+            className="rounded-lg border border-brand-navy/10 bg-white p-5"
+            aria-labelledby="gholi-showings-heading"
+          >
+            <h2
+              id="gholi-showings-heading"
+              className="text-lg font-semibold text-brand-navy"
+            >
+              Showing requests
+            </h2>
+            {showingCards.length === 0 ? (
+              <p className="mt-2 text-sm text-brand-slate">
+                No showing requests yet. Ask from a listing — Nick will submit
+                the request, and it will show up here.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {showingCards.map((card) => {
+                  const when = formatShowingRequestedAt(card.requestedAt)
+                  return (
+                    <li key={card.id}>
+                      <Link
+                        to="/listing/$listingId"
+                        params={{ listingId: card.id }}
+                        className="block rounded-md border border-brand-navy/10 px-3 py-2 text-sm text-brand-navy hover:border-brand-gold"
+                      >
+                        <span className="font-semibold">
+                          {card.address || 'Aiken listing'}
+                        </span>
+                        {card.price != null && (
+                          <span className="mt-0.5 block text-brand-slate">
+                            ${Number(card.price).toLocaleString()}
+                          </span>
+                        )}
+                        {when && (
+                          <span className="mt-0.5 block text-sm text-brand-slate">
+                            Requested {when}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </section>
           <DashboardList
             heading="Trash"
             headingId="gholi-trash-heading"
             empty="Nothing in the trash. A No on “keep as a favorite” lands here."
             cards={trashCards}
+            restoreBusyId={restoringId}
+            onRestore={(id) => void handleRestore(id)}
           />
         </div>
 
@@ -226,11 +310,15 @@ function DashboardList({
   headingId,
   empty,
   cards,
+  restoreBusyId,
+  onRestore,
 }: {
   heading: string
   headingId: string
   empty: string
   cards: ListingCard[]
+  restoreBusyId?: string | null
+  onRestore?: (listingId: string) => void
 }) {
   return (
     <section
@@ -245,11 +333,11 @@ function DashboardList({
       ) : (
         <ul className="mt-3 space-y-3">
           {cards.map((card) => (
-            <li key={card.id}>
+            <li key={card.id} className="flex items-stretch gap-2">
               <Link
                 to="/listing/$listingId"
                 params={{ listingId: card.id }}
-                className="block rounded-md border border-brand-navy/10 px-3 py-2 text-sm text-brand-navy hover:border-brand-gold"
+                className="block min-w-0 flex-1 rounded-md border border-brand-navy/10 px-3 py-2 text-sm text-brand-navy hover:border-brand-gold"
               >
                 <span className="font-semibold">
                   {card.address || 'Aiken listing'}
@@ -260,6 +348,17 @@ function DashboardList({
                   </span>
                 )}
               </Link>
+              {onRestore && (
+                <button
+                  type="button"
+                  aria-label={`Restore ${card.address || 'this listing'} from trash`}
+                  disabled={restoreBusyId === card.id}
+                  onClick={() => onRestore(card.id)}
+                  className="shrink-0 rounded-md border border-brand-navy/20 bg-brand-cream px-3 py-2 text-sm font-semibold text-brand-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold disabled:opacity-60"
+                >
+                  {restoreBusyId === card.id ? 'Restoring…' : 'Restore'}
+                </button>
+              )}
             </li>
           ))}
         </ul>

@@ -16,6 +16,7 @@ export type Listing = {
   lat: number | null
   primary_photo_url: string | null
   property_type?: string | null
+  list_office_name?: string | null
 }
 
 /** Camera bbox from Mapbox `map.getBounds()` — west/south/east/north in WGS84. */

@@ -3,6 +3,7 @@ import { isListingId } from '../../lib/listing-facts'
 import { rouPersonaRouter } from '../../lib/rou/live'
 import {
   formatThumbExcerpt,
+  formatTrashExcerpt,
   GHOLI_THUMB_QUESTION_POOL,
   isThumbQuestionId,
   isThumbVote,
@@ -34,7 +35,8 @@ function questionPrompt(questionId: string): string {
 
 /**
  * Listing thumbs written by public Rou. Node B memory RPCs only.
- * ChatWidget must not call this — RouThumbs on the listing page does.
+ * ChatWidget must not call this — RouThumbs on the listing page and
+ * the opened map card does.
  */
 export const recordGholiThumb = createServerFn({ method: 'POST' })
   .validator((data: ThumbRequest) => data)
@@ -60,12 +62,12 @@ export const recordGholiThumb = createServerFn({ method: 'POST' })
     })
     if (!written.ok) return { ok: false as const }
 
-    if (data.questionId === 'keep_favorite' && data.vote === 'down') {
+    if (data.questionId === 'keep_favorite') {
       await rouPersonaRouter.companion.writeNote({
         sessionKey,
         category: 'property_interest',
         noteKey: trashNoteKey(data.listingId),
-        excerpt: formatThumbExcerpt('down', 'Trashed this listing'),
+        excerpt: formatTrashExcerpt(data.vote === 'down'),
         confidence: 0.95,
         source: 'user',
         updatedBy: 'account_holder',
@@ -73,6 +75,36 @@ export const recordGholiThumb = createServerFn({ method: 'POST' })
     }
 
     return { ok: true as const, vote: data.vote }
+  })
+
+export const restoreGholiListing = createServerFn({ method: 'POST' })
+  .validator((data: { sessionKey: string; listingId: string }) => data)
+  .handler(async ({ data }) => {
+    const sessionKey = data.sessionKey.trim()
+    if (!sessionKey || !isListingId(data.listingId)) return { ok: false as const }
+    const favorite = await rouPersonaRouter.companion.writeNote({
+      sessionKey,
+      category: 'property_interest',
+      noteKey: thumbNoteKey(data.listingId, 'keep_favorite'),
+      excerpt: formatThumbExcerpt(
+        'up',
+        questionPrompt('keep_favorite')
+      ),
+      confidence: 0.95,
+      source: 'user',
+      updatedBy: 'account_holder',
+    })
+    if (!favorite.ok) return { ok: false as const }
+    await rouPersonaRouter.companion.writeNote({
+      sessionKey,
+      category: 'property_interest',
+      noteKey: trashNoteKey(data.listingId),
+      excerpt: formatTrashExcerpt(false),
+      confidence: 0.95,
+      source: 'user',
+      updatedBy: 'account_holder',
+    })
+    return { ok: true as const }
   })
 
 export const listGholiThumbs = createServerFn({ method: 'GET' })

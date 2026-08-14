@@ -32,6 +32,8 @@ describe('RouOrb public visual', () => {
     expect(orb).toContain('aria-expanded')
     expect(orb).toContain('top-16')
     expect(orb).toContain('right-4')
+    expect(orb).toContain('h-20 w-20')
+    expect(orb).toContain('md:h-28 md:w-28')
     expect(orb).toContain('items-end')
     expect(orb).not.toContain('bottom-4')
     expect(orb).not.toContain('left-4')

@@ -32,7 +32,7 @@
 
 ### Rou public UX
 4. **LOCK (shipped)** — First open of a property card → one-time **Introducing Rou** dialog (neighborhood-fit framing + example asks); dismissible; localStorage so it does not nag every card.
-5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Will feel cleaner once full property-card detail exists.
+5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Opened-card Yes/No thumbs shipped 2026-08-13 (same notebook as `/listing/:id`).
 11. Visual walk/drive route lines (with #3). **Shipped** — both paths at once: red dotted walk + solid drive; walk/drive icon+time pills on the lines; no separate route box.
 12. Public Rou visual — **REVISE 2026-08-13**: talking-head video + broadcast CC. Live slice is still `RouOrb` with TEMP `gholi-avatar.jpg` (workbench). Not the ship plate.
 13. Clickable chips after activate (schools / grocery / park…). **Shipped** with activate greeting.
@@ -60,7 +60,7 @@
 19. Comparison mode (side-by-side) — with #9.
 20. “What should I know about this area?” — only with real curated area notes (don’t invent).
 22. Hesitation / objection prompts — easy to feel pushy; after activate + mute-safe UI trusted.
-28. **Listing-office credit (IDX / MLS)** — **partial 2026-08-13**. Listing detail credits `ListOfficeName` via `formatListingCourtesy`. No Nick default. Map-card courtesy still later. Redeploy `mls-ingest`.
+28. **Listing-office credit (IDX / MLS)** — **partial 2026-08-13**. Detail page, search cards, and pin popups credit `ListOfficeName` in `text-sm` / 14px navy. Apply `20260813_listing_office_names.sql`. Redeploy `mls-ingest`.
 ---
 
 ## DROP

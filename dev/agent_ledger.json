@@ -2358,5 +2358,323 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Listing courtesy of ListOfficeName on the detail page. Redeploy mls-ingest."
+  },
+  {
+    "timestamp": "2026-08-14T02:22:00Z",
+    "task_id": "IDX_MAP_CARD_OFFICE_CREDIT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/components/Map.tsx",
+      "src/lib/rou/node-a.ts",
+      "src/lib/rou/perimeter.ts",
+      "supabase/migrations/20260813_listing_office_names.sql"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "New SECURITY DEFINER get_listing_office_names. Node A loads it beside get_listings_with_coords. Map RPC unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Office RPC returns id + ListOfficeName only. Popup HTML escaped. No agent/owner. Courtesy omitted when empty. Never Nick default.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Merge helper tests. Node A calls both RPCs. Cards and Map assert formatListingCourtesy. Office RPC failure does not empty the map.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Search cards and pin popups credit ListOfficeName. Apply 20260813_listing_office_names.sql."
+  },
+  {
+    "timestamp": "2026-08-14T02:47:00Z",
+    "task_id": "IDX_COURTESY_MEDIAN_TYPEFACE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/components/Map.tsx",
+      "src/routes/listing.$listingId.tsx",
+      "src/lib/listing-page.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No schema change. Courtesy typeface matches card median: text-sm on list cards, 14px on pin popups. Map RPC and office RPC unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Still ListOfficeName only. Empty office still omits the line. Never defaults to Nick. Popup HTML still escaped. No agent or owner fields.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Locked card class text-sm text-brand-navy, popup 14px navy, detail courtesy navy. listing-page.test.ts asserts all three.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - IDX courtesy type is median-or-larger navy on cards, popups, and detail. Redeploy mls-ingest still required for names to appear."
+  },
+  {
+    "timestamp": "2026-08-14T02:56:00Z",
+    "task_id": "ROU_OPENED_CARD_THUMBS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouThumbs.tsx",
+    "supporting_files": [
+      "src/routes/index.tsx",
+      "src/lib/rou/gholi-thumbs.test.ts",
+      "src/routes/api/-gholi-thumbs.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new RPC. Opened card reuses listGholiThumbs / recordGholiThumb. Mount only when Rou is active so idle cards do not N+1 the notebook.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Same Node B memory path. ChatWidget still cannot import thumbs. Node A still has no memory RPC. Question pool unchanged — no Fair Housing probes.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Isolation tests lock variant=card on index, isRouActive gate, no ChatWidget/account/node-a import. Page variant still has Back to search.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Opened map card asks one Yes/No at a time into the same Gholi notebook as the listing page."
+  },
+  {
+    "timestamp": "2026-08-14T03:08:00Z",
+    "task_id": "BUYER_AUTH_RETURN_TO_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/auth-next.ts",
+    "supporting_files": [
+      "src/routes/login.tsx",
+      "src/routes/auth.callback.tsx",
+      "src/routes/index.tsx",
+      "src/lib/saved-search.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new table. sessionStorage pending save payload + allowlisted next. Callback peeks next if Supabase drops the query string.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "parseAuthNext allowlist only: account, home, listing uuid, saved uuid. https, //, and relative paths fall back to /account. No email in pending payload.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "auth-next.test.ts locks allowlist and open-redirect rejects. Login/callback/home source locks for rememberAuthNext and pending save.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Magic link returns to the map, listing, saved search, or dashboard. Sign in to save restores and writes the search."
+  },
+  {
+    "timestamp": "2026-08-14T03:14:00Z",
+    "task_id": "GHOLI_DASHBOARD_SHOWINGS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/account.tsx",
+    "supporting_files": [
+      "src/routes/api/-showing-requests.ts",
+      "src/lib/showing-requests.ts",
+      "src/lib/showing-request.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new table. Dashboard reads existing list_buyer_showings. One row per home. Multi-select compare still later.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "JWT buyerUserClient only. Parse allowlists uuid id + listing_id. RPC error returns []. Account still has no supabase or Node A import.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Parse drops junk rows. Account and API source-lock listBuyerShowings and Showing requests heading.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Gholi dashboard lists showing requests the buyer already sent Nick."
+  },
+  {
+    "timestamp": "2026-08-14T03:18:00Z",
+    "task_id": "ROU_SILENT_SAVE_HOME_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouThumbs.tsx",
+    "supporting_files": [
+      "src/lib/rou/gholi-thumbs.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new RPC. Save this home writes keep_favorite up through recordGholiThumb. Same notebook Gholi already reads.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No extra consent form. Visitor session key only. ChatWidget still cannot import thumbs. Un-trash of a prior No is not this slice.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Isolation test locks Save this home and keep_favorite up. Page and opened-card variants share the button.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - One-tap Save this home on the listing page and opened map card."
+  },
+  {
+    "timestamp": "2026-08-14T03:23:00Z",
+    "task_id": "ROU_ORB_RESTORE_FAB_SIZE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/lib/rou/rou-orb.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Position stays top-right under the navy bar. Circle restored to pre-move FAB size: h-20 / md:h-28.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No identity or session change. TEMP portrait remains workbench-only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "rou-orb.test.ts locks h-20 w-20 and md:h-28 md:w-28.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou orb desktop size restored to the pre-move FAB (112px)."
+  },
+  {
+    "timestamp": "2026-08-14T03:28:00Z",
+    "task_id": "MAP_CARD_SHOWING_REQUEST_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/lib/showing-request.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new RPC. Opened card and Schedule a showing chip reuse request_buyer_showing. Guests navigate to the listing form.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "JWT path only when signed in. No consent repeat. Guest does not write showing_requests. ChatWidget still does not import thumbs or Node A.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "showing-request.test.ts locks index onShowingIntent, requestBuyerShowing, and Request a showing behind isRouActive.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Opened map card and Rou chip can request a showing without opening the listing first."
+  },
+  {
+    "timestamp": "2026-08-14T03:33:00Z",
+    "task_id": "GHOLI_TRASH_RESTORE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/account.tsx",
+    "supporting_files": [
+      "src/lib/rou/gholi-thumbs.ts",
+      "src/routes/api/-gholi-thumbs.ts",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new table. Restore upserts trash excerpt to up | Restored. Save this home keep_favorite up does the same. Listing header uses SiteAccountLink.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Dashboard restore is Node B session-key only. Account still cannot import recordGholiThumb or ChatWidget. Empty excerpt still counts as trash.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Notebook test: restored excerpt leaves rated. Isolation locks Restore on account. Listing page locks SiteAccountLink.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Dashboard Restore and Save this home pull a listing out of trash."
+  },
+  {
+    "timestamp": "2026-08-14T03:40:00Z",
+    "task_id": "ROU_SHOWING_NICK_SUBMITS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/rou-public-persona.ts",
+    "supporting_files": [
+      "src/lib/rou/gholi-persona.ts",
+      "src/lib/rou/gholi-thumbs.ts",
+      "src/routes/index.tsx",
+      "src/routes/listing.$listingId.tsx",
+      "src/routes/account.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new RPC. Showing still uses request_buyer_showing. Rou states Nick will submit; she does not offer a speak-to-Nick yes/no.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No new write path. Fair Housing thumbs no longer ask Want Nick. ChatWidget AI-failure handoff stays on refused/fail only, not the showing path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Persona tests lock Nick will submit the showing request and forbid hand-off/connect/speak-to-Nick asks. Thumbs blob forbids Want Nick. Showing success copy locked on the map.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou tells them Nick will submit the showing request. She does not ask if they want to speak to him."
   }
 ]

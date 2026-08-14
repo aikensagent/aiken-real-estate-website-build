@@ -30,6 +30,10 @@ describe('Rou public persona profile', () => {
     expect(ROU_SYSTEM_PROMPT).toContain('COUNTY RECORDS')
     expect(ROU_SYSTEM_PROMPT).toContain('listing office')
     expect(ROU_SYSTEM_PROMPT).toContain('Do not say Nick Williams or Coldwell Banker Best Life Realty listed it')
+    expect(ROU_SYSTEM_PROMPT).toContain('Nick will submit the showing request')
+    expect(ROU_SYSTEM_PROMPT).toContain('Do not ask if they want to speak to Nick')
+    expect(ROU_SYSTEM_PROMPT).not.toContain('hand off to Nick Williams')
+    expect(ROU_SYSTEM_PROMPT).not.toContain('offer to connect them with Nick')
   })
 
   it('matches the context matrix utility node', () => {

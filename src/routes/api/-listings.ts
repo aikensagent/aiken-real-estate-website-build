@@ -4,7 +4,7 @@ import { assertNodeARpc } from '../../lib/rou/perimeter'
 
 /**
  * Node A public listing pipeline.
- * Bound to get_listings_with_coords only. Memory RPCs are rejected
+ * Bound to get_listings_with_coords plus listing office names. Memory RPCs are rejected
  * at the perimeter before any network call.
  */
 export const getPublicListings = createServerFn({ method: 'GET' }).handler(

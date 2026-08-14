@@ -75,7 +75,8 @@
     "authorized_public_rpc_methods": [
       "public.capture_lead",
       "public.get_listings_with_coords",
-      "public.get_nearby_listings"
+      "public.get_nearby_listings",
+      "public.get_listing_office_names"
     ],
     "fair_housing": {
       "strict_enforcement": true,

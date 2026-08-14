@@ -101,3 +101,54 @@ export function filtersFromPayload(payload: SavedSearchPayload): SearchFilters {
     sqft: payload.sqft,
   }
 }
+
+export const PENDING_SAVE_SEARCH_KEY =
+  'searchaikenhomes:buyer:pending-save-search:v1'
+
+type PendingSaveSearch = {
+  v: 1
+  label: string
+  payload: SavedSearchPayload
+}
+
+function sessionStore(): Storage | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.sessionStorage
+  } catch {
+    return null
+  }
+}
+
+export function rememberPendingSaveSearch(
+  label: string,
+  payload: SavedSearchPayload
+) {
+  const row: PendingSaveSearch = {
+    v: 1,
+    label: label.slice(0, 80),
+    payload,
+  }
+  sessionStore()?.setItem(PENDING_SAVE_SEARCH_KEY, JSON.stringify(row))
+}
+
+export function readPendingSaveSearch(): {
+  label: string
+  payload: SavedSearchPayload
+} | null {
+  const raw = sessionStore()?.getItem(PENDING_SAVE_SEARCH_KEY)
+  if (!raw) return null
+  try {
+    const row = JSON.parse(raw) as PendingSaveSearch
+    if (row?.v !== 1 || typeof row.label !== 'string') return null
+    const payload = parseSavedSearchPayload(row.payload)
+    if (!payload) return null
+    return { label: row.label.slice(0, 80), payload }
+  } catch {
+    return null
+  }
+}
+
+export function clearPendingSaveSearch() {
+  sessionStore()?.removeItem(PENDING_SAVE_SEARCH_KEY)
+}

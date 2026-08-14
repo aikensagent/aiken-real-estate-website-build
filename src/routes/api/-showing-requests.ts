@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { buyerUserClient, isAccessToken } from '../../lib/buyer-user-client'
 import { isListingId } from '../../lib/listing-facts'
+import { parseBuyerShowingRows } from '../../lib/showing-requests'
 
 export const requestBuyerShowing = createServerFn({ method: 'POST' })
   .validator((data: { accessToken: string; listingId: string }) => data)
@@ -16,4 +17,15 @@ export const requestBuyerShowing = createServerFn({ method: 'POST' })
     if (error || !row || typeof row !== 'object') return { ok: false as const }
     const already = (row as { already?: unknown }).already === true
     return { ok: true as const, already }
+  })
+
+export const listBuyerShowings = createServerFn({ method: 'GET' })
+  .validator((data: { accessToken: string }) => data)
+  .handler(async ({ data }) => {
+    const token = data.accessToken.trim()
+    if (!isAccessToken(token)) return []
+    const client = buyerUserClient(token)
+    const { data: rows, error } = await client.rpc('list_buyer_showings')
+    if (error) return []
+    return parseBuyerShowingRows(rows)
   })
