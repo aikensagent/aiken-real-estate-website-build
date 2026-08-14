@@ -122,11 +122,11 @@ export const listGholiNotebook = createServerFn({ method: 'GET' })
   .handler(async ({ data }) => {
     const sessionKey = data.sessionKey.trim()
     if (!sessionKey) {
-      return { ratedListingIds: [], trashedListingIds: [] }
+      return { ratedListingIds: [], trashedListingIds: [], upVotes: 0, downVotes: 0 }
     }
     const memory = await rouPersonaRouter.companion.readMemory(sessionKey)
     if (!memory.ok) {
-      return { ratedListingIds: [], trashedListingIds: [] }
+      return { ratedListingIds: [], trashedListingIds: [], upVotes: 0, downVotes: 0 }
     }
     return notebookFromNotes(memory.data.notes)
   })

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  filterListings,
   filterListingsInBounds,
   isListingSort,
   listingInBounds,
@@ -108,5 +109,15 @@ describe('listing sort control', () => {
     expect(home).toContain('sortListings')
     expect(home).toContain('aria-label="Sort homes in view"')
     expect(home).not.toContain('school_rating')
+  })
+})
+
+describe('sqft filter', () => {
+  it('drops known undersized homes and keeps unknown sqft', () => {
+    const small = { ...home('small', -81.74, 33.56), sqft: 1200 }
+    const large = { ...home('large', -81.74, 33.56), sqft: 2400 }
+    const unknown = home('unknown', -81.74, 33.56)
+    const kept = filterListings([small, large, unknown], { sqft: '2000' })
+    expect(kept.map((row) => row.id)).toEqual(['large', 'unknown'])
   })
 })

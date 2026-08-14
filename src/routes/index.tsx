@@ -20,7 +20,9 @@ import {
 } from '../lib/filterListings'
 import {
   formatListingCourtesy,
+  mergeListingLivingAreas,
   mergeListingOfficeNames,
+  parseListingLivingAreaRows,
   parseListingOfficeRows,
 } from '../lib/listing-facts'
 import {
@@ -66,6 +68,7 @@ import {
 } from '../lib/saved-search'
 import { listBuyerSearches, saveBuyerSearch } from './api/-saved-searches'
 import { ListingCompareTray } from '../components/ListingCompareTray'
+import { SiteFooter } from '../components/SiteFooter'
 import {
   hydrateCompareIds,
   persistCompareIds,
@@ -523,11 +526,12 @@ function Home() {
     async function load() {
       setLoading(true)
       try {
-        const [listResult, officeResult] = await Promise.all([
+        const [listResult, officeResult, areaResult] = await Promise.all([
           supabase.rpc('get_listings_with_coords', {
             p_property_type: 'Residential',
           }),
           supabase.rpc('get_listing_office_names'),
+          supabase.rpc('get_listing_living_areas'),
         ])
         if (cancelled) return
 
@@ -537,13 +541,14 @@ function Home() {
           return
         }
 
-        const filtered = filterListings(listResult.data as Listing[], filters)
-        setListings(
+        const withFacts = mergeListingLivingAreas(
           mergeListingOfficeNames(
-            filtered,
+            listResult.data as Listing[],
             parseListingOfficeRows(officeResult.data)
-          )
+          ),
+          parseListingLivingAreaRows(areaResult.data)
         )
+        setListings(filterListings(withFacts, filters))
       } catch (err) {
         console.error(err)
         setListings([])
@@ -685,9 +690,12 @@ function Home() {
   }, [visibleListingKey])
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div id="main-content" className="min-h-screen bg-background flex flex-col">
       {!showResults ? (
-        <Hero onSearch={handleHeroSearch} />
+        <>
+          <Hero onSearch={handleHeroSearch} />
+          <SiteFooter />
+        </>
       ) : (
         <div className="flex h-dvh flex-col overflow-hidden">
           <div className="bg-brand-navy text-white px-4 py-3 flex items-center justify-between shrink-0">
@@ -819,6 +827,12 @@ function Home() {
                   {compareNote && (
                     <p className="text-xs text-brand-navy" role="status">
                       {compareNote}
+                    </p>
+                  )}
+                  {!selectedListing && (
+                    <p className="text-xs text-brand-slate">
+                      Tap Ask Rou on a home for playgrounds, schools, grocery, or
+                      a showing.
                     </p>
                   )}
                   <div className="md:hidden space-y-2">
@@ -1131,6 +1145,7 @@ function Home() {
       />
       <ChatWidget
         origin={rouOrigin}
+        areaLabel={activeArea?.label}
         onAmenityIntent={handleAmenityIntent}
         onNamedPlaceQuery={handleNamedPlaceQuery}
         onShowingIntent={() => void handleShowingIntent()}

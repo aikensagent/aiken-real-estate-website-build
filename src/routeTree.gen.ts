@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as FairHousingRouteImport } from './routes/fair-housing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ListingListingIdRouteImport } from './routes/listing.$listingId'
 
@@ -20,14 +23,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FairHousingRoute = FairHousingRouteImport.update({
+  id: '/fair-housing',
+  path: '/fair-housing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -43,45 +61,75 @@ const ListingListingIdRoute = ListingListingIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/fair-housing': typeof FairHousingRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/listing/$listingId': typeof ListingListingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/fair-housing': typeof FairHousingRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/listing/$listingId': typeof ListingListingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/fair-housing': typeof FairHousingRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/listing/$listingId': typeof ListingListingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account' | '/login' | '/auth/callback' | '/listing/$listingId'
+    | '/'
+    | '/about'
+    | '/account'
+    | '/fair-housing'
+    | '/login'
+    | '/privacy'
+    | '/auth/callback'
+    | '/listing/$listingId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/login' | '/auth/callback' | '/listing/$listingId'
+  to:
+    | '/'
+    | '/about'
+    | '/account'
+    | '/fair-housing'
+    | '/login'
+    | '/privacy'
+    | '/auth/callback'
+    | '/listing/$listingId'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/account'
+    | '/fair-housing'
     | '/login'
+    | '/privacy'
     | '/auth/callback'
     | '/listing/$listingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
+  FairHousingRoute: typeof FairHousingRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ListingListingIdRoute: typeof ListingListingIdRoute
 }
@@ -95,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account': {
       id: '/account'
       path: '/account'
@@ -102,11 +157,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fair-housing': {
+      id: '/fair-housing'
+      path: '/fair-housing'
+      fullPath: '/fair-housing'
+      preLoaderRoute: typeof FairHousingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -128,8 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
+  FairHousingRoute: FairHousingRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ListingListingIdRoute: ListingListingIdRoute,
 }

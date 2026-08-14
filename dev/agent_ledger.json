@@ -2741,5 +2741,57 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Visitors can compare up to four homes on listed facts only."
+  },
+  {
+    "timestamp": "2026-08-14T04:00:00Z",
+    "task_id": "PUBLIC_SITE_CHROME_AREA_NOTES_FIT_SQFT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/SiteFooter.tsx",
+    "supporting_files": [
+      "src/routes/about.tsx",
+      "src/routes/privacy.tsx",
+      "src/routes/fair-housing.tsx",
+      "src/lib/rou/area-notes.ts",
+      "supabase/migrations/20260814_listing_living_areas.sql",
+      "src/lib/rou/gholi-thumbs.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "living_area_rpc_missing",
+        "detection": "get_listing_living_areas 404 or error",
+        "isolation": "parseListingLivingAreaRows empty; unknown sqft stays visible; Node A catch returns office-merged listings"
+      },
+      {
+        "id": "area_notes_fair_housing",
+        "detection": "FAIR_HOUSING_PLACE_BLOCK or mentionsAreaNotes false on protected-class probes",
+        "isolation": "No AREA NOTES block; chat still refuses via checkFairHousing"
+      },
+      {
+        "id": "fit_percent_too_early",
+        "detection": "notebookFit percent null below 8 answers",
+        "isolation": "Dashboard shows ?% and home-fit copy only"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "SECURITY DEFINER get_listing_living_areas reads BuildingAreaTotal only. Merge like office names. Unknown sqft stays in the filtered set. Node A allowlist includes the RPC.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "RPC grants execute without owner/agent. Area notes refuse Fair Housing probes. Fit % is home-fit only. Privacy and Fair Housing pages are public chrome, not data collection.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "192/192 vitest. Locks chrome, sqft keep-unknown, notebookFit threshold, Hitchcock Woods notes, living-area merge, Node A RPC order.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public chrome, honest dashboard fit, curated area notes, and sqft filter shipped. Apply 20260814_listing_living_areas.sql. Redeploy mls-ingest. Do not push."
   }
 ]

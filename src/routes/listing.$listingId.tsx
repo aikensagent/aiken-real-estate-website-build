@@ -6,6 +6,7 @@ import { ListingPinMap } from '../components/ListingPinMap'
 import { RouThumbs } from '../components/RouThumbs'
 import { ListingCompareTray } from '../components/ListingCompareTray'
 import { SiteAccountLink } from '../components/SiteAccountLink'
+import { SiteFooter } from '../components/SiteFooter'
 import { readAccessToken, useBuyerSignedIn } from '../lib/auth-browser'
 import { requestBuyerShowing } from './api/-showing-requests'
 import type { PriceSnapshot } from '../lib/price-history'
@@ -134,6 +135,7 @@ function ListingPage() {
       </header>
 
       <main
+        id="main-content"
         className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.8fr)]"
         aria-labelledby="listing-heading"
       >
@@ -316,6 +318,7 @@ function ListingPage() {
             : 'The showing form is on this page. I’ll scroll you there.'
         }
       />
+      <SiteFooter />
     </div>
   )
 }

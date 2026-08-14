@@ -215,6 +215,37 @@ export function mergeListingOfficeNames<
   })
 }
 
+export type ListingLivingAreaRow = {
+  id: string
+  sqft: number
+}
+
+export function parseListingLivingAreaRows(data: unknown): ListingLivingAreaRow[] {
+  if (!Array.isArray(data)) return []
+  const rows: ListingLivingAreaRow[] = []
+  for (const item of data) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+    const rec = item as Record<string, unknown>
+    const id = typeof rec.id === 'string' ? rec.id.trim() : ''
+    const sqft = Number(rec.sqft)
+    if (!id || !Number.isFinite(sqft) || sqft < 100 || sqft > 100000) continue
+    rows.push({ id, sqft: Math.round(sqft) })
+  }
+  return rows
+}
+
+export function mergeListingLivingAreas<
+  T extends { id: string; sqft?: number | null },
+>(listings: T[], areas: ListingLivingAreaRow[]): T[] {
+  if (areas.length === 0) return listings
+  const byId = new Map(areas.map((row) => [row.id, row.sqft]))
+  return listings.map((listing) => {
+    const sqft = byId.get(listing.id)
+    if (sqft == null) return listing
+    return { ...listing, sqft }
+  })
+}
+
 function finiteNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string' && value.trim()) {

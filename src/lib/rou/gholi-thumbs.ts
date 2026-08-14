@@ -102,6 +102,39 @@ export function isActiveTrashExcerpt(excerpt: string | undefined): boolean {
 export type GholiNotebook = {
   ratedListingIds: string[]
   trashedListingIds: string[]
+  upVotes: number
+  downVotes: number
+}
+
+export const NOTEBOOK_FIT_MIN_ANSWERS = 8
+
+export type NotebookFit = {
+  answered: number
+  upVotes: number
+  downVotes: number
+  percent: number | null
+  label: string
+}
+
+export function notebookFit(book: GholiNotebook): NotebookFit {
+  const answered = book.upVotes + book.downVotes
+  if (answered < NOTEBOOK_FIT_MIN_ANSWERS) {
+    return {
+      answered,
+      upVotes: book.upVotes,
+      downVotes: book.downVotes,
+      percent: null,
+      label: `Not enough yes/no yet (${answered} of ${NOTEBOOK_FIT_MIN_ANSWERS}). This is home-fit, not a score of people or neighborhoods.`,
+    }
+  }
+  const percent = Math.round((100 * book.upVotes) / answered)
+  return {
+    answered,
+    upVotes: book.upVotes,
+    downVotes: book.downVotes,
+    percent,
+    label: `${percent}% yes on ${answered} home-fit answers. This is not a ranking of neighborhoods or who belongs.`,
+  }
 }
 
 const LISTING_IN_KEY =
@@ -122,9 +155,25 @@ export function notebookFromNotes(
     if (dump?.[1] && isActiveTrashExcerpt(note.excerpt)) trashed.add(dump[1])
   }
   const trashedListingIds = [...trashed]
+  let upVotes = 0
+  let downVotes = 0
+  for (const note of notes) {
+    if (note.is_active === false) continue
+    const vote = parseThumbVote(note.excerpt ?? '')
+    if (!vote) continue
+    if (note.note_key.startsWith('trash:')) {
+      if (vote === 'down') downVotes += 1
+      continue
+    }
+    if (!note.note_key.startsWith('thumb:')) continue
+    if (vote === 'up') upVotes += 1
+    else downVotes += 1
+  }
   return {
     ratedListingIds: [...rated].filter((id) => !trashed.has(id)),
     trashedListingIds,
+    upVotes,
+    downVotes,
   }
 }
 

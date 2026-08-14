@@ -56,9 +56,14 @@ export function Hero({ onSearch }: HeroProps) {
           className="mt-10 w-full max-w-md rounded-xl bg-white/95 p-3 shadow-xl backdrop-blur-sm sm:w-auto sm:max-w-none sm:p-3"
         >
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+            <label className="sr-only" htmlFor="hero-beds">
+              Minimum bedrooms
+            </label>
             <select
+              id="hero-beds"
               value={beds}
               onChange={(e) => setBeds(e.target.value)}
+              aria-label="Minimum bedrooms"
               className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
             >
               <option value="">Beds</option>
@@ -68,9 +73,14 @@ export function Hero({ onSearch }: HeroProps) {
               <option value="4">4+</option>
               <option value="5">5+</option>
             </select>
+            <label className="sr-only" htmlFor="hero-baths">
+              Minimum bathrooms
+            </label>
             <select
+              id="hero-baths"
               value={baths}
               onChange={(e) => setBaths(e.target.value)}
+              aria-label="Minimum bathrooms"
               className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
             >
               <option value="">Baths</option>
@@ -79,9 +89,14 @@ export function Hero({ onSearch }: HeroProps) {
               <option value="3">3+</option>
               <option value="4">4+</option>
             </select>
+            <label className="sr-only" htmlFor="hero-sqft">
+              Minimum square feet
+            </label>
             <select
+              id="hero-sqft"
               value={sqft}
               onChange={(e) => setSqft(e.target.value)}
+              aria-label="Minimum square feet"
               className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
             >
               <option value="">Sq Ft</option>
@@ -90,9 +105,14 @@ export function Hero({ onSearch }: HeroProps) {
               <option value="2500">2,500+</option>
               <option value="3000">3,000+</option>
             </select>
+            <label className="sr-only" htmlFor="hero-price">
+              Minimum price
+            </label>
             <select
+              id="hero-price"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
+              aria-label="Minimum price"
               className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
             >
               <option value="">Price</option>

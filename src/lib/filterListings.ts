@@ -2,7 +2,7 @@ export type SearchFilters = {
   location?: string
   beds?: string
   baths?: string
-  sqft?: string   // currently ignored — not in RPC
+  sqft?: string
   price?: string
 }
 
@@ -17,6 +17,7 @@ export type Listing = {
   primary_photo_url: string | null
   property_type?: string | null
   list_office_name?: string | null
+  sqft?: number | null
 }
 
 /** Camera bbox from Mapbox `map.getBounds()` — west/south/east/north in WGS84. */
@@ -31,7 +32,7 @@ export type MapViewportBounds = {
  * Client-side filter.
  * - beds / baths / price / sqft = minimums
  * - location = substring match on address (kept for future use)
- * - sqft is currently ignored because the RPC does not return it
+ * - unknown sqft stays visible (do not drop homes we cannot measure yet)
  * - Returns the filtered set as-is (empty is allowed — do not silently fall back)
  */
 export function filterListings(
@@ -46,6 +47,7 @@ export function filterListings(
     const beds = Number(listing.beds ?? 0)
     const baths = Number(listing.baths ?? 0)
     const price = Number(listing.price ?? 0)
+    const sqft = Number(listing.sqft ?? 0)
 
     // Minimum beds
     if (filters.beds && beds > 0 && beds < Number(filters.beds)) return false
@@ -55,6 +57,9 @@ export function filterListings(
 
     // Minimum price
     if (filters.price && price > 0 && price < Number(filters.price)) return false
+
+    // Minimum living area — skip the check when sqft is unknown
+    if (filters.sqft && sqft > 0 && sqft < Number(filters.sqft)) return false
 
     // Location against address only (kept for future use)
     if (filters.location) {

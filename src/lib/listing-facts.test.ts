@@ -6,7 +6,9 @@ import {
   extractPublicListingFacts,
   formatListingCourtesy,
   formatListingFactRows,
+  mergeListingLivingAreas,
   mergeListingOfficeNames,
+  parseListingLivingAreaRows,
   parseListingOfficeRows,
   isListingId,
   PUBLIC_RESO_SELECT,
@@ -185,6 +187,22 @@ describe('listing office courtesy', () => {
     )
     expect(merged[0]?.list_office_name).toBe('Example Realty Group')
     expect(merged[1]?.list_office_name).toBeNull()
+  })
+
+  it('merges living area onto listings and keeps unknown sqft', () => {
+    const merged = mergeListingLivingAreas(
+      [
+        { id: 'a', sqft: null },
+        { id: 'b', sqft: null },
+      ],
+      parseListingLivingAreaRows([
+        { id: 'a', sqft: 1842 },
+        { id: 'c', sqft: 50 },
+        { id: '', sqft: 2000 },
+      ])
+    )
+    expect(merged[0]?.sqft).toBe(1842)
+    expect(merged[1]?.sqft).toBeNull()
   })
 
   it('ignores agent and owner names in the MLS blob', () => {

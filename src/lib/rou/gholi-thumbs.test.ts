@@ -6,6 +6,7 @@ import {
   formatThumbExcerpt,
   GHOLI_THUMB_QUESTION_POOL,
   GHOLI_THUMBS_PER_LISTING,
+  notebookFit,
   notebookFromNotes,
   questionsForListing,
   thumbNoteKey,
@@ -61,12 +62,14 @@ describe('Gholi account thumbs', () => {
     const keep = listingId
     const dump = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
     const book = notebookFromNotes([
-      { note_key: `thumb:${keep}:see_in_person`, is_active: true },
-      { note_key: `thumb:${dump}:keep_favorite`, is_active: true },
-      { note_key: `trash:${dump}`, is_active: true },
+      { note_key: `thumb:${keep}:see_in_person`, excerpt: 'up | see', is_active: true },
+      { note_key: `thumb:${dump}:keep_favorite`, excerpt: 'down | keep', is_active: true },
+      { note_key: `trash:${dump}`, excerpt: 'down | Trashed this listing', is_active: true },
     ])
     expect(book.ratedListingIds).toEqual([keep])
     expect(book.trashedListingIds).toEqual([dump])
+    expect(book.upVotes).toBe(1)
+    expect(book.downVotes).toBe(2)
   })
 
   it('restores a trashed home when the trash excerpt is no longer a down vote', () => {
@@ -81,6 +84,27 @@ describe('Gholi account thumbs', () => {
     ])
     expect(book.trashedListingIds).toEqual([])
     expect(book.ratedListingIds).toEqual([listing])
+    expect(book.upVotes).toBe(1)
+    expect(book.downVotes).toBe(0)
+  })
+
+  it('hides a percent until eight home-fit answers exist', () => {
+    const early = notebookFit({
+      ratedListingIds: [listingId],
+      trashedListingIds: [],
+      upVotes: 3,
+      downVotes: 2,
+    })
+    expect(early.percent).toBeNull()
+    expect(early.label).toContain('Not enough yes/no')
+    const ready = notebookFit({
+      ratedListingIds: [listingId],
+      trashedListingIds: [],
+      upVotes: 6,
+      downVotes: 2,
+    })
+    expect(ready.percent).toBe(75)
+    expect(ready.label).toContain('not a ranking of neighborhoods')
   })
 })
 
@@ -106,7 +130,9 @@ describe('Rou listing thumbs isolation', () => {
     expect(account).toContain('Rated homes')
     expect(account).toContain('Trash')
     expect(account).toContain('Saved searches')
-    expect(account).toContain('Showing requests')
+    expect(account).toContain('notebookFit')
+    expect(account).toContain('Fit so far')
+    expect(account).toContain('SiteFooter')
     expect(account).toContain('listBuyerShowings')
     expect(account).toContain('listGholiNotebook')
     expect(account).toContain('resolveBuyerAccount')

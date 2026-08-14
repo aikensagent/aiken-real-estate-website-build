@@ -10,7 +10,8 @@ describe('root not-found chrome', () => {
   it('registers a branded notFoundComponent and a real document title', () => {
     expect(root).toContain('notFoundComponent: NotFoundPage')
     expect(root).toContain("title: 'Find your place in Aiken | Nick Williams'")
-    expect(root).not.toContain('TanStack Start Starter')
+    expect(root).toContain('Skip to content')
+    expect(root).toContain('SiteFooter')
   })
 
   it('uses brand tokens, an accessible heading, and a home Link', () => {

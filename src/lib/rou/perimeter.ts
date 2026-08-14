@@ -5,6 +5,7 @@ export const NODE_A_ALLOWED_RPCS = [
   'get_listings_with_coords',
   'get_nearby_listings',
   'get_listing_office_names',
+  'get_listing_living_areas',
 ] as const
 
 /** Companion Rou — audited SECURITY DEFINER memory paths only. */

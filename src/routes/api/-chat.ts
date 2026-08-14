@@ -25,10 +25,10 @@ import {
   findNearestSchools,
 } from '../../lib/playgrounds'
 import {
-  extractNamedPlaceQuery,
-  formatNamedPlaceBlock,
-  resolveNamedPlace,
-} from '../../lib/rou/named-place'
+  formatAreaNotesBlock,
+  mentionsAreaNotes,
+  resolveAreaNotes,
+} from '../../lib/rou/area-notes'
 import {
   buildAmenityRouteOverlay,
   formatRoutedTimesBlock,
@@ -326,12 +326,13 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
   const wantsSchools = mentionsSchool(cleanedInput)
   const wantsGrocery = mentionsGrocery(cleanedInput)
   const wantsAmenities = wantsPlaygrounds || wantsSchools || wantsGrocery
-  const namedPlaceQuery = !wantsAmenities
+  const wantsAreaNotes = mentionsAreaNotes(cleanedInput)
+  const namedPlaceQuery = !wantsAmenities && !wantsAreaNotes
     ? extractNamedPlaceQuery(cleanedInput)
     : null
 
   let listingRows: ListingSummary[] | null = null
-  if (needsListings || wantsAmenities || namedPlaceQuery || selectedListing) {
+  if (needsListings || wantsAmenities || namedPlaceQuery || selectedListing || wantsAreaNotes) {
     try {
       listingRows = await getListingRows()
     } catch (err) {
@@ -360,6 +361,13 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
     systemPrompt = listingRows
       ? `${systemPrompt}\n\n${formatListingsContext(listingRows, 25)}`
       : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
+  }
+
+  if (wantsAreaNotes) {
+    const note = resolveAreaNotes(cleanedInput)
+    systemPrompt = note
+      ? `${systemPrompt}\n\n${formatAreaNotesBlock(note)}`
+      : `${systemPrompt}\n\nAREA NOTES: no curated note for that place. Do not invent demographics. Offer a named place, commute, or Nick.`
   }
 
   if (wantsAmenities) {

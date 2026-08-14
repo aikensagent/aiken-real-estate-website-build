@@ -28,6 +28,7 @@ type Message = {
 
 type ChatWidgetProps = {
   origin?: ChatOrigin | null
+  areaLabel?: string | null
   onAmenityIntent?: (kind: 'playground' | 'school' | 'grocery') => void
   onNamedPlaceQuery?: (query: string) => void
   onShowingIntent?: () => void
@@ -58,6 +59,7 @@ function isWithinNickCallHours(): boolean {
 
 export function ChatWidget({
   origin,
+  areaLabel,
   onAmenityIntent,
   onNamedPlaceQuery,
   onShowingIntent,
@@ -127,7 +129,11 @@ export function ChatWidget({
     announcedOrigin.current = homeKey
 
     const intro = `Got it — ${originStreet}. I can help with nearby playgrounds, schools, grocery, or details on this home. What would help?`
-    setSuggestionChips([...ORIGIN_SUGGESTION_CHIPS])
+    const chips = [...ORIGIN_SUGGESTION_CHIPS]
+    if (areaLabel?.trim()) {
+      chips.unshift(`What should I know about ${areaLabel.trim()}?`)
+    }
+    setSuggestionChips(chips)
     setMessages([{ role: 'assistant', content: intro }])
     setPanelsOpen(true)
     speakText(intro)

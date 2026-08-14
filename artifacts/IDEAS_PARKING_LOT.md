@@ -52,13 +52,13 @@
 
 ## PARKED (dependency / later)
 
-6. Dashboard confidence score — build after #7/#8 can feed it; UI may show `?%` / not enough data until honest. (Do build collection — score never earns itself otherwise.)
+6. Dashboard confidence score — **partial 2026-08-13**. Honest `?%` until 8 yes/no answers; then percent of yes. Not a people/neighborhood score.
 9. Multi-select + drag-to-compare — **partial 2026-08-13**. Up to 4 homes, sessionStorage tray, drag to reorder, side-by-side allowlisted facts. Never ranks neighborhoods or schools.
 16. Photo-browse / dwell like-dislike triggers — after #4/#5 activate flow is trusted.
 17. Subdivision overlays.
-18. Rou post-search prompts — only when the offered action is actually supported.
+18. Rou post-search prompts — **partial 2026-08-13**. Results list tells them to tap Ask Rou for playgrounds, schools, grocery, or a showing. Area-note chip when an area is focused.
 19. Comparison mode (side-by-side) — with #9.
-20. “What should I know about this area?” — only with real curated area notes (don’t invent).
+20. “What should I know about this area?” — **partial 2026-08-13**. Curated notes for Downtown, City of Aiken, Hitchcock Woods, North Augusta, Graniteville. Facts only.
 22. Hesitation / objection prompts — easy to feel pushy; after activate + mute-safe UI trusted.
 28. **Listing-office credit (IDX / MLS)** — **partial 2026-08-13**. Detail page, search cards, and pin popups credit `ListOfficeName` in `text-sm` / 14px navy. Apply `20260813_listing_office_names.sql`. Redeploy `mls-ingest`.
 ---

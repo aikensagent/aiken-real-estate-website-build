@@ -6,6 +6,7 @@ import { isListingId } from '../lib/listing-facts'
 import type { SavedSearchRow } from '../lib/saved-search'
 import {
   type GholiNotebook,
+  notebookFit,
 } from '../lib/rou/gholi-thumbs'
 import { GHOLI_DISPLAY_NAME, GHOLI_TITLE } from '../lib/rou/gholi-persona'
 import { getListingDetail } from './api/-listing-detail'
@@ -13,6 +14,7 @@ import { listGholiNotebook, restoreGholiListing } from './api/-gholi-thumbs'
 import { deleteBuyerSearch, listBuyerSearches } from './api/-saved-searches'
 import { listBuyerShowings } from './api/-showing-requests'
 import { formatShowingRequestedAt } from '../lib/showing-requests'
+import { SiteFooter } from '../components/SiteFooter'
 
 type ListingCard = {
   id: string
@@ -39,6 +41,8 @@ function GholiDashboardPage() {
   const [notebook, setNotebook] = useState<GholiNotebook>({
     ratedListingIds: [],
     trashedListingIds: [],
+    upVotes: 0,
+    downVotes: 0,
   })
   const [ratedCards, setRatedCards] = useState<ListingCard[]>([])
   const [trashCards, setTrashCards] = useState<ListingCard[]>([])
@@ -116,6 +120,8 @@ function GholiDashboardPage() {
     if (result.ok) setNotebookTick((n) => n + 1)
   }
 
+  const fit = notebookFit(notebook)
+
   return (
     <div className="min-h-screen bg-brand-cream">
       <header className="border-b border-brand-navy/10 bg-brand-navy">
@@ -153,6 +159,7 @@ function GholiDashboardPage() {
       ) : null}
 
       <main
+        id="main-content"
         className={`mx-auto grid max-w-5xl gap-6 px-4 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)] ${
           ready ? '' : 'hidden'
         }`}
@@ -176,6 +183,11 @@ function GholiDashboardPage() {
             {email && (
               <p className="mt-2 text-sm text-brand-slate">Signed in as {email}</p>
             )}
+            <p className="mt-3 text-sm text-brand-navy" role="status">
+              {fit.percent == null
+                ? `Fit so far: ?%. ${fit.label}`
+                : `Fit so far: ${fit.percent}%. ${fit.label}`}
+            </p>
           </section>
 
           <DashboardList
@@ -301,6 +313,7 @@ function GholiDashboardPage() {
           </p>
         </aside>
       </main>
+      <SiteFooter />
     </div>
   )
 }

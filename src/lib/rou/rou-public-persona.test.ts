@@ -33,7 +33,7 @@ describe('Rou public persona profile', () => {
     expect(ROU_SYSTEM_PROMPT).toContain('Nick will submit the showing request')
     expect(ROU_SYSTEM_PROMPT).toContain('Do not ask if they want to speak to Nick')
     expect(ROU_SYSTEM_PROMPT).toContain('If they compare homes')
-    expect(ROU_SYSTEM_PROMPT).toContain('Never rank neighborhoods')
+    expect(ROU_SYSTEM_PROMPT).toContain('If an AREA NOTES block is in context')
     expect(ROU_SYSTEM_PROMPT).not.toContain('hand off to Nick Williams')
     expect(ROU_SYSTEM_PROMPT).not.toContain('offer to connect them with Nick')
   })

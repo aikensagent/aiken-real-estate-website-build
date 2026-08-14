@@ -73,6 +73,7 @@ describe('Aegis perimeter', () => {
     expect(() => assertNodeARpc('get_listings_with_coords')).not.toThrow()
     expect(() => assertNodeARpc('public.get_nearby_listings')).not.toThrow()
     expect(() => assertNodeARpc('get_listing_office_names')).not.toThrow()
+    expect(() => assertNodeARpc('get_listing_living_areas')).not.toThrow()
     expect(() => assertNodeARpc('get_lead_memory')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('upsert_personal_note')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('save_conversation_summary')).toThrow(/blocked from memory RPC/)
@@ -150,6 +151,12 @@ describe('two-tier isolation and degradation', () => {
       if (name === 'get_lead_memory') {
         throw new Error('memory rpc must not be reachable')
       }
+      if (name === 'get_listing_living_areas') {
+        return {
+          data: [{ id: '1', sqft: 1842 }],
+          error: null,
+        }
+      }
       if (name === 'get_listing_office_names') {
         return {
           data: [
@@ -165,9 +172,14 @@ describe('two-tier isolation and degradation', () => {
     }
     const nodeA = createInterfaceRou(rpc)
     const listings = await nodeA.loadPublicListings()
-    expect(calls).toEqual(['get_listings_with_coords', 'get_listing_office_names'])
+    expect(calls).toEqual([
+      'get_listings_with_coords',
+      'get_listing_office_names',
+      'get_listing_living_areas',
+    ])
     expect(listings[0]?.address).toContain('Barnard')
     expect(listings[0]?.list_office_name).toBe('Example Realty Group')
+    expect(listings[0]?.sqft).toBe(1842)
   })
 
   it('rejects a Node A caller that tries to hit a memory RPC', async () => {

@@ -8,6 +8,7 @@ import {
   rememberAuthNext,
   serializeAuthNext,
 } from '../lib/auth-next'
+import { SiteFooter } from '../components/SiteFooter'
 
 type LoginSearch = {
   next?: string
@@ -84,6 +85,7 @@ function LoginPage() {
       </header>
 
       <main
+        id="main-content"
         className="mx-auto max-w-lg px-4 py-10"
         aria-labelledby="login-heading"
       >
@@ -132,7 +134,13 @@ function LoginPage() {
               />
               <span>
                 I agree that Nick Williams / Best Life Realty may use this
-                email to keep my saved homes and follow up about Aiken listings.
+                email to keep my saved homes and follow up about Aiken listings.{' '}
+                <Link
+                  to="/privacy"
+                  className="font-semibold text-brand-navy underline decoration-brand-gold underline-offset-2"
+                >
+                  Privacy
+                </Link>
               </span>
             </label>
             {error && (
@@ -150,6 +158,7 @@ function LoginPage() {
           </form>
         )}
       </main>
+      <SiteFooter />
     </div>
   )
 }

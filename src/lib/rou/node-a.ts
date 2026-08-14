@@ -1,6 +1,8 @@
 import type { ListingSummary } from '../listings-context'
 import {
+  mergeListingLivingAreas,
   mergeListingOfficeNames,
+  parseListingLivingAreaRows,
   parseListingOfficeRows,
 } from '../listing-facts'
 import { contextMatrix } from '../context-matrix'
@@ -64,11 +66,24 @@ export function createInterfaceRou(rpc: RpcCaller): InterfaceRou {
         assertNodeARpc('get_listing_office_names')
         try {
           const offices = await rpc('get_listing_office_names')
-          if (offices.error || !offices.data) return listings
-          return mergeListingOfficeNames(
-            listings,
-            parseListingOfficeRows(offices.data)
-          )
+          const withOffices =
+            offices.error || !offices.data
+              ? listings
+              : mergeListingOfficeNames(
+                  listings,
+                  parseListingOfficeRows(offices.data)
+                )
+          assertNodeARpc('get_listing_living_areas')
+          try {
+            const areas = await rpc('get_listing_living_areas')
+            if (areas.error || !areas.data) return withOffices
+            return mergeListingLivingAreas(
+              withOffices,
+              parseListingLivingAreaRows(areas.data)
+            )
+          } catch {
+            return withOffices
+          }
         } catch {
           return listings
         }
