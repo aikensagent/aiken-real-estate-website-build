@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { SiteFooter, SITE_AGENT, SITE_FIRM, SITE_PHONE } from '../components/SiteFooter'
+import { SiteFooter, SITE_AGENT, SITE_FIRM, SITE_PHONE, agentJsonLd } from '../components/SiteFooter'
 import { SiteAccountLink } from '../components/SiteAccountLink'
 
 export const Route = createFileRoute('/about')({
@@ -52,9 +52,20 @@ function AboutPage() {
             >
               {SITE_PHONE}
             </a>
-            . Hours for a live call are 9 AM – 9 PM Eastern.
+            . Hours for a live call are 9 AM – 9 PM Eastern. Or use the{' '}
+            <Link
+              to="/contact"
+              className="font-semibold text-brand-navy underline decoration-brand-gold underline-offset-2"
+            >
+              contact form
+            </Link>
+            .
           </p>
         </div>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(agentJsonLd()) }}
+        />
       </main>
       <SiteFooter />
     </div>

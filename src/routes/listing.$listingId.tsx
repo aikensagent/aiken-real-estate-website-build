@@ -11,7 +11,7 @@ import { readAccessToken, useBuyerSignedIn } from '../lib/auth-browser'
 import { requestBuyerShowing } from './api/-showing-requests'
 import type { PriceSnapshot } from '../lib/price-history'
 import { RouCardIntroDialog } from '../components/RouCardIntroDialog'
-import { AIKEN_COUNTY_PROPERTY_SEARCH_URL, formatListingCourtesy, formatListingFactRows } from '../lib/listing-facts'
+import { AIKEN_COUNTY_PROPERTY_SEARCH_URL, formatListingCourtesy, formatListingFactRows, listingShareMeta } from '../lib/listing-facts'
 import {
   hydrateCompareIds,
   persistCompareIds,
@@ -37,15 +37,21 @@ export const Route = createFileRoute('/listing/$listingId')({
     if (!detail) throw notFound()
     return detail
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData?.address
-          ? `${loaderData.address} | Nick Williams`
-          : 'Listing | Nick Williams',
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const share = listingShareMeta(loaderData ?? {})
+    return {
+      meta: [
+        { title: share.title },
+        { name: 'description', content: share.description },
+        { property: 'og:title', content: share.title },
+        { property: 'og:description', content: share.description },
+        { property: 'og:type', content: 'website' },
+        ...(share.image
+          ? [{ property: 'og:image', content: share.image }]
+          : []),
+      ],
+    }
+  },
   component: ListingPage,
 })
 

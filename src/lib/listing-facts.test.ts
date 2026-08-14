@@ -10,6 +10,7 @@ import {
   mergeListingOfficeNames,
   parseListingLivingAreaRows,
   parseListingOfficeRows,
+  listingShareMeta,
   isListingId,
   PUBLIC_RESO_SELECT,
   formatCountyRecordsBlock,
@@ -129,6 +130,24 @@ describe('listing photos and ids', () => {
       ['https://cdn.example.com/only.jpg']
     )
     expect(extractListingPhotos({}, 'http://bad.example.com/x.jpg')).toEqual([])
+  })
+
+  it('builds share title and description from listed facts only', () => {
+    const share = listingShareMeta({
+      address: '215 Barnard Avenue SE',
+      price: 425000,
+      beds: 3,
+      baths: 2,
+      photos: ['https://cdn.example.com/cover.jpg'],
+      facts: { sqft: 1842 },
+    })
+    expect(share.title).toBe('215 Barnard Avenue SE | Nick Williams')
+    expect(share.description).toContain('$425,000')
+    expect(share.description).toContain('3 bed')
+    expect(share.description).toContain('1,842 sq ft')
+    expect(share.description.toLowerCase()).not.toContain('school')
+    expect(share.description.toLowerCase()).not.toContain('safe')
+    expect(share.image).toBe('https://cdn.example.com/cover.jpg')
   })
 })
 

@@ -63,6 +63,7 @@ describe('listing detail page', () => {
     expect(page).toContain('formatListingCourtesy')
     expect(page).toContain('list_office_name')
     expect(page).toContain('formatListingFactRows')
+    expect(page).toContain('listingShareMeta')
     expect(page).toContain('Add to compare')
     expect(page).toContain('SiteFooter')
     expect(cards).toContain('get_listing_living_areas')

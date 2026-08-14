@@ -9,7 +9,8 @@ const root = readFileSync(join(here, '../routes/__root.tsx'), 'utf8')
 describe('root not-found chrome', () => {
   it('registers a branded notFoundComponent and a real document title', () => {
     expect(root).toContain('notFoundComponent: NotFoundPage')
-    expect(root).toContain("title: 'Find your place in Aiken | Nick Williams'")
+    expect(root).toContain('SITE_HOME_TITLE')
+    expect(root).toContain('og:title')
     expect(root).toContain('Skip to content')
     expect(root).toContain('SiteFooter')
   })

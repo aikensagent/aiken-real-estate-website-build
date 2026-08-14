@@ -3,6 +3,28 @@ import { Link } from '@tanstack/react-router'
 export const SITE_FIRM = 'Coldwell Banker Best Life Realty'
 export const SITE_AGENT = 'Nick Williams'
 export const SITE_PHONE = '803-292-2921'
+export const SITE_HOME_TITLE = 'Find your place in Aiken | Nick Williams'
+export const SITE_HOME_DESCRIPTION =
+  'Search Aiken, South Carolina homes with Nick Williams at Coldwell Banker Best Life Realty. Equal Housing Opportunity.'
+
+export function agentJsonLd(): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateAgent',
+    name: SITE_AGENT,
+    telephone: SITE_PHONE,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Aiken',
+      addressRegion: 'SC',
+      addressCountry: 'US',
+    },
+    worksFor: {
+      '@type': 'RealEstateAgent',
+      name: SITE_FIRM,
+    },
+  }
+}
 
 type SiteFooterProps = {
   compact?: boolean
@@ -40,6 +62,12 @@ export function SiteFooter({ compact = false }: SiteFooterProps) {
             className="underline decoration-brand-gold underline-offset-2"
           >
             About
+          </Link>
+          <Link
+            to="/contact"
+            className="underline decoration-brand-gold underline-offset-2"
+          >
+            Contact
           </Link>
           <Link
             to="/privacy"

@@ -49,8 +49,14 @@ function PrivacyPage() {
           </p>
           <p>
             Magic-link sign-in uses your email. You can ask Nick to close the
-            account. Questions: use the contact form on the home page or call
-            the number in the footer.
+            account. Questions: use the{' '}
+            <Link
+              to="/contact"
+              className="font-semibold text-brand-navy underline decoration-brand-gold underline-offset-2"
+            >
+              contact form
+            </Link>{' '}
+            or call the number in the footer.
           </p>
         </div>
       </main>

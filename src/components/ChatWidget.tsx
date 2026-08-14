@@ -221,8 +221,8 @@ export function ChatWidget({
 
       if (result.refused) {
         const handoff = isWithinNickCallHours()
-          ? `I’d like to connect you with Nick Williams directly. You can reach him at ${NICK_PHONE}, or fill out the short form on this page and he’ll get right back to you.`
-          : `I’d like to connect you with Nick Williams. He’s available 9 AM – 9 PM Eastern. Please leave your details on the form and he’ll call you first thing.`
+          ? `I’d like to connect you with Nick Williams directly. You can reach him at ${NICK_PHONE}, or fill out the short form on the Contact page and he’ll get right back to you.`
+          : `I’d like to connect you with Nick Williams. He’s available 9 AM – 9 PM Eastern. Please leave your details on the Contact page and he’ll call you first thing.`
         setTimeout(() => {
           setMessages((prev) => [
             ...prev,
@@ -233,8 +233,8 @@ export function ChatWidget({
       }
     } catch {
       const fail = isWithinNickCallHours()
-        ? `I’m having trouble responding right now. Please reach Nick Williams at ${NICK_PHONE} or use the contact form on this page — he’ll take care of you.`
-        : `I’m having trouble responding right now. Nick is available 9 AM – 9 PM Eastern. Please leave your details on the form and he’ll call you first thing.`
+        ? `I’m having trouble responding right now. Please reach Nick Williams at ${NICK_PHONE} or use the Contact page — he’ll take care of you.`
+        : `I’m having trouble responding right now. Nick is available 9 AM – 9 PM Eastern. Please leave your details on the Contact page and he’ll call you first thing.`
       setCaption(fail)
       setMessages((prev) => [...prev, { role: 'assistant', content: fail }])
     } finally {

@@ -1,6 +1,6 @@
 # ARIA Project Status
 
-**Last Updated:** 2026-08-13
+**Last Updated:** 2026-08-14
 
 ## Phase 0 — Foundation & Design Tokens
 - COMPLETE
@@ -74,6 +74,7 @@
 - **MLS public facts (2026-08-13):** ingest + Spark `$select` now pull pool features, fireplace, roof, flooring, basement, parking, patio/porch, interior/exterior, new construction, waterfront, HOA frequency, and on-market date (days on market is computed). Listing Facts and Rou’s SELECTED HOME use the same allowlist. Still never LivingArea / StoriesTotal / PoolPrivateYN in `$select` (this MLS rejects them). **Redeploy** `mls-ingest`.
 - **Compare homes (2026-08-13):** map cards and the listing page can add up to 4 homes. Tab-scoped sessionStorage tray; drag to reorder. Side-by-side facts only — not a neighborhood or school ranking.
 - **Public chrome (2026-08-13):** About, Privacy, Fair Housing, IDX/Equal Housing footer, skip-to-content, document description. Hero filters are labeled. Sqft filter uses `get_listing_living_areas` (unknown sqft stays visible). **Apply** `20260814_listing_living_areas.sql`.
+- **Contact (2026-08-14):** `/contact` plus a home-page form. Footer and Privacy link there. Rou handoff names the Contact page, not a form on the map. Listing and home pages have Open Graph tags. PWA manifest is Nick Williams, not the TanStack starter.
 - **Dashboard fit %:** honest `?%` until 8 yes/no answers; then percent of yes. Not a ranking of people or neighborhoods.
 - **Area notes:** curated Downtown / City / Hitchcock Woods / North Augusta / Graniteville facts for “what should I know about this area.” No school quality, crime, or who belongs.
 - **Listing-office credit (IDX)**: listing detail and search cards / pin popups show `Listing courtesy of {ListOfficeName}` when present, in `text-sm` navy (popup 14px navy) so type is not smaller than the card median. Never defaults to Nick’s shop. **Apply** `20260813_listing_office_names.sql` and **redeploy** `mls-ingest`.

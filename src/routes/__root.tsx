@@ -5,7 +5,7 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import PostHogProvider from '../integrations/posthog/provider'
-import { SiteFooter } from '../components/SiteFooter'
+import { SiteFooter, SITE_HOME_DESCRIPTION, SITE_HOME_TITLE } from '../components/SiteFooter'
 
 import appCss from '../styles.css?url'
 
@@ -26,12 +26,27 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Find your place in Aiken | Nick Williams',
+        title: SITE_HOME_TITLE,
       },
       {
         name: 'description',
-        content:
-          'Search Aiken, South Carolina homes with Nick Williams at Coldwell Banker Best Life Realty. Equal Housing Opportunity.',
+        content: SITE_HOME_DESCRIPTION,
+      },
+      {
+        property: 'og:title',
+        content: SITE_HOME_TITLE,
+      },
+      {
+        property: 'og:description',
+        content: SITE_HOME_DESCRIPTION,
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary',
       },
     ],
     links: [

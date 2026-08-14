@@ -39,6 +39,8 @@ describe('Rou chat streaming path', () => {
     expect(widget).toMatch(/streamCompanionChat/)
     expect(widget).toMatch(/hydrateTransientChat/)
     expect(widget).toMatch(/areaLabel/)
+    expect(widget).toContain('Contact page')
+    expect(widget).not.toContain('contact form on this page')
     expect(widget).not.toMatch(/from ['"][^'"]*supabase['"]/)
     expect(widget).not.toMatch(/from ['"][^'"]*rou\/node-a['"]/)
     expect(widget).not.toMatch(/from ['"][^'"]*chat-lead-score['"]/)

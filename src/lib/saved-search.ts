@@ -88,6 +88,12 @@ export function labelSavedSearch(payload: SavedSearchPayload): string {
       Number.isFinite(n) ? `$${Math.round(n / 1000)}k+` : 'priced'
     )
   }
+  if (payload.sqft) {
+    const n = Number(payload.sqft)
+    parts.push(
+      Number.isFinite(n) ? `${n.toLocaleString('en-US')}+ sq ft` : 'sized'
+    )
+  }
   if (payload.area?.label) parts.push(payload.area.label)
   const label = parts.join(' · ') || 'Aiken homes'
   return label.slice(0, 80)

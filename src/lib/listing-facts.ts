@@ -516,3 +516,35 @@ export function formatCountyRecordsBlock(opts: {
     'Say county assessment data can differ from the MLS listing. Offer Nick if they want help reading it.',
   ].join('\n')
 }
+
+export function listingShareMeta(listing: {
+  address?: string | null
+  price?: number | null
+  beds?: number | null
+  baths?: number | null
+  photos?: string[]
+  facts?: { sqft?: number | null }
+}): { title: string; description: string; image: string | null } {
+  const address = listing.address?.trim() || 'Aiken listing'
+  const title = `${address} | Nick Williams`
+  const bits: string[] = []
+  if (listing.price && listing.price > 0) {
+    bits.push(
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(listing.price)
+    )
+  }
+  if (listing.beds && listing.beds > 0) bits.push(`${listing.beds} bed`)
+  if (listing.baths && listing.baths > 0) bits.push(`${listing.baths} bath`)
+  const sqft = listing.facts?.sqft
+  if (sqft && sqft > 0) bits.push(`${sqft.toLocaleString('en-US')} sq ft`)
+  const description = bits.length
+    ? `${bits.join(' · ')} in Aiken, South Carolina. Listed with Nick Williams, Coldwell Banker Best Life Realty. Equal Housing Opportunity.`
+    : 'Aiken, South Carolina home listed with Nick Williams, Coldwell Banker Best Life Realty. Equal Housing Opportunity.'
+  const image =
+    listing.photos?.find((url) => url.startsWith('https://')) ?? null
+  return { title, description, image }
+}

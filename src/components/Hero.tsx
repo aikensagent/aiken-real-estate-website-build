@@ -47,7 +47,7 @@ export function Hero({ onSearch }: HeroProps) {
         <div className="flex w-full max-w-6xl justify-end pt-4">
           <SiteAccountLink />
         </div>
-        <h1 className="mt-[12%] text-center text-4xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
+        <h1 className="mt-[12%] text-center text-4xl font-semibold tracking-tight text-brand-cream drop-shadow-sm sm:text-5xl md:text-6xl">
           Find your place in Aiken.
         </h1>
 
@@ -64,7 +64,7 @@ export function Hero({ onSearch }: HeroProps) {
               value={beds}
               onChange={(e) => setBeds(e.target.value)}
               aria-label="Minimum bedrooms"
-              className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
+              className="w-full rounded-lg border border-brand-navy/20 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
             >
               <option value="">Beds</option>
               <option value="1">1+</option>
@@ -81,7 +81,7 @@ export function Hero({ onSearch }: HeroProps) {
               value={baths}
               onChange={(e) => setBaths(e.target.value)}
               aria-label="Minimum bathrooms"
-              className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
+              className="w-full rounded-lg border border-brand-navy/20 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-[5.5rem]"
             >
               <option value="">Baths</option>
               <option value="1">1+</option>
@@ -97,7 +97,7 @@ export function Hero({ onSearch }: HeroProps) {
               value={sqft}
               onChange={(e) => setSqft(e.target.value)}
               aria-label="Minimum square feet"
-              className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
+              className="w-full rounded-lg border border-brand-navy/20 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
             >
               <option value="">Sq Ft</option>
               <option value="1500">1,500+</option>
@@ -113,7 +113,7 @@ export function Hero({ onSearch }: HeroProps) {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               aria-label="Minimum price"
-              className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
+              className="w-full rounded-lg border border-brand-navy/20 px-2.5 py-2 text-sm focus:border-brand-navy focus:outline-none focus:ring-1 focus:ring-brand-navy sm:w-28"
             >
               <option value="">Price</option>
               <option value="300000">$300k+</option>
@@ -124,7 +124,8 @@ export function Hero({ onSearch }: HeroProps) {
             </select>
             <button
               type="submit"
-              className="col-span-2 rounded-lg bg-brand-navy px-5 py-2 text-sm font-medium text-white transition hover:bg-brand-navy/90 sm:col-span-1 sm:px-5"
+              className="col-span-2 rounded-lg bg-brand-navy px-5 py-2 text-sm font-medium text-brand-cream transition hover:bg-brand-navy/90 sm:col-span-1 sm:px-5"
+              aria-label="Search homes"
             >
               Search
             </button>

@@ -68,6 +68,7 @@ import {
 } from '../lib/saved-search'
 import { listBuyerSearches, saveBuyerSearch } from './api/-saved-searches'
 import { ListingCompareTray } from '../components/ListingCompareTray'
+import { LeadCaptureForm } from '../components/LeadCaptureForm'
 import { SiteFooter } from '../components/SiteFooter'
 import {
   hydrateCompareIds,
@@ -694,6 +695,31 @@ function Home() {
       {!showResults ? (
         <>
           <Hero onSearch={handleHeroSearch} />
+          <section
+            id="contact"
+            className="bg-brand-cream px-4 py-12"
+            aria-labelledby="home-contact-heading"
+          >
+            <div className="mx-auto max-w-3xl">
+              <h2
+                id="home-contact-heading"
+                className="text-2xl font-semibold tracking-tight text-brand-navy"
+              >
+                Talk with Nick
+              </h2>
+              <p className="mt-2 text-brand-slate">
+                Searching is open. When you want a showing, a listing appointment,
+                or a straight answer, send a note. Nick reads these.
+              </p>
+              <div className="mt-6">
+                <LeadCaptureForm
+                  source="home"
+                  heading="Send a note"
+                  description="No obligation. Equal Housing Opportunity."
+                />
+              </div>
+            </div>
+          </section>
           <SiteFooter />
         </>
       ) : (

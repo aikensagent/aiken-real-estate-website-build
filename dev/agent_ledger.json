@@ -2793,5 +2793,52 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Public chrome, honest dashboard fit, curated area notes, and sqft filter shipped. Apply 20260814_listing_living_areas.sql. Redeploy mls-ingest. Do not push."
+  },
+  {
+    "timestamp": "2026-08-14T04:08:00Z",
+    "task_id": "PUBLIC_CONTACT_SHARE_CHROME_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/contact.tsx",
+    "supporting_files": [
+      "src/components/LeadCaptureForm.tsx",
+      "src/components/SiteFooter.tsx",
+      "src/routes/index.tsx",
+      "src/routes/listing.$listingId.tsx",
+      "src/lib/listing-facts.ts",
+      "public/manifest.json"
+    ],
+    "failure_modes": [
+      {
+        "id": "map_form_lie",
+        "detection": "ChatWidget copy must name Contact page, not a form on the map",
+        "isolation": "Handoff and failure strings point at /contact; showing form stays on listing only"
+      },
+      {
+        "id": "lead_form_hex",
+        "detection": "LeadCaptureForm hex or green-* classes",
+        "isolation": "Brand tokens only; capture_lead RPC unchanged"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new table. Contact still writes through capture_lead. Listing share meta is facts-only from already-loaded detail. Manifest is static chrome.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Same consent checkboxes and capture_lead RPC. No invented site URL in JSON-LD. Share description cannot mention schools or safety. Form field ids are prefixed so two forms cannot collide.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "193/193 vitest. Locks /contact, home form, footer Contact, no-hex form, listingShareMeta, Rou Contact-page handoff, og:title.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public contact path is real. Share tags and manifest match the live brand. Still no Resend, Twilio, video, or admin."
   }
 ]

@@ -27,6 +27,11 @@ describe('saved search payload', () => {
     )
     expect(labelSavedSearch(payload)).toBe('3+ beds · $400k+ · Downtown')
     expect(payload.area?.label).toBe('Downtown')
+    expect(
+      labelSavedSearch(
+        buildSavedSearchPayload({ beds: '3', sqft: '2000' }, downtown)
+      )
+    ).toBe('3+ beds · 2,000+ sq ft · Downtown')
   })
 
   it('drops out-of-area coordinates and junk fields', () => {
