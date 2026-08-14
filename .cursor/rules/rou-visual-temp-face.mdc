@@ -1,0 +1,11 @@
+---
+description: Public Rou face is temporary; ship visual is talking-head video
+alwaysApply: true
+---
+
+# Rou public visual
+
+- `src/assets/gholi-avatar.jpg` is TEMP workbench only. Do not treat it as the ship plate or as Rou’s brand face.
+- Direction (2026-08-13): public Rou is a talking-head video (she talks and the head moves). Voice is Carina only. Captions are broadcast CC on the picture, not cream text boxes.
+- Do not implement the video pipeline until Nick says execute.
+- Gholi stays dashboard-only. The workbench photo is not a lock that Rou and Gholi are the same person.

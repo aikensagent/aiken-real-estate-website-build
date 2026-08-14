@@ -1,5 +1,16 @@
 import { createServerFn } from '@tanstack/react-start'
-import { formatListingsContext, getListingRows } from '../../lib/listings-context'
+import {
+  countyRecordsForListing,
+  formatListingsContext,
+  formatPriceSeenBlock,
+  formatSelectedListingBlock,
+  getListingRows,
+  loadListingPriceHistory,
+  loadListingPublicFacts,
+  mergeListingFacts,
+  parseSelectedListing,
+  preferServerListing,
+} from '../../lib/listings-context'
 import type { ListingSummary } from '../../lib/listings-context'
 import {
   getGroceryContext,
@@ -27,6 +38,7 @@ import {
   extractAndSaveNotes,
   extractAndSaveConversationSummary,
 } from '../../lib/lead-memory'
+import { recordChatLeadEvent } from '../../lib/chat-lead-score'
 import { rouPersonaRouter } from '../../lib/rou/live'
 import {
   ROU_CONVERSATION_STYLE_BLOCK,
@@ -45,7 +57,8 @@ ${ROU_CONVERSATION_STYLE_BLOCK}`
 
 const MARKET_AND_DATA_BLOCK = `
 MARKET & DATA RULES:
-- Never invent listing data, prices, or availability. If you don’t have current data, say so clearly.
+- Never invent listing data, prices, price history, or availability. If you don’t have current data, say so clearly.
+- PRICE WE HAVE SEEN is only our ingest snapshots. It is not a full MLS change log.
 - Stay focused on the Aiken, SC market and the local MLS coverage area. For clear out-of-area requests, politely explain your focus and offer that Nick can refer them to a trusted agent.
 - You may speak warmly about Nick and the service he provides. Never reveal or hint at any private personal relationship.`
 
@@ -68,7 +81,15 @@ export type ChatRequestData = {
   history?: ChatMessage[]
   sessionKey?: string
   leadId?: string
-  origin?: { lng?: number | null; lat?: number | null; label?: string }
+  origin?: {
+    lng?: number | null
+    lat?: number | null
+    label?: string
+    listingId?: string
+    price?: number | null
+    beds?: number | null
+    baths?: number | null
+  }
 }
 
 export type ChatStreamChunk =
@@ -231,6 +252,7 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
       ? data.leadId.trim()
       : null
   const origin = parseOrigin(data)
+  const selectedListing = parseSelectedListing(data.origin)
 
   const cleanedInput = redactPII(userMessage)
   const lower = cleanedInput.toLowerCase()
@@ -277,19 +299,22 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
     }
   }
 
+  const wantsInventory =
+    lower.includes('show me') ||
+    lower.includes('looking for') ||
+    lower.includes('any homes') ||
+    lower.includes('available') ||
+    lower.includes('under $') ||
+    lower.includes('budget') ||
+    lower.includes('relocating')
+
   const needsListings =
+    wantsInventory ||
     lower.includes('house') ||
     lower.includes('home') ||
     lower.includes('bedroom') ||
     lower.includes('bath') ||
     lower.includes('listing') ||
-    lower.includes('available') ||
-    lower.includes('show me') ||
-    lower.includes('looking for') ||
-    lower.includes('any homes') ||
-    lower.includes('under $') ||
-    lower.includes('budget') ||
-    lower.includes('relocating') ||
     lower.includes('srs') ||
     lower.includes('miles') ||
     lower.includes('near') ||
@@ -306,7 +331,7 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
     : null
 
   let listingRows: ListingSummary[] | null = null
-  if (needsListings || wantsAmenities || namedPlaceQuery) {
+  if (needsListings || wantsAmenities || namedPlaceQuery || selectedListing) {
     try {
       listingRows = await getListingRows()
     } catch (err) {
@@ -314,7 +339,24 @@ async function prepareChatTurn(data: ChatRequestData): Promise<PreparedTurn> {
     }
   }
 
-  if (needsListings) {
+  if (selectedListing) {
+    let home = preferServerListing(selectedListing, listingRows)
+    let priceSeen = formatPriceSeenBlock([])
+    if (home.id) {
+      const [facts, history] = await Promise.all([
+        loadListingPublicFacts(home.id),
+        loadListingPriceHistory(home.id),
+      ])
+      home = mergeListingFacts(home, facts)
+      priceSeen = formatPriceSeenBlock(history)
+    }
+    systemPrompt = `${systemPrompt}\n\n${formatSelectedListingBlock(home)}`
+    systemPrompt = `${systemPrompt}\n\n${priceSeen}`
+    systemPrompt = `${systemPrompt}\n\n${countyRecordsForListing(home)}`
+  }
+
+  const dumpInventory = needsListings && (!selectedListing || wantsInventory)
+  if (dumpInventory) {
     systemPrompt = listingRows
       ? `${systemPrompt}\n\n${formatListingsContext(listingRows, 25)}`
       : `${systemPrompt}\n\nLISTING DATA UNAVAILABLE: could not load current inventory. Do not invent prices or addresses.`
@@ -462,8 +504,35 @@ function saveMemoryAfterTurn(opts: {
   history: ChatMessage[]
   cleanedInput: string
   reply: string
+  listingId?: string
+  refused?: boolean
+  reason?: string
 }) {
   if (!opts.sessionKey) return
+  const scoreData = {
+    listingId: opts.listingId,
+    refused: opts.refused,
+    reason: opts.reason,
+  }
+  if (opts.history.length === 0) {
+    void recordChatLeadEvent({
+      sessionKey: opts.sessionKey,
+      eventType: 'chat_open',
+      data: scoreData,
+    })
+  }
+  void recordChatLeadEvent({
+    sessionKey: opts.sessionKey,
+    eventType: 'chat_message',
+    data: scoreData,
+  })
+  if (opts.refused) {
+    void recordChatLeadEvent({
+      sessionKey: opts.sessionKey,
+      eventType: 'human_handoff_requested',
+      data: scoreData,
+    })
+  }
   void rouPersonaRouter.isolateCompanion(async () => {
     await extractAndSaveConversationSummary({
       sessionKey: opts.sessionKey!,
@@ -525,6 +594,17 @@ export const chat = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const prepared = await prepareChatTurn(data)
     if (prepared.kind === 'early') {
+      saveMemoryAfterTurn({
+        sessionKey:
+          typeof data.sessionKey === 'string' ? data.sessionKey.trim() : null,
+        leadId: typeof data.leadId === 'string' ? data.leadId.trim() : null,
+        history: Array.isArray(data.history) ? data.history : [],
+        cleanedInput: redactPII(data.message.trim()),
+        reply: prepared.reply,
+        listingId: data.origin?.listingId,
+        refused: true,
+        reason: prepared.reason,
+      })
       return {
         reply: prepared.reply,
         refused: true as const,
@@ -564,6 +644,9 @@ export const chat = createServerFn({ method: 'POST' })
       history: prepared.history,
       cleanedInput: prepared.cleanedInput,
       reply: finalized.reply,
+      listingId: data.origin?.listingId,
+      refused: finalized.refused,
+      reason: finalized.reason,
     })
     return finalized
   })
@@ -578,6 +661,17 @@ export const chatStream = createServerFn({ method: 'POST' })
     try {
       const prepared = await prepareChatTurn(data)
       if (prepared.kind === 'early') {
+        saveMemoryAfterTurn({
+          sessionKey:
+            typeof data.sessionKey === 'string' ? data.sessionKey.trim() : null,
+          leadId: typeof data.leadId === 'string' ? data.leadId.trim() : null,
+          history: Array.isArray(data.history) ? data.history : [],
+          cleanedInput: redactPII(data.message.trim()),
+          reply: prepared.reply,
+          listingId: data.origin?.listingId,
+          refused: true,
+          reason: prepared.reason,
+        })
         yield {
           type: 'done',
           reply: prepared.reply,
@@ -627,6 +721,9 @@ export const chatStream = createServerFn({ method: 'POST' })
         history: prepared.history,
         cleanedInput: prepared.cleanedInput,
         reply: finalized.reply,
+        listingId: data.origin?.listingId,
+        refused: finalized.refused,
+        reason: finalized.reason,
       })
       yield {
         type: 'done',

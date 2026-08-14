@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { streamCompanionChat } from '../lib/rou/companion-chat'
 import {
   cancelGholiSpeech,
+  persistSpeakRepliesPreference,
   readSpeakRepliesPreference,
   speakGholiReply,
 } from '../lib/rou/voice'
@@ -13,6 +14,12 @@ import {
   mentionsSchool,
 } from '../lib/playgrounds'
 import { extractNamedPlaceQuery } from '../lib/rou/named-place'
+import { getRouVisitorKey } from '../lib/rou/rou-session'
+import {
+  hydrateTransientChat,
+  listingThreadKey,
+  persistTransientChat,
+} from '../lib/rou/transient-chat-state'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -23,9 +30,12 @@ type ChatWidgetProps = {
   origin?: ChatOrigin | null
   onAmenityIntent?: (kind: 'playground' | 'school' | 'grocery') => void
   onNamedPlaceQuery?: (query: string) => void
+  onShowingIntent?: () => void
+  showingHint?: string
 }
 
-const SESSION_KEY = 'rou-session-key'
+export const SHOWING_CHIP = 'Schedule a showing'
+
 const NICK_PHONE = '803-292-2921'
 
 const ORIGIN_SUGGESTION_CHIPS = [
@@ -33,6 +43,7 @@ const ORIGIN_SUGGESTION_CHIPS = [
   'Schools nearby',
   'Grocery & daily needs',
   'Details on this home',
+  SHOWING_CHIP,
 ] as const
 
 function isWithinNickCallHours(): boolean {
@@ -45,39 +56,53 @@ function isWithinNickCallHours(): boolean {
   return hour >= 9 && hour < 21
 }
 
-function getRouSessionKey(): string {
-  if (typeof window === 'undefined') return 'server'
-  let key = localStorage.getItem(SESSION_KEY)
-  if (!key) {
-    key =
-      crypto.randomUUID?.() ??
-      `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`
-    localStorage.setItem(SESSION_KEY, key)
-  }
-  return key
-}
-
 export function ChatWidget({
   origin,
   onAmenityIntent,
   onNamedPlaceQuery,
+  onShowingIntent,
+  showingHint,
 }: ChatWidgetProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(
+    () => hydrateTransientChat().messages
+  )
   const [loading, setLoading] = useState(false)
-  const [speakReplies] = useState(() =>
+  const [speakReplies, setSpeakReplies] = useState(() =>
     readSpeakRepliesPreference(true)
   )
   const [suggestionChips, setSuggestionChips] = useState<string[]>([])
   const [speaking, setSpeaking] = useState(false)
   const [caption, setCaption] = useState<string | null>(null)
-  const announcedOrigin = useRef<string | null>(null)
+  const [panelsOpen, setPanelsOpen] = useState(
+    () => hydrateTransientChat().panelsOpen
+  )
+  const announcedOrigin = useRef<string | null>(
+    hydrateTransientChat().announcedOrigin
+  )
   const speakRepliesRef = useRef(speakReplies)
   speakRepliesRef.current = speakReplies
 
-  const originKey = origin
-    ? `${origin.lng},${origin.lat},${origin.label ?? ''}`
-    : ''
+  const homeKey = listingThreadKey(origin)
   const originStreet = (origin?.label ?? '').split(',')[0].trim() || 'this home'
+
+  useEffect(() => {
+    persistTransientChat({
+      version: 1,
+      messages,
+      announcedOrigin: announcedOrigin.current,
+      panelsOpen,
+    })
+  }, [messages, panelsOpen])
+
+  function toggleMute() {
+    const next = !speakReplies
+    setSpeakReplies(next)
+    persistSpeakRepliesPreference(next)
+    if (!next) {
+      cancelGholiSpeech()
+      setSpeaking(false)
+    }
+  }
 
   function speakText(text: string) {
     const trimmed = text.trim()
@@ -97,18 +122,16 @@ export function ChatWidget({
   }
 
   useEffect(() => {
-    if (!originKey) {
-      announcedOrigin.current = null
-      return
-    }
-    if (announcedOrigin.current === originKey) return
-    announcedOrigin.current = originKey
+    if (!homeKey) return
+    if (announcedOrigin.current === homeKey) return
+    announcedOrigin.current = homeKey
 
     const intro = `Got it — ${originStreet}. I can help with nearby playgrounds, schools, grocery, or details on this home. What would help?`
     setSuggestionChips([...ORIGIN_SUGGESTION_CHIPS])
-    setMessages((prev) => [...prev, { role: 'assistant', content: intro }])
+    setMessages([{ role: 'assistant', content: intro }])
+    setPanelsOpen(true)
     speakText(intro)
-  }, [originKey, originStreet])
+  }, [homeKey, originStreet])
 
   async function sendMessage(raw: string) {
     if (!raw.trim() || loading) return
@@ -117,6 +140,18 @@ export function ChatWidget({
     setSuggestionChips([])
 
     const trimmed = raw.trim()
+    if (onShowingIntent && trimmed === SHOWING_CHIP) {
+      const hint =
+        showingHint?.trim() ||
+        'The showing form is on this page. I’ll scroll you there.'
+      setMessages([
+        ...messages,
+        { role: 'user', content: trimmed },
+        { role: 'assistant', content: hint },
+      ])
+      onShowingIntent()
+      return
+    }
     if (mentionsPlayground(trimmed)) onAmenityIntent?.('playground')
     else if (mentionsSchool(trimmed)) onAmenityIntent?.('school')
     else if (mentionsGrocery(trimmed)) onAmenityIntent?.('grocery')
@@ -142,7 +177,7 @@ export function ChatWidget({
       const result = await streamCompanionChat(
         trimmed,
         historyForApi,
-        getRouSessionKey(),
+        getRouVisitorKey(),
         undefined,
         origin,
         (chunk) => {
@@ -208,6 +243,11 @@ export function ChatWidget({
       muted={!speakReplies}
       askEnabled={Boolean(origin)}
       chips={suggestionChips}
+      messages={messages}
+      panelsOpen={panelsOpen}
+      onClosePanels={() => setPanelsOpen(false)}
+      onOpenPanels={() => setPanelsOpen(true)}
+      onToggleMute={toggleMute}
       onChip={(label) => void sendMessage(label)}
       onAsk={(text) => void sendMessage(text)}
     />

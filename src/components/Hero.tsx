@@ -1,5 +1,6 @@
 import { useState } from "react";
 import heroImage from "@/assets/hero-farmhouse.jpg";
+import { SiteAccountLink } from "./SiteAccountLink";
 
 type SearchFilters = {
   beds?: string
@@ -40,10 +41,13 @@ export function Hero({ onSearch }: HeroProps) {
       />
 
       <div className="absolute inset-0 bg-black/10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/65" />
 
       <div className="relative z-10 flex h-full flex-col items-center px-4">
-        <h1 className="mt-[18%] text-center text-4xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
+        <div className="flex w-full max-w-6xl justify-end pt-4">
+          <SiteAccountLink />
+        </div>
+        <h1 className="mt-[12%] text-center text-4xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl">
           Find your place in Aiken.
         </h1>
 

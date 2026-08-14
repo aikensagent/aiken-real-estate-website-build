@@ -4,6 +4,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 const RESO_BASE = 'https://replication.sparkapi.com/Version/3/Reso/OData/Property'
+function shouldRecordPriceSnapshot(
+  lastPrice: number | null | undefined,
+  nextPrice: number | null | undefined,
+): boolean {
+  if (nextPrice == null || !Number.isFinite(Number(nextPrice))) return false
+  if (lastPrice == null || !Number.isFinite(Number(lastPrice))) return true
+  return Number(lastPrice) !== Number(nextPrice)
+}
+
+async function recordPriceSnapshot(
+  supabase: ReturnType<typeof createClient>,
+  saved: { id?: string; price?: number | null } | null,
+) {
+  const listingId = saved?.id
+  const nextPrice = saved?.price
+  if (!listingId || nextPrice == null) return
+  const { data: last } = await supabase
+    .from('listing_price_snapshots')
+    .select('list_price')
+    .eq('listing_id', listingId)
+    .order('observed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const lastPrice =
+    last?.list_price == null ? null : Number(last.list_price)
+  if (!shouldRecordPriceSnapshot(lastPrice, Number(nextPrice))) return
+  const written = await supabase.from('listing_price_snapshots').insert({
+    listing_id: listingId,
+    list_price: nextPrice,
+  })
+  if (written.error) {
+    console.error('Price snapshot error', listingId, written.error.message)
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,7 +58,7 @@ Deno.serve(async (req) => {
     const filter =
       "StandardStatus eq 'Active' and (PropertyType eq 'Residential' or PropertyType eq 'Land')"
     const select =
-      'ListingKey,ListingId,UnparsedAddress,StreetNumber,StreetName,StreetSuffix,City,StateOrProvince,PostalCode,ListPrice,BedroomsTotal,BathroomsTotalInteger,BathroomsFull,BathroomsHalf,Latitude,Longitude,StandardStatus,PropertyType,PropertySubType'
+      'ListingKey,ListingId,UnparsedAddress,StreetNumber,StreetName,StreetSuffix,City,StateOrProvince,PostalCode,ListPrice,BedroomsTotal,BathroomsTotalInteger,BathroomsFull,BathroomsHalf,Latitude,Longitude,StandardStatus,PropertyType,PropertySubType,BuildingAreaTotal,YearBuilt,LotSizeAcres,PublicRemarks,GarageSpaces,SubdivisionName,AssociationFee,Heating,Cooling,ArchitecturalStyle,ListOfficeName'
     let nextUrl: string | null =
       `${RESO_BASE}?$filter=${encodeURIComponent(filter)}&$top=100&$select=${select}`
     const allRaw: any[] = []
@@ -87,8 +122,50 @@ Deno.serve(async (req) => {
         const result = await supabase
           .from('listings')
           .upsert(row, { onConflict: 'mls_id' })
+          .select('id, price')
+          .maybeSingle()
         if (result.error) {
           console.error('Upsert error', mlsId, result.error.message)
+          errorCount++
+          continue
+        }
+        await recordPriceSnapshot(supabase, result.data)
+
+        const { data: existing } = await supabase
+          .from('listings')
+          .select('mls_data')
+          .eq('mls_id', String(mlsId))
+          .maybeSingle()
+        const prev =
+          existing?.mls_data &&
+          typeof existing.mls_data === 'object' &&
+          !Array.isArray(existing.mls_data)
+            ? existing.mls_data
+            : {}
+        const facts = {
+          BuildingAreaTotal: item.BuildingAreaTotal ?? item.LivingArea ?? null,
+          LivingArea: item.LivingArea ?? item.BuildingAreaTotal ?? null,
+          YearBuilt: item.YearBuilt ?? null,
+          LotSizeAcres: item.LotSizeAcres ?? null,
+          PropertySubType: item.PropertySubType ?? null,
+          PublicRemarks: item.PublicRemarks ?? null,
+          StoriesTotal: item.StoriesTotal ?? null,
+          GarageSpaces: item.GarageSpaces ?? null,
+          SubdivisionName: item.SubdivisionName ?? null,
+          AssociationFee: item.AssociationFee ?? null,
+          PoolPrivateYN: item.PoolPrivateYN ?? null,
+          Heating: item.Heating ?? null,
+          Cooling: item.Cooling ?? null,
+          ArchitecturalStyle: item.ArchitecturalStyle ?? null,
+          ListingId: item.ListingId ?? null,
+          ListOfficeName: item.ListOfficeName ?? null,
+        }
+        const merge = await supabase
+          .from('listings')
+          .update({ mls_data: { ...prev, ...facts } })
+          .eq('mls_id', String(mlsId))
+        if (merge.error) {
+          console.error('Facts merge error', mlsId, merge.error.message)
           errorCount++
         } else {
           okCount++

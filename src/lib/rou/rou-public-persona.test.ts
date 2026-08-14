@@ -26,6 +26,10 @@ describe('Rou public persona profile', () => {
     expect(ROU_SYSTEM_PROMPT).toContain('Never invent')
     expect(ROU_SYSTEM_PROMPT).toContain('Never say you do not have a saved route')
     expect(ROU_SYSTEM_PROMPT).toContain('general Aiken area')
+    expect(ROU_SYSTEM_PROMPT).toContain('SELECTED HOME')
+    expect(ROU_SYSTEM_PROMPT).toContain('COUNTY RECORDS')
+    expect(ROU_SYSTEM_PROMPT).toContain('listing office')
+    expect(ROU_SYSTEM_PROMPT).toContain('Do not say Nick Williams or Coldwell Banker Best Life Realty listed it')
   })
 
   it('matches the context matrix utility node', () => {

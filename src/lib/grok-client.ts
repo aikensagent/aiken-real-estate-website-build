@@ -11,6 +11,10 @@ export type ChatOrigin = {
   lng?: number | null
   lat?: number | null
   label?: string
+  listingId?: string
+  price?: number | null
+  beds?: number | null
+  baths?: number | null
 }
 
 export type { ChatStreamChunk }

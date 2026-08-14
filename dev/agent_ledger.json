@@ -982,5 +982,1381 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Temporary Gholi portrait inside Rou orb for Nick's local workbench. Revert before public ship."
+  },
+  {
+    "timestamp": "2026-08-13T12:32:00Z",
+    "task_id": "SELECTED_HOME_FACTS_IN_ROU_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listings-context.ts",
+    "supporting_files": [
+      "src/routes/api/-chat.ts",
+      "src/routes/index.tsx",
+      "src/lib/grok-client.ts",
+      "src/lib/listings-context.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "ChatOrigin carries listingId + price/beds/baths. Server injects SELECTED HOME every turn. Inventory dump of 25 skipped unless they ask for more homes. Prefer live RPC row when ids match.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Public MLS facts only. No photo URL. Address capped. Numbers validated. Client spoof only affects their session; server row wins when loaded.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "parse/prefer/format tests. Persona + chat-stream source locks. Details-on-this-home must not pull the 25-home dump.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou answers details from the tapped home, not a generic inventory list."
+  },
+  {
+    "timestamp": "2026-08-13T12:40:00Z",
+    "task_id": "LISTING_FACTS_AND_COUNTY_LINKOUT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-facts.ts",
+    "supporting_files": [
+      "src/lib/listings-context.ts",
+      "src/routes/api/-chat.ts",
+      "src/lib/rou/rou-public-persona.ts",
+      "supabase/functions/mls-ingest/index.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Selected-home turn reads allowlisted RESO keys from listings.mls_data (LivingArea, YearBuilt, LotSizeAcres, PropertySubType). Public RPC still the map pipeline. Ingest $select now asks Spark for those fields.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No county scrape. qPublic disclaimer forbids ingesting assessor data for our product. Link-out only. OwnerName and Media never enter the prompt. Range-checked numbers.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Extract, range, Edgefield-exclusion, and selected-block tests. Persona forbids claiming a parcel scrape.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou can speak MLS sqft/year/lot when present, and may point to the official Aiken County search when a fact is missing."
+  },
+  {
+    "timestamp": "2026-08-13T12:48:00Z",
+    "task_id": "FIX_SQFT_YEAR_FROM_SPARK_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listings-context.ts",
+    "supporting_files": [
+      "src/lib/listing-facts.ts",
+      "supabase/functions/mls-ingest/index.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Stored mls_data was photos only. Extract now reads BuildingAreaTotal (this MLS’s sqft) and nested StandardFields. Selected-home turn fetches Spark RESO when stored facts are missing. Ingest merges those keys into mls_data without wiping Media.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "SPARK_ACCESS_TOKEN stays server-only. Allowlisted fields only. No owner name. No county scrape.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Nested StandardFields extract test. Flexmls sample confirmed BuildingAreaTotal and YearBuilt exist on Aiken actives.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou can now reach live MLS sqft and year when the Spark token is on the server."
+  },
+  {
+    "timestamp": "2026-08-13T13:18:00Z",
+    "task_id": "INGEST_PUBLIC_MLS_FACTS_BATCH_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-facts.ts",
+    "supporting_files": [
+      "src/lib/listings-context.ts",
+      "supabase/functions/mls-ingest/index.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "One public-fact allowlist for ingest + selected-home Spark. Map RPC stays thin. mls_data merge keeps Media. Not the entire raw MLS blob.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No owner name, showing instructions, or compensation. Remarks capped. Token server-only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Extract still drops OwnerName/Media. Selected block includes remarks/garage when present.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public listing facts ingest as one allowlisted batch. Map and photos stay intact."
+  },
+  {
+    "timestamp": "2026-08-13T13:22:00Z",
+    "task_id": "FIX_SPARK_SELECT_400_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-facts.ts",
+    "supporting_files": [
+      "src/lib/listings-context.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "This MLS rejects LivingArea, StoriesTotal, PoolPrivateYN on $select (400). Ask only fields Spark accepts. Fall back to a min select and ListingKey filter.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Token still server-only. No extra PII.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock: PUBLIC_RESO_SELECT excludes the three rejected fields.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Spark listing-fact lookup no longer 400s on this MLS."
+  },
+  {
+    "timestamp": "2026-08-13T13:30:00Z",
+    "task_id": "LISTING_DETAIL_PAGE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/listing.$listingId.tsx",
+    "supporting_files": [
+      "src/lib/listing-facts.ts",
+      "src/lib/listings-context.ts",
+      "src/routes/api/-listing-detail.ts",
+      "src/routes/index.tsx",
+      "src/components/LeadCaptureForm.tsx"
+    ],
+    "failure_modes": [
+      {
+        "id": "invalid_listing_id",
+        "detection": "isListingId rejects non-UUID; loader throws notFound()",
+        "isolation": "No Spark or table query for junk ids; branded 404"
+      },
+      {
+        "id": "spark_token_on_client",
+        "detection": "Facts load only in getListingDetail server fn",
+        "isolation": "Page does not import supabase or listings-context"
+      },
+      {
+        "id": "unsafe_photo_url",
+        "detection": "extractListingPhotos allows https MediaURL only",
+        "isolation": "http and javascript URLs dropped"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "One listings row plus get_listings_with_coords for lng/lat/cover. Facts reuse the Spark allowlist. No new RPC this turn.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "UUID gate before query. Photos https-only. Spark token server-only. Page has no supabase or Node A import. Lead source is listing:id through capture_lead. County is link-out only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Photo extract tests plus source lock on route path, brand tokens, ChatWidget origin, card Link, no hex/TODO.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Tap a card opens a real listing URL with photos, facts, Nick, and Rou already on that home."
+  },
+  {
+    "timestamp": "2026-08-13T14:25:00Z",
+    "task_id": "LISTING_RAIL_SORT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/filterListings.ts",
+    "supporting_files": [
+      "src/routes/index.tsx",
+      "src/lib/filterListings.test.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "missing_price_sorts_first",
+        "detection": "missingLast sends null/NaN to the end",
+        "isolation": "Price on request never sorts as $0"
+      },
+      {
+        "id": "fair_housing_sort",
+        "detection": "Allowlist is featured/price/beds/baths/address only",
+        "isolation": "No school, demographic, or neighborhood-quality sort"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Client-side sort of the in-bounds card set. No new RPC. Featured keeps ingest order.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Labeled select. Display-only. No protected-class or school-quality sort keys.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Sort unit tests plus source lock on listing-sort above the stack.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Sort by sits above the property stack and only reorders homes already in view."
+  },
+  {
+    "timestamp": "2026-08-13T15:01:00Z",
+    "task_id": "LISTING_RAIL_SINGLE_COLUMN_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/lib/listing-page.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Single-column card stack. Rail stays 420/480. Map remains flex-1.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Layout only. Card links and Ask Rou labels unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock: one column, no sm:grid-cols-2, rail widths unchanged.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Property cards are one per row at the original double-column rail width."
+  },
+  {
+    "timestamp": "2026-08-13T15:20:00Z",
+    "task_id": "MOBILE_AIKEN_AREA_SEARCH_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/aiken-areas.ts",
+    "supporting_files": [
+      "src/routes/index.tsx",
+      "src/components/Map.tsx",
+      "src/lib/rou/aiken-areas.test.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "hidden_map_bounds",
+        "detection": "skipHiddenBoundsRef ignores onViewportBounds while mobile List is showing",
+        "isolation": "List uses boundsFromAreaFocus, not a display:none canvas"
+      },
+      {
+        "id": "out_of_market_gps",
+        "detection": "No navigator.geolocation in this turn",
+        "isolation": "v2 note only: out-of-bbox GPS must not filter listings"
+      },
+      {
+        "id": "fair_housing_area",
+        "detection": "resolveAikenArea returns null on FAIR_HOUSING_PLACE_BLOCK",
+        "isolation": "No Mapbox call for protected-class probes"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Chips from verified park/amenity coords. Geocode stays inside AIKEN_GEOCODE_BBOX. List bbox is computed, not scraped from a hidden map.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Mobile-only UI. Fair Housing block on free text. No GPS this turn. Places only — no school-quality or demographic area keys.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Chip match without fetch, bbox/geocode source lock, FH refusal, no geolocation in index.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Mobile Where in Aiken chips fly a computed bbox. Use my location is noted for v2 only."
+  },
+  {
+    "timestamp": "2026-08-13T15:26:00Z",
+    "task_id": "ON_SITE_HOME_AND_PARCEL_PLAN_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "STATUS.md",
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "I’m at a home uses existing get_nearby_listings (tight radius, public card fields only). Lot polygons only from a licensed county/Regrid layer, joined by address or parcel id. ST_DWithin stays SRID 4326.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Geolocation is consent-only and in-bbox. Out-of-bbox GPS never filters inventory. No owner names, no assessed values, no qPublic scrape. Assessor-lines disclaimer required if parcels ship.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Ambiguous sidewalk/townhome: show a short list, never auto-open a neighbor. Hidden-map bounds must not drive the on-site match.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - I’m at a home is next to build. Parcel lines wait on a licensed GIS source."
+  },
+  {
+    "timestamp": "2026-08-13T15:55:00Z",
+    "task_id": "IM_AT_A_HOME_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/rou/on-site-home.ts",
+    "supporting_files": [
+      "src/routes/index.tsx",
+      "src/components/Map.tsx",
+      "src/lib/rou/on-site-home.test.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "out_of_bbox_filters_inventory",
+        "detection": "isOnSiteInCoverage false skips classifyOnSiteMatch",
+        "isolation": "City name only; Where in Aiken stays the browse path"
+      },
+      {
+        "id": "neighbor_auto_open",
+        "detection": "Two pins inside 40m → several, never unique",
+        "isolation": "Visitor picks the card"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Haversine on the already-loaded public card set. get_nearby_listings returns raw listings rows without clean lng/lat, so it is not the v1 path. Computed bbox + gold dot.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Consent via the browser prompt. Lead events store listing id or city, not raw GPS. No owner names, no parcels.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Unique/several/none unit tests plus source lock on the mobile control.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - I’m at a home is live on mobile. Lot lines still wait on a license."
+  },
+  {
+    "timestamp": "2026-08-13T16:10:00Z",
+    "task_id": "GHOLI_ACCOUNT_THUMBS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/account.tsx",
+    "supporting_files": [
+      "src/lib/rou/gholi-thumbs.ts",
+      "src/routes/api/-gholi-thumbs.ts",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "failure_modes": [
+      {
+        "id": "thumbs_on_public_rou",
+        "detection": "ChatWidget source lock excludes recordGholiThumb",
+        "isolation": "Account route only; separate gholi account session key"
+      },
+      {
+        "id": "fair_housing_thumb_prompt",
+        "detection": "Question pool excludes school/family/demographic language",
+        "isolation": "Home-fit questions only"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Thumbs write through Node B upsert_personal_note. Favorite-down also writes trash:listingId. No listing RPC from Node B.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "UUID + allowlisted question ids. source=user. Account page has no supabase or Node A import. Session key is not the public Rou key.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Five-question stability tests, vote parse, page isolation from ChatWidget.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Gholi account thumbs are live. Public Rou does not see them."
+  },
+  {
+    "timestamp": "2026-08-13T16:12:00Z",
+    "task_id": "GHOLI_CLIENT_DASHBOARD_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/account.tsx",
+    "supporting_files": [
+      "src/lib/rou/gholi-thumbs.ts",
+      "src/routes/api/-gholi-thumbs.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Dashboard reads notebookFromNotes via get_lead_memory. Rated vs trash split. No Node A listing RPC from Node B.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Page still has no supabase or Node A import. Thumbs stay account-scoped.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for Your dashboard, Rated homes, Trash, Saved searches.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - /account is Gholi’s client dashboard. Thumbs live inside it."
+  },
+  {
+    "timestamp": "2026-08-13T16:20:00Z",
+    "task_id": "ROU_LISTING_THUMBS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouThumbs.tsx",
+    "supporting_files": [
+      "src/routes/listing.$listingId.tsx",
+      "src/routes/account.tsx",
+      "src/lib/rou/rou-session.ts",
+      "src/lib/rou/gholi-thumbs.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Rou listing UI writes thumb notes through existing Node B server fn. Dashboard only reads notebook. No listing RPC from Node B.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No Gholi name on public thumbs. ChatWidget does not import the writer. Same SECURITY DEFINER path. Rou visitor key shared for notebook visibility.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Isolation flipped: listing has RouThumbs, account has no recordGholiThumb, ChatWidget stays thumbs-free.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Lock #1: Rou asks thumbs on the listing page. Gholi only reads them on /account."
+  },
+  {
+    "timestamp": "2026-08-13T16:23:00Z",
+    "task_id": "ROU_THUMBS_EXIT_BACK_TO_SEARCH",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouThumbs.tsx",
+    "supporting_files": ["src/lib/rou/gholi-thumbs.test.ts"],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No submit mutation. Votes already persist per tap. Exit is navigation to /.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Exit is a labeled Link, not a form post. Full ARIA on the control.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock Back to search present; Submit absent.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Listing thumbs exit is Back to search. No submit."
+  },
+  {
+    "timestamp": "2026-08-13T16:26:00Z",
+    "task_id": "ROU_THUMBS_EXIT_MAP_FOCUS",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/index.tsx",
+    "supporting_files": [
+      "src/components/RouThumbs.tsx",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Return search is listingId only. Home skips Hero, flies camera via boundsAroundPoint, selects the card. No Node B on this path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "listingId validated with isListingId. No raw coords in the URL. Exit links stay labeled Links.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for search listingId on both Back to search links and home validateSearch + camera focus.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Back to search returns to the map on that listing’s pin and card."
+  },
+  {
+    "timestamp": "2026-08-13T16:48:00Z",
+    "task_id": "LISTING_PIN_MAP_AND_PRICE_SNAPSHOTS",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/ListingPinMap.tsx",
+    "supporting_files": [
+      "supabase/migrations/20260813_listing_price_snapshots.sql",
+      "supabase/functions/mls-ingest/index.ts",
+      "src/lib/price-history.ts",
+      "src/lib/listings-context.ts",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Snapshots only on price change. Public history via SECURITY DEFINER RPC. Listing map is one pin, not get_listings_with_coords.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "RLS on snapshots, no anon table writes. RPC is read-only. Pin map has no supabase import. UI copy stays aerial, not demographic.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Snapshot change-only tests, ingest/RPC source lock, pin map isolation from inventory Map.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Ingest tracks ask changes. Listing page has one-pin Streets/Satellite map."
+  },
+  {
+    "timestamp": "2026-08-13T17:20:00Z",
+    "task_id": "BUYER_AUTH_MAGIC_LINK_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/login.tsx",
+    "supporting_files": [
+      "supabase/migrations/20260813_buyer_account_auth.sql",
+      "src/routes/api/-account-auth.ts",
+      "src/routes/account.tsx",
+      "src/lib/account-session.ts",
+      "src/lib/auth-browser.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "claim_buyer_account is SECURITY DEFINER + auth.uid(). First visitor_session_key wins so thumbs follow the account.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Anon cannot execute claim. Server fn forwards caller JWT only. Account file still has no supabase import. Consent required on login.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for magic link, claim RPC, /account redirect to /login, isolation from ChatWidget.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Buyer magic-link Auth gates /account and claims the Rou notebook."
+  },
+  {
+    "timestamp": "2026-08-13T18:24:00Z",
+    "task_id": "PUBLIC_SIGN_IN_LINK",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/SiteAccountLink.tsx",
+    "supporting_files": [
+      "src/components/Hero.tsx",
+      "src/routes/index.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Public chrome links to /login or /account. No new RPCs. Map path still does not claim accounts.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Link only reads the existing browser session token. No secrets in the header.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock Sign in / Dashboard on SiteAccountLink, Hero, and home map bar.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Sign in is on the public hero and map header."
+  },
+  {
+    "timestamp": "2026-08-13T18:30:00Z",
+    "task_id": "BUYER_SAVED_SEARCH_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/saved-search.ts",
+    "supporting_files": [
+      "supabase/migrations/20260813_saved_buyer_searches.sql",
+      "src/routes/api/-saved-searches.ts",
+      "src/routes/index.tsx",
+      "src/routes/account.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Payload is filters + optional Aiken area. Restore via /?saved=. RPCs scoped to buyer_lead_id().",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "RLS on, no anon table grants. auth.uid() only. No raw GPS. Area must be inside the Aiken bbox.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Label/parse tests and source lock for Save this search plus dashboard list.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Buyers can save a map search and reopen it from Gholi’s dashboard."
+  },
+  {
+    "timestamp": "2026-08-13T18:40:00Z",
+    "task_id": "BUYER_AUTH_SESSION_VISIBILITY_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/auth-browser.ts",
+    "supporting_files": [
+      "src/components/SiteAccountLink.tsx",
+      "src/components/Hero.tsx",
+      "src/routes/login.tsx",
+      "src/routes/index.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Session is localStorage. onAuthStateChange plus focus/visibility refresh so the map tab sees the email-link tab. /login redirects when a session already exists.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Rate-limit copy only. No raw provider errors. Gold chip uses theme tokens. Magic-link still auth.uid() only after callback.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for onAuthStateChange, already-sent rate copy, login redirect, and brand-gold Sign in chip.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Sign in is a gold chip. An existing browser session opens the dashboard without a second email."
+  },
+  {
+    "timestamp": "2026-08-13T18:42:00Z",
+    "task_id": "BRAND_LINK_COLOR_NAVY_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/styles.css",
+    "supporting_files": [
+      "src/components/SiteAccountLink.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Unlayered a { color } was beating Tailwind text-brand-navy on the account chip.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No auth surface change. Color only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock: global anchors use --color-brand-navy, not --lagoon-deep.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Gold Sign in chip uses the same navy as the rest of the site."
+  },
+  {
+    "timestamp": "2026-08-13T18:50:00Z",
+    "task_id": "ROU_LIVE_LISTING_CONTEXT_V2",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/api/-chat.ts",
+    "supporting_files": [
+      "src/lib/listings-context.ts",
+      "src/lib/price-history.ts",
+      "src/lib/listings-context.test.ts",
+      "src/lib/rou/chat-stream.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Selected-home turns always hydrate get_listings_with_coords plus allowlisted facts. Price history is get_listing_price_history only. Node A still type-imports listings; Node B does not call listing RPCs.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No photos, no owner PII, no raw mls_data in the prompt. Empty snapshot block forbids invented prior prices. Fair Housing and PII redaction unchanged on the chat path.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source locks for loadListingPriceHistory / formatPriceSeenBlock and unit coverage for missing-fact list plus honest empty history.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou answers this-home from allowlisted facts and ingest price snapshots only."
+  },
+  {
+    "timestamp": "2026-08-13T18:55:00Z",
+    "task_id": "CHAT_SESSION_SCORE_HOOK_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/chat-lead-score.ts",
+    "supporting_files": [
+      "supabase/migrations/20260813_chat_lead_score_hook.sql",
+      "src/lib/rou/transient-chat-state.ts",
+      "src/components/ChatWidget.tsx",
+      "src/routes/api/-chat.ts",
+      "src/lib/leadTracking.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "record_chat_lead_event is SECURITY DEFINER. Links lead via visitor_session_key and backfills null lead_id rows for that session. Chat UI history is sessionStorage only. Scoring is not a Node A or Node B RPC.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No transcript in event_data. Hourly chat_message cap 40. UUID listing ids only. ChatWidget still has no supabase. Node A/B cannot call the scoring RPC.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Sanitize + migration source locks, sessionStorage round-trip, perimeter rejects record_chat_lead_event on both nodes.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Chat turns persist in the tab and score a claimed lead without storing the conversation in lead_events."
+  },
+  {
+    "timestamp": "2026-08-13T19:58:00Z",
+    "task_id": "ROU_VISIBLE_THREAD_UX_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/rou-orb.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Thread is the same sessionStorage messages ChatWidget already owns. No new store. Last eight turns only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Public orb still has no supabase. Labels are You/Rou only. No Gholi name on the public thread.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for Conversation with Rou, messages prop, and ChatWidget wiring.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Visitors can re-read the Rou thread after speech ends."
+  },
+  {
+    "timestamp": "2026-08-13T20:35:00Z",
+    "task_id": "LINK_LAYER_CREAM_BUTTONS_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/styles.css",
+    "supporting_files": [
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Moved global a color into @layer base so text-brand-cream on navy buttons wins.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No auth or data change. Color cascade only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for @layer base and Call {NICK_PHONE} cream text.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Call Nick is cream on navy, not an empty bar."
+  },
+  {
+    "timestamp": "2026-08-13T20:38:00Z",
+    "task_id": "ROU_PANELS_CLOSE_AND_HOME_RESET_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/ChatWidget.tsx",
+    "supporting_files": [
+      "src/components/RouOrb.tsx",
+      "src/lib/rou/transient-chat-state.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Thread key is listing:{id}. A new id replaces the message array. Deselect does not wipe. panelsOpen is sessionStorage.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Close does not clear the notebook. Orb stays. Full ARIA on Close/Open. No supabase on ChatWidget.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "listingThreadKey unit test plus source locks for Close Rou, Open Rou, and replace-on-new-home.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Visitors can close Rou’s boxes. A new home starts a clean thread."
+  },
+  {
+    "timestamp": "2026-08-13T20:42:00Z",
+    "task_id": "ROU_MUTE_SPEAKER_TOGGLE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/components/ChatWidget.tsx",
+      "src/lib/rou/voice.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Mute uses the existing sessionStorage speak preference. Toggle cancels TTS. Thread stays.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "aria-pressed and Mute/Unmute labels. Tokens only. No new store.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for speaker icon, persistSpeakRepliesPreference, and muted gold invert.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou has a speaker mute control next to Close."
+  },
+  {
+    "timestamp": "2026-08-13T20:44:00Z",
+    "task_id": "ROU_ORB_UPPER_RIGHT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/lib/rou/rou-orb.test.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Fixed top-16 right-4 under the navy bar. Orb first, panels hang down, items-end. Off the listing rail.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No new data. ARIA labels unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for top-16 right-4 and not bottom-4 left-4.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rou sits upper-right as help, not on the home list."
+  },
+  {
+    "timestamp": "2026-08-13T20:52:00Z",
+    "task_id": "BUYER_SHOWING_REQUEST_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/api/-showing-requests.ts",
+    "supporting_files": [
+      "supabase/migrations/20260813_showing_requests.sql",
+      "src/routes/listing.$listingId.tsx",
+      "src/components/ChatWidget.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "showing_requests is one row per lead+listing. list_buyer_showings is ready for dashboard multi-select. Guests keep the form.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Auth only. No consent re-ask. RLS on, no anon table grants. JWT client same as saved searches.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for unique pair, Rou chip, and listing Request a showing.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Account holders request a showing without the fear form. Many homes can be requested later from the dashboard."
+  },
+  {
+    "timestamp": "2026-08-13T21:06:00Z",
+    "task_id": "LISTING_ASIDE_SHOWING_FIRST_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/listing.$listingId.tsx",
+    "supporting_files": [],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Aside order is showing, Talk to Nick, Rou thumbs. Call is outline, not a second navy CTA.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "tel: and ARIA label unchanged. Tokens only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock for Call Nick outline.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Showing is the primary listing action. Call Nick is secondary."
+  },
+  {
+    "timestamp": "2026-08-13T21:10:00Z",
+    "task_id": "AWARD_BAR_REVIEW_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "C:/Users/nwill/.cursor/projects/c-dev-aiken-real-estate-website-build/canvases/award-bar-review.canvas.tsx",
+    "supporting_files": [
+      "STATUS.md",
+      "artifacts/IDEAS_PARKING_LOT.md"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Award gap is dirt-truth: licensed lot lines, flood, assigned public school labeled as zoning. Saved search and showing pipes are live but have no consequence after the visit. Dashboard must become a private office, not a shoebox.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Honesty and Fair Housing stay the differentiator. Do not invent tax or MLS history. Auth must stop teaching fear. Guest consent must not repeat after claim. Associate desk is required before this is an award consumer product.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Failure modes a jury would feel in ninety seconds: human face on public Rou, parked hero, leftover lagoon/green tokens, empty price-seen until ingest redeploy, tab-only thread, listing gallery unfinished.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Award-bar review delivered as canvas. Not good-enough. Seven wins named. Execute only if Nick asks."
+  },
+  {
+    "timestamp": "2026-08-13T21:16:00Z",
+    "task_id": "ROU_TALKING_FACE_CAPTION_BAR_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/components/RouOrb.tsx",
+    "supporting_files": [
+      "src/lib/rou/voice.ts",
+      "src/routes/api/-tts.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "xAI TTS is an mp3 blob with no viseme or word timestamps. A talking face needs a mouth-shape layer or a talking-head pipeline; the current still plus EQ cannot meet the bar.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "The live portrait is Gholi. A public talking Rou on that photo merges identities and can read as a real person / deepfake. Face lock must name whose face. Captions stay after Fair Housing / PII on the spoken text.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Today the full reply dumps into a cream card. Award CC is one or two timed lines, mute still shows them, they leave when speech ends. A desynced jaw on the JPEG fails worse than a still.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Discussing talking face + broadcast captions. Not executed. Waiting on whose face."
+  },
+  {
+    "timestamp": "2026-08-13T21:18:00Z",
+    "task_id": "ROU_TALKING_HEAD_VIDEO_BAR_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/assets/gholi-avatar.jpg",
+    "supporting_files": [
+      "src/components/RouOrb.tsx",
+      "src/lib/rou/voice.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Nick means a talking-head video, not visemes on a still. That is photo-plus-Carina into a streaming avatar pipeline. Three hops after Grok. First frame will lag unless we idle on a filmed plate.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "A photoreal talking woman on the public map reads as a live person. Disclose AI. Do not use a lounge portrait as a licensed-agent stand-in. Gholi face as public Rou still merges identity.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Current JPEG is evening wear in a bar. Puppeteering that still is the AI-realtor tell. Award path needs a purpose-shot talking plate and captions over the picture, not cream cards.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Corrected to video talking-head. Not executed."
+  },
+  {
+    "timestamp": "2026-08-13T21:20:00Z",
+    "task_id": "ROU_TALKING_HEAD_CARINA_LOCK_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/routes/api/-tts.ts",
+    "supporting_files": [
+      "artifacts/IDEAS_PARKING_LOT.md",
+      ".cursor/rules/rou-visual-temp-face.mdc"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Talking-head is generated motion driven by existing Carina mp3. No second voice pipeline.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Carina still passes PII redaction and Fair Housing in -tts.ts before audio exists for video.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Source lock: ROU_TTS_VOICE_ID stays carina. Browser speechSynthesis stays forbidden.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Carina locked as the talking-head voice. Not executed."
+  },
+  {
+    "timestamp": "2026-08-13T21:26:00Z",
+    "task_id": "ROU_SITE_TOUR_SCRIPT_15_30_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/rou-site-tour-script.txt",
+    "supporting_files": [],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Script follows live visitor path: map, tap home, Ask Rou, save, showing, Nick. Features need not be shipped.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Copy says public schools. Blocks good-schools / safe-area / family-friendly in the reader notes.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Short ~45 words / Full ~70 words. Spoken labels match the site.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - 15-30s Rou site-tour script written. Not a video build."
+  },
+  {
+    "timestamp": "2026-08-13T22:42:00Z",
+    "task_id": "ROU_SITE_TOUR_SCRIPT_35_45_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/rou-site-tour-script.txt",
+    "supporting_files": [],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Same visitor path, longer breath: map, filter, tap, Ask Rou, save, showing, Nick.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Keeps public schools and I-only-say-what-we-know. No good-schools or safe-area.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Primary ~100 words / Long ~112 words. Notes Act-Two 30s cap.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Script rewritten to 35-45 seconds."
+  },
+  {
+    "timestamp": "2026-08-14T00:58:00Z",
+    "task_id": "IDX_LISTING_OFFICE_CREDIT_PARK_AND_NICK_LOCKUP_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/IDEAS_PARKING_LOT.md",
+    "supporting_files": [
+      "artifacts/brand/nick-williams-lockup-light.png",
+      "artifacts/brand/nick-williams-lockup-dark.png"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Parked ListOfficeName / IDX courtesy-of. listing-facts has no office field yet. Logo lockup composites official VER_BLU and HZ_W_MO; does not redraw CB.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "IDX and SC advertising require the listing brokerage on each listing, not Nick by default. Official CB art only. Do not commit the kit to GitHub unless Nick asks.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Parked item 28. Lockups in artifacts/brand. Gemini circular seals stay mockups.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Listing-office credit parked. Nick lockup uses official CB Best Life files."
+  },
+  {
+    "timestamp": "2026-08-14T01:20:00Z",
+    "task_id": "NICK_WILLIAMS_SEAL_KERN_V2",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/brand/nick-williams-seal.png",
+    "supporting_files": [],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Seal uses official VER_BLU CB in the center. Arc type sits on the baseline, natural glyph advances, no outer rings, letters not stretched to fill the circle.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Official CB Best Life art only. Kit stays on Nick's machine. Modest navy host plate remains the video still; cleavage-heavy Kling throwaway is not a keeper.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Optical kern on AM/WI/word gap. Pixel gaps in WILLIAMS now in the same family as NICK. Host video still is artifacts/runway-stills/00-rou-host-anchor-navy.png.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Seal rebuilt for A-M and NICK-WILLIAMS spacing. Modest navy plate locked."
+  },
+  {
+    "timestamp": "2026-08-14T01:42:00Z",
+    "task_id": "ROU_HOST_NAVY_HINT_NECKLINE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "artifacts/runway-stills/00-rou-host-anchor-navy-hint.png",
+    "supporting_files": [
+      "artifacts/runway-stills/00-rou-host-anchor-navy.png"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Same host plate, neckline only: shallow TV-host V. Submit still, not Kling video.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Professional news-anchor cut. Not a plunging cocktail neckline. Closed modest plate kept as fallback.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Hint plate is the Runway character still. Closed navy remains at 00-rou-host-anchor-navy.png.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Hint neckline plate ready for Runway submit."
+  },
+  {
+    "timestamp": "2026-08-14T01:54:00Z",
+    "task_id": "RUNWAY_SUBMITTED_RESUME_SITE_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "STATUS.md",
+    "supporting_files": [
+      "artifacts/runway-stills/00-rou-host-anchor-navy-hint.png"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Parked Runway wait. Next site slice is Nick's pick: listing-office credit, opened-card thumbs, or commit the sprint.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Listing-office credit stays off until execute. Do not default courtesy-of to Nick's shop. No agent names unless IDX allows.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Host plate for the submitted request is 00-rou-host-anchor-navy-hint.png. Site work does not wait on the clip.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Runway is in Nick's queue. Site work resumes on his next execute."
+  },
+  {
+    "timestamp": "2026-08-14T01:58:00Z",
+    "task_id": "IDX_LISTING_OFFICE_CREDIT_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-facts.ts",
+    "supporting_files": [
+      "src/lib/listings-context.ts",
+      "src/routes/listing.$listingId.tsx",
+      "supabase/functions/mls-ingest/index.ts",
+      "src/lib/rou/rou-public-persona.ts"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "ListOfficeName in ingest $select and mls_data merge. No new table. Spark fallback when store has no office. Map RPC unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Allowlist ListOfficeName only. No ListAgent or OwnerName. formatListingCourtesy returns null when empty. Never default to Nick.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Tests for extract, courtesy null, listing page, ingest select, selected-home block, Rou prompt.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Listing courtesy of ListOfficeName on the detail page. Redeploy mls-ingest."
   }
 ]

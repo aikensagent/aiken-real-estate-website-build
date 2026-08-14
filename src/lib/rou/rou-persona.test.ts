@@ -75,12 +75,14 @@ describe('Aegis perimeter', () => {
     expect(() => assertNodeARpc('get_lead_memory')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('upsert_personal_note')).toThrow(/blocked from memory RPC/)
     expect(() => assertNodeARpc('save_conversation_summary')).toThrow(/blocked from memory RPC/)
+    expect(() => assertNodeARpc('record_chat_lead_event')).toThrow(/cannot call/)
   })
 
   it('allows Node B SECURITY DEFINER memory RPCs and blocks listing RPCs', () => {
     expect(() => assertNodeBRpc('get_lead_memory')).not.toThrow()
     expect(() => assertNodeBRpc('upsert_personal_note')).not.toThrow()
     expect(() => assertNodeBRpc('get_listings_with_coords')).toThrow(/cannot call Interface Rou RPC/)
+    expect(() => assertNodeBRpc('record_chat_lead_event')).toThrow(/cannot call/)
   })
 
   it('blocks Node A from isolated memory tables', () => {

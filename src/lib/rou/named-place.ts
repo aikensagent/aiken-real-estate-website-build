@@ -49,7 +49,7 @@ const COARSE_PLACE_TYPES = new Set([
   'neighborhood',
 ])
 
-const FAIR_HOUSING_PLACE_BLOCK = [
+export const FAIR_HOUSING_PLACE_BLOCK = [
   'race',
   'racial',
   'black neighborhood',

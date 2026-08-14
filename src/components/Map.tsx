@@ -125,6 +125,10 @@ type MapProps = {
   routeOverlay?: AmenityRouteOverlay | null
   /** Left-rail cards follow this camera bbox after pan/zoom. */
   onViewportBounds?: (bounds: MapViewportBounds) => void
+  /** Area search / chip — fly here when the list stays on mobile List. */
+  cameraFocus?: { lng: number; lat: number; zoom: number } | null
+  /** Buyer standing in town — blue-dot only, never a parcel. */
+  userLocation?: { lng: number; lat: number } | null
 }
 
 type ListingFeatureCollection = {
@@ -347,6 +351,8 @@ export default function Map({
   visible = true,
   routeOverlay = null,
   onViewportBounds,
+  cameraFocus = null,
+  userLocation = null,
 }: MapProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
@@ -364,6 +370,7 @@ export default function Map({
   const [showLegend, setShowLegend] = useState(true)
   const walkLabelMarker = useRef<mapboxgl.Marker | null>(null)
   const driveLabelMarker = useRef<mapboxgl.Marker | null>(null)
+  const userLocationMarker = useRef<mapboxgl.Marker | null>(null)
 
   function clearRouteLabelMarkers() {
     walkLabelMarker.current?.remove()
@@ -957,6 +964,42 @@ export default function Map({
     if (!map.current?.isStyleLoaded()) return
     setBoundaryLayersVisible(map.current, showBoundaries)
   }, [showBoundaries])
+
+  useEffect(() => {
+    const m = map.current
+    if (!m || !cameraFocus) return
+    const fly = () => {
+      m.flyTo({
+        center: [cameraFocus.lng, cameraFocus.lat],
+        zoom: cameraFocus.zoom,
+        duration: 700,
+      })
+    }
+    if (m.isStyleLoaded()) fly()
+    else m.once('load', fly)
+    return () => {
+      m.off('load', fly)
+    }
+  }, [cameraFocus])
+
+  useEffect(() => {
+    const m = map.current
+    userLocationMarker.current?.remove()
+    userLocationMarker.current = null
+    if (!m || !userLocation) return
+    const el = document.createElement('div')
+    el.setAttribute('role', 'img')
+    el.setAttribute('aria-label', 'Your location')
+    el.className =
+      'h-3.5 w-3.5 rounded-full border-2 border-brand-cream bg-brand-gold shadow'
+    userLocationMarker.current = new mapboxgl.Marker({ element: el })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(m)
+    return () => {
+      userLocationMarker.current?.remove()
+      userLocationMarker.current = null
+    }
+  }, [userLocation])
 
   useEffect(() => {
     const m = map.current

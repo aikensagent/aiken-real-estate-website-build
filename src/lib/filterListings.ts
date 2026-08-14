@@ -88,3 +88,57 @@ export function filterListingsInBounds(
   if (!bounds) return listings
   return listings.filter((listing) => listingInBounds(listing, bounds))
 }
+
+export const LISTING_SORT_OPTIONS = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'price_desc', label: 'Price: high to low' },
+  { value: 'price_asc', label: 'Price: low to high' },
+  { value: 'beds_desc', label: 'Beds: most first' },
+  { value: 'baths_desc', label: 'Baths: most first' },
+  { value: 'address_asc', label: 'Address A–Z' },
+] as const
+
+export type ListingSort = (typeof LISTING_SORT_OPTIONS)[number]['value']
+
+export function isListingSort(value: string): value is ListingSort {
+  return LISTING_SORT_OPTIONS.some((option) => option.value === value)
+}
+
+function missingLast(
+  a: number | null | undefined,
+  b: number | null | undefined,
+  direction: 'asc' | 'desc'
+): number {
+  const aMissing = a == null || !Number.isFinite(a)
+  const bMissing = b == null || !Number.isFinite(b)
+  if (aMissing && bMissing) return 0
+  if (aMissing) return 1
+  if (bMissing) return -1
+  return direction === 'asc' ? a - b : b - a
+}
+
+/** Display order only — does not mutate the input or re-query the map RPC. */
+export function sortListings(
+  listings: Listing[],
+  sort: ListingSort
+): Listing[] {
+  if (sort === 'featured') return listings
+
+  return [...listings].sort((a, b) => {
+    let cmp = 0
+    if (sort === 'price_asc') cmp = missingLast(a.price, b.price, 'asc')
+    else if (sort === 'price_desc') cmp = missingLast(a.price, b.price, 'desc')
+    else if (sort === 'beds_desc') cmp = missingLast(a.beds, b.beds, 'desc')
+    else if (sort === 'baths_desc') cmp = missingLast(a.baths, b.baths, 'desc')
+    else if (sort === 'address_asc') {
+      const aAddr = (a.address || '').trim()
+      const bAddr = (b.address || '').trim()
+      if (!aAddr && !bAddr) cmp = 0
+      else if (!aAddr) cmp = 1
+      else if (!bAddr) cmp = -1
+      else cmp = aAddr.localeCompare(bAddr, 'en', { sensitivity: 'base' })
+    }
+    if (cmp !== 0) return cmp
+    return a.id.localeCompare(b.id)
+  })
+}

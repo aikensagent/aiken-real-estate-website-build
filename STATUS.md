@@ -1,6 +1,6 @@
 # ARIA Project Status
 
-**Last Updated:** 2026-08-12
+**Last Updated:** 2026-08-13
 
 ## Phase 0 — Foundation & Design Tokens
 - COMPLETE
@@ -25,6 +25,8 @@
 - **Rou** — Node A utility (map filters, PostGIS, POI / amenity lookups). Stateless `sessionStorage` only.
 - **Gholi** — Node B spoken companion (Best Life Realty personal advisor). Stateful memory via SECURITY DEFINER RPCs.
 - Live UI remains **ChatWidget** (not the floating-orb experiment).
+- Public Rou face: `gholi-avatar.jpg` is **TEMP workbench only**. Direction is talking-head video driven by **Carina** + broadcast CC. Do not treat the lounge still as the ship plate.
+- **Runway (2026-08-13):** Nick submitted the site-tour request with host plate `artifacts/runway-stills/00-rou-host-anchor-navy-hint.png`. Waiting on their clip. Do not block site work on it.
 
 ### Completed through 2026-08-12 (on disk; not all committed)
 - Grok chat via server-only `createServerFn` (`src/routes/api/-chat.ts`)
@@ -40,10 +42,10 @@
 - Specialist ledger receipts in `dev/agent_ledger.json` (83/83 vitest at last gate)
 
 ### Still Remaining in Phase 3
-- Stronger multi-turn conversation history UX
+- Stronger multi-turn conversation history UX ............... DONE 2026-08-13 (sessionStorage + visible You/Rou thread on the orb)
 - Server / Twilio voice (beyond xAI TTS + browser mic)
-- Richer live MLS listing context injection
-- Chat session persistence ↔ lead scoring hook
+- Richer live MLS listing context injection ............... DONE 2026-08-13 (selected-home facts + missing-fact list + price-we-have-seen snapshots; not a full MLS log)
+- Chat session persistence ↔ lead scoring hook ............... DONE 2026-08-13 (record_chat_lead_event + shared Rou visitor key; SQL must be applied)
 - Notion Phase 3 exit checklist
 - Visual design polish (parked for specialized visual agents)
 - Floating-orb private conversion testing (kill-switch stays off until then)
@@ -54,6 +56,22 @@
 - xAI TTS (Carina) for public Rou replies — browser `speechSynthesis` robot voice removed; captions stay if TTS fails
 - Branded 404 (`notFoundComponent` on `__root__`) + document title “Find your place in Aiken | Nick Williams”
 - Named-place geocode (LOCK #2): “how far to Bridgestone” matches curated amenities first, then Mapbox inside the Aiken bbox, and draws the walk/drive route
+- Listing detail page (`/listing/:listingId`): photos, allowlisted MLS facts, schedule/talk to Nick, Rou already on that home. Cards link to the URL. Spark token stays server-only.
+- Left-rail sort (featured, price, beds, baths, address) on homes in the current map view.
+- Mobile “Where in Aiken?” chips + field (list stays on List; computed bbox). Desktop still pans the map.
+- Noted for v2: Use my location — in-bbox flies the camera; out-of-bbox is relocating-from lead signal, never a listing filter.
+- **I’m at a home** (mobile): in-bbox GPS matches a nearby card from loaded listings; out-of-bbox never filters inventory. Lot lines still wait on a licensed county / Regrid layer.
+- Gholi **client dashboard** (`/account`): rated homes, trash, saved-search empty state. Gated by buyer Auth. Public Rou stays off this path.
+- Rou **listing thumbs**: Yes/No on `/listing/:id` writes the shared notebook. Exit is Back to search (`/?listingId=`), which opens the map on that home and selects the card. Gholi only reads the notebook on `/account`. ChatWidget does not ask thumbs. Map-card thumbs still later.
+- Listing **price snapshots**: 15-min ingest writes `listing_price_snapshots` only when ask changes. Public read via `get_listing_price_history`. History starts now — not a full MLS log.
+- Listing **pin map**: one Mapbox pin on `/listing/:id` with Streets / Satellite (`satellite-streets-v12`). Not the inventory map.
+- Buyer **Auth** (first slice): magic-link at `/login`, callback at `/auth/callback`, `claim_buyer_account` attaches `auth.uid()` to a lead and keeps the first visitor notebook key. `/account` redirects if signed out. **Sign in** is on the hero and map header (`SiteAccountLink`). Admin/associate dashboards still later.
+- **Saved searches**: signed-in buyers save the current map filters + area from the navy bar. Stored via `save_buyer_search` (max 20). Dashboard lists them; tap opens `/?saved=`. No GPS in the payload.
+- **Rou listing context**: a tapped home now gets allowlisted MLS facts, an explicit missing-fact list, county-records link-only, and PRICE WE HAVE SEEN (ingest snapshots only). Chat still does not invent prices or a full MLS change log.
+- **Chat persist + score**: the public thread stays in sessionStorage for the tab. Each turn records `chat_open` / `chat_message` (and handoff on refusal) via `record_chat_lead_event`. No transcript in `lead_events`. Map + form + chat share `rou-session-key`. Score updates only after a lead is attached. **Apply** `20260813_chat_lead_score_hook.sql`.
+- **Rou thread UX**: orb sits upper-right under the navy bar (map side, not over the list). Close hides the cream panels; tap the orb to open them again. A new listing id wipes the thread. Mute is a speaker icon next to Close.
+- **Showing request**: signed-in buyers get one **Request a showing** button (no consent repeat). Guests still see the form. Rou chip “Schedule a showing” fires that path or scrolls to the form. Table is one row per home so the dashboard can multi-select later. **Apply** `20260813_showing_requests.sql`.
+- **Listing-office credit (IDX)**: listing detail shows `Listing courtesy of {ListOfficeName}` when Spark/ingest has it. Never defaults to Nick’s shop. Rou is told not to invent who listed the home. Map cards still later (RPC has no office field). **Redeploy** `mls-ingest` so existing rows pick up the office name.
 
 ## Architectural Rules Established
 - Public write operations must use SECURITY DEFINER RPCs

@@ -1,6 +1,7 @@
 // src/lib/leadTracking.ts
 // Phase 2 – Lead Capture & Behavioral Scoring
 
+import { getRouVisitorKey } from "./rou/rou-session";
 import { supabase } from "./supabase";
 
 export type LeadEventType =
@@ -23,18 +24,9 @@ export interface TrackEventOptions {
   eventData?: Record<string, unknown>;
 }
 
-const SESSION_KEY = "aria_session_id";
-
-/** Get or create a stable anonymous session id */
+/** Same visitor key as Rou chat and listing thumbs. */
 export function getSessionId(): string {
-  if (typeof window === "undefined") return "server";
-
-  let id = localStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(SESSION_KEY, id);
-  }
-  return id;
+  return getRouVisitorKey();
 }
 
 /** Track a behavioral event (anonymous or linked to a lead) */

@@ -13,9 +13,11 @@
 ## Identity (LOCKED)
 - **Rou** — public Node A utility / interface AI (map, listings, amenity Q&A, transient session)
 - **Gholi** — Node B relationship companion, **account/client dashboard only** (stateful memory)
-- Public Rou visual = abstract orb (Watson-like *idea*, brand-native art), **not** a human face
-- Orb motion = EQ-style fluctuation while speaking; other motion optional
-- Mute/silent speech UI = hybrid **D**: captions near orb + tap-orb transcript/ask; contrast-safe scrim or fixed caption bar (text never naked on map/photos)
+- Public Rou visual (**REVISE 2026-08-13**) — talking-head **video**: she talks and the head moves, like a person on camera. Not a still with a mouth layer. Not cream text boxes; captions are broadcast CC on the picture.
+- `src/assets/gholi-avatar.jpg` is **TEMP workbench only**. Do not treat it as the ship plate, do not argue the lounge still as the brand, do not ship it as Rou.
+- Voice is **Carina** (`ROU_TTS_VOICE_ID` in `-tts.ts`). Talking-head video is driven by that audio. Not a vendor avatar voice. Not browser `speechSynthesis`. Not filmed dialogue.
+- Ship plate is still unchosen. `gholi-avatar.jpg` stays TEMP until a purpose-shot plate exists.
+- Mute/silent speech UI = hybrid **D**: captions on the picture like television CC; tap-orb for ask. Text never naked on map/photos.
 - Chatroom grey-hoodie thumbnail = Cursor chat only (Nick ↔ agent). **Not** site product.
 
 ---
@@ -32,7 +34,7 @@
 4. **LOCK (shipped)** — First open of a property card → one-time **Introducing Rou** dialog (neighborhood-fit framing + example asks); dismissible; localStorage so it does not nag every card.
 5. **LOCK (shipped)** — Tap card to open/focus (ring). **Ask Rou** appears only on the opened card (and stays while Rou is active). Idle cards stay clean. Activating sets listing origin + chips. Will feel cleaner once full property-card detail exists.
 11. Visual walk/drive route lines (with #3). **Shipped** — both paths at once: red dotted walk + solid drive; walk/drive icon+time pills on the lines; no separate route box.
-12. Public Rou = abstract orb + EQ-while-speaking (not face, not bars-on-photo). **First slice shipped 2026-08-12** — closed ChatWidget is `RouOrb` (navy/gold EQ). Chat panel still exists until full orb replacement.
+12. Public Rou visual — **REVISE 2026-08-13**: talking-head video + broadcast CC. Live slice is still `RouOrb` with TEMP `gholi-avatar.jpg` (workbench). Not the ship plate.
 13. Clickable chips after activate (schools / grocery / park…). **Shipped** with activate greeting.
 14. Dual presence — Rou public / Gholi dashboard (Gholi may be warm/visual in-dashboard only).
 15. Orb-first UI over time; captions + transcript hybrid; contrast-safe text; visuals adjustable. **Partial** — cream caption scrim on orb when speaking or muted. Full transcript-drawer still later.
@@ -58,12 +60,13 @@
 19. Comparison mode (side-by-side) — with #9.
 20. “What should I know about this area?” — only with real curated area notes (don’t invent).
 22. Hesitation / objection prompts — easy to feel pushy; after activate + mute-safe UI trusted.
+28. **Listing-office credit (IDX / MLS)** — **partial 2026-08-13**. Listing detail credits `ListOfficeName` via `formatListingCourtesy`. No Nick default. Map-card courtesy still later. Redeploy `mls-ingest`.
 ---
 
 ## DROP
 
 10. Buyer’s-agent “written agreement?” question — live agent handles representation.
-23. Public avatar / face rethink — superseded by abstract orb + dashboard-only Gholi.
+23. Public avatar / face — **REVISE 2026-08-13**: talking-head video is back on the table. TEMP face is not the ship plate. Dashboard-only Gholi unchanged.
 
 ---
 

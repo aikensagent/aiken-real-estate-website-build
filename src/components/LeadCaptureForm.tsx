@@ -9,12 +9,18 @@ import { trackEvent, submitLead, type LeadFormData } from "@/lib/leadTracking";
 interface LeadCaptureFormProps {
   source?: string;
   className?: string;
+  defaultMessage?: string;
+  heading?: string;
+  description?: string;
   onSuccess?: (leadId: string) => void;
 }
 
 export function LeadCaptureForm({
   source = "website_form",
   className = "",
+  defaultMessage = "",
+  heading = "Get in Touch",
+  description = "Tell us a little about yourself and we will follow up.",
   onSuccess,
 }: LeadCaptureFormProps) {
   const [form, setForm] = useState({
@@ -22,7 +28,7 @@ export function LeadCaptureForm({
     lastName: "",
     email: "",
     phone: "",
-    message: "",
+    message: defaultMessage,
     consentGiven: false,
     consentEmail: false,
     consentSms: false,
@@ -101,10 +107,8 @@ export function LeadCaptureForm({
       noValidate
     >
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-foreground">Get in Touch</h3>
-        <p className="text-sm text-muted-foreground">
-          Tell us a little about yourself and we will follow up.
-        </p>
+        <h3 className="text-lg font-semibold text-foreground">{heading}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
