@@ -5,11 +5,13 @@ import {
   extractListingPhotos,
   extractPublicListingFacts,
   formatListingCourtesy,
+  formatListingFactRows,
   mergeListingOfficeNames,
   parseListingOfficeRows,
   isListingId,
   PUBLIC_RESO_SELECT,
   formatCountyRecordsBlock,
+  daysOnMarketFromDate,
   isAikenCountyAddress,
 } from './listing-facts'
 
@@ -21,6 +23,10 @@ describe('extractPublicListingFacts', () => {
     expect(PUBLIC_RESO_SELECT).toContain('BuildingAreaTotal')
     expect(PUBLIC_RESO_SELECT).toContain('YearBuilt')
     expect(PUBLIC_RESO_SELECT).toContain('ListOfficeName')
+    expect(PUBLIC_RESO_SELECT).toContain('PoolFeatures')
+    expect(PUBLIC_RESO_SELECT).toContain('FireplaceYN')
+    expect(PUBLIC_RESO_SELECT).toContain('ArchitecturalStyle')
+    expect(PUBLIC_RESO_SELECT).toContain('OnMarketDate')
     expect(PUBLIC_RESO_SELECT).not.toContain('ListAgent')
     expect(PUBLIC_RESO_SELECT).not.toContain('OwnerName')
   })
@@ -57,6 +63,29 @@ describe('extractPublicListingFacts', () => {
     expect(JSON.stringify(facts)).not.toContain('MUST NOT APPEAR')
     expect(JSON.stringify(facts)).not.toContain('example.com')
     expect(facts.list_office_name).toBeNull()
+  })
+
+  it('reads fireplace, pool features, style, and days on market', () => {
+    const facts = extractPublicListingFacts({
+      PoolFeatures: ['Private', 'In Ground'],
+      FireplaceYN: true,
+      FireplacesTotal: 2,
+      ArchitecturalStyle: ['Traditional'],
+      Roof: ['Metal'],
+      Flooring: ['Hardwood', 'Tile'],
+      NewConstructionYN: false,
+      WaterFrontYN: true,
+      OnMarketDate: '2026-07-30T12:00:00.000Z',
+    })
+    expect(facts.pool).toContain('Private')
+    expect(facts.fireplace).toBe('2 fireplaces')
+    expect(facts.architectural_style).toBe('Traditional')
+    expect(facts.roof).toBe('Metal')
+    expect(facts.flooring).toContain('Hardwood')
+    expect(facts.new_construction).toBe(false)
+    expect(facts.waterfront).toBe(true)
+    expect(facts.on_market_date).toBe('2026-07-30')
+    expect(facts.days_on_market).toBeGreaterThanOrEqual(0)
   })
 
   it('drops out-of-range and missing values', () => {
@@ -166,5 +195,27 @@ describe('listing office courtesy', () => {
     })
     expect(facts.list_office_name).toBe('Aiken Homes LLC')
     expect(JSON.stringify(facts)).not.toContain('MUST NOT APPEAR')
+  })
+})
+
+describe('public fact rows', () => {
+  it('lists property facts and never schools or who lives nearby', () => {
+    const rows = formatListingFactRows(
+      {
+        ...emptyListingPublicFacts(),
+        sqft: 1842,
+        architectural_style: 'Traditional',
+        new_construction: false,
+      },
+      { price: 425000, beds: 3, baths: 2 }
+    )
+    const blob = rows.map((row) => `${row.key} ${row.label}`).join(' ').toLowerCase()
+    expect(rows.some((row) => row.key === 'sqft')).toBe(true)
+    expect(rows.some((row) => row.label === 'Style')).toBe(true)
+    expect(blob).not.toContain('school')
+    expect(blob).not.toContain('crime')
+    expect(blob).not.toContain('family')
+    expect(blob).not.toContain('demographic')
+    expect(daysOnMarketFromDate('2026-08-01T00:00:00.000Z', Date.parse('2026-08-11T00:00:00.000Z'))).toBe(10)
   })
 })

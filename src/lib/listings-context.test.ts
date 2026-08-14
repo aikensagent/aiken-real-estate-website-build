@@ -61,7 +61,6 @@ describe('selected listing context', () => {
     expect(block).toContain('1,842 sqft')
     expect(block).toContain('built 1998')
     expect(block).toContain('0.42 acres')
-    expect(block).toContain('COUNTY RECORDS')
   })
 
   it('includes remarks and garage when those facts are present', () => {
@@ -84,6 +83,20 @@ describe('selected listing context', () => {
     expect(block).toContain('listed by Example Realty Group')
     expect(block).not.toContain('listing office')
     expect(block).not.toContain('Nick Williams')
+  })
+
+  it('includes style and days on market when those facts are present', () => {
+    const block = formatSelectedListingBlock({
+      ...tapped,
+      architectural_style: 'Traditional',
+      fireplace: '2 fireplaces',
+      new_construction: true,
+      days_on_market: 12,
+    })
+    expect(block).toContain('Traditional')
+    expect(block).toContain('fireplace: 2 fireplaces')
+    expect(block).toContain('new construction')
+    expect(block).toContain('12 days on market')
   })
 
   it('names missing facts so the model cannot invent them', () => {

@@ -53,7 +53,7 @@
 ## PARKED (dependency / later)
 
 6. Dashboard confidence score — build after #7/#8 can feed it; UI may show `?%` / not enough data until honest. (Do build collection — score never earns itself otherwise.)
-9. Multi-select + drag-to-compare — after single-house Rou activate feels solid.
+9. Multi-select + drag-to-compare — **partial 2026-08-13**. Up to 4 homes, sessionStorage tray, drag to reorder, side-by-side allowlisted facts. Never ranks neighborhoods or schools.
 16. Photo-browse / dwell like-dislike triggers — after #4/#5 activate flow is trusted.
 17. Subdivision overlays.
 18. Rou post-search prompts — only when the offered action is actually supported.

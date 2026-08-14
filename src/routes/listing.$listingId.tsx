@@ -4,12 +4,19 @@ import { ChatWidget } from '../components/ChatWidget'
 import { LeadCaptureForm } from '../components/LeadCaptureForm'
 import { ListingPinMap } from '../components/ListingPinMap'
 import { RouThumbs } from '../components/RouThumbs'
+import { ListingCompareTray } from '../components/ListingCompareTray'
 import { SiteAccountLink } from '../components/SiteAccountLink'
 import { readAccessToken, useBuyerSignedIn } from '../lib/auth-browser'
 import { requestBuyerShowing } from './api/-showing-requests'
 import type { PriceSnapshot } from '../lib/price-history'
 import { RouCardIntroDialog } from '../components/RouCardIntroDialog'
-import { AIKEN_COUNTY_PROPERTY_SEARCH_URL, formatListingCourtesy } from '../lib/listing-facts'
+import { AIKEN_COUNTY_PROPERTY_SEARCH_URL, formatListingCourtesy, formatListingFactRows } from '../lib/listing-facts'
+import {
+  hydrateCompareIds,
+  persistCompareIds,
+  toggleCompareId,
+  moveCompareId,
+} from '../lib/listing-compare'
 import {
   hasSeenRouCardIntro,
   markRouCardIntroSeen,
@@ -47,9 +54,14 @@ function ListingPage() {
   const [showRouIntro, setShowRouIntro] = useState(false)
   const [showingNote, setShowingNote] = useState<string | null>(null)
   const [showingBusy, setShowingBusy] = useState(false)
+  const [compareIds, setCompareIds] = useState<string[]>([])
 
   useEffect(() => {
     if (!hasSeenRouCardIntro()) setShowRouIntro(true)
+  }, [])
+
+  useEffect(() => {
+    setCompareIds(hydrateCompareIds())
   }, [])
 
   const address = listing.address || 'Aiken listing'
@@ -88,6 +100,13 @@ function ListingPage() {
       block: 'start',
     })
   }
+
+  function handleToggleCompare() {
+    const result = toggleCompareId(compareIds, listing.id)
+    setCompareIds(persistCompareIds(result.ids))
+  }
+
+  const inCompare = compareIds.includes(listing.id)
   const rouOrigin = {
     lng: listing.lng,
     lat: listing.lat,
@@ -248,6 +267,24 @@ function ListingPage() {
             </a>
           </div>
 
+          <button
+            type="button"
+            onClick={handleToggleCompare}
+            aria-pressed={inCompare}
+            aria-label={
+              inCompare
+                ? `Remove ${address} from compare`
+                : `Add ${address} to compare`
+            }
+            className={`w-full rounded-md px-4 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
+              inCompare
+                ? 'bg-brand-gold text-brand-navy'
+                : 'border border-brand-navy/20 bg-white text-brand-navy'
+            }`}
+          >
+            {inCompare ? 'In compare' : 'Add to compare'}
+          </button>
+
           <RouThumbs listingId={listing.id} address={address} />
         </aside>
       </main>
@@ -258,6 +295,17 @@ function ListingPage() {
           markRouCardIntroSeen()
           setShowRouIntro(false)
         }}
+      />
+      <ListingCompareTray
+        listingIds={compareIds}
+        labels={{ [listing.id]: address }}
+        onRemove={(id) =>
+          setCompareIds(persistCompareIds(compareIds.filter((item) => item !== id)))
+        }
+        onMove={(from, to) =>
+          setCompareIds(persistCompareIds(moveCompareId(compareIds, from, to)))
+        }
+        onClear={() => setCompareIds(persistCompareIds([]))}
       />
       <ChatWidget
         origin={rouOrigin}
@@ -359,34 +407,7 @@ function ListingGallery({
 }
 
 function SpecList({ listing }: { listing: ListingPageListing }) {
-  const rows: { label: string; value: string }[] = []
-  if (listing.facts.subdivision) {
-    rows.push({ label: 'Subdivision', value: listing.facts.subdivision })
-  }
-  if (listing.facts.garage_spaces != null) {
-    rows.push({
-      label: 'Garage',
-      value: String(listing.facts.garage_spaces),
-    })
-  }
-  if (listing.facts.hoa_fee != null) {
-    rows.push({
-      label: 'HOA',
-      value: `$${Number(listing.facts.hoa_fee).toLocaleString()}`,
-    })
-  }
-  if (listing.facts.pool) {
-    rows.push({ label: 'Pool', value: listing.facts.pool })
-  }
-  if (listing.facts.heating) {
-    rows.push({ label: 'Heat', value: listing.facts.heating })
-  }
-  if (listing.facts.cooling) {
-    rows.push({ label: 'Cool', value: listing.facts.cooling })
-  }
-  if (listing.mls_id) {
-    rows.push({ label: 'MLS', value: listing.mls_id })
-  }
+  const rows = formatListingFactRows(listing.facts, { mls_id: listing.mls_id })
   if (rows.length === 0) return null
 
   return (
@@ -399,7 +420,7 @@ function SpecList({ listing }: { listing: ListingPageListing }) {
       </h2>
       <dl className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {rows.map((row) => (
-          <div key={row.label}>
+          <div key={row.key}>
             <dt className="text-xs font-semibold uppercase tracking-wide text-brand-slate/70">
               {row.label}
             </dt>

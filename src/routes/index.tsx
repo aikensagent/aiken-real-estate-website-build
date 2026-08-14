@@ -65,7 +65,13 @@ import {
   rememberPendingSaveSearch,
 } from '../lib/saved-search'
 import { listBuyerSearches, saveBuyerSearch } from './api/-saved-searches'
-import { requestBuyerShowing } from './api/-showing-requests'
+import { ListingCompareTray } from '../components/ListingCompareTray'
+import {
+  hydrateCompareIds,
+  persistCompareIds,
+  toggleCompareId,
+  moveCompareId,
+} from '../lib/listing-compare'
 
 type HomeSearch = {
   listingId?: string
@@ -98,6 +104,8 @@ function Home() {
   const [saveBusy, setSaveBusy] = useState(false)
   const [showingNote, setShowingNote] = useState<string | null>(null)
   const [showingBusy, setShowingBusy] = useState(false)
+  const [compareIds, setCompareIds] = useState<string[]>([])
+  const [compareNote, setCompareNote] = useState<string | null>(null)
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
@@ -391,6 +399,18 @@ function Home() {
     setShowingNote(null)
   }
 
+  function setCompare(next: string[]) {
+    setCompareIds(persistCompareIds(next))
+  }
+
+  function handleToggleCompare(listingId: string) {
+    const result = toggleCompareId(compareIds, listingId)
+    setCompare(result.ids)
+    setCompareNote(
+      result.full ? 'Compare holds four homes. Remove one to add another.' : null
+    )
+  }
+
   async function handleAmenityIntent(kind: 'playground' | 'school' | 'grocery') {
     const listing = selectedListing
     if (
@@ -489,6 +509,10 @@ function Home() {
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    setCompareIds(hydrateCompareIds())
   }, [])
 
   useEffect(() => {
@@ -762,7 +786,7 @@ function Home() {
               ref={listRef}
               className={`w-full md:w-[420px] lg:w-[480px] min-h-0 overflow-y-auto border-r border-slate-200 bg-white ${
                 mobileView === 'list' ? 'block' : 'hidden'
-              } md:block`}
+              } md:block ${compareIds.length > 0 ? 'pb-28' : ''}`}
             >
               {!loading && (
                 <div className="sticky top-0 z-10 space-y-2 border-b border-brand-navy/10 bg-white px-3 py-2">
@@ -791,6 +815,11 @@ function Home() {
                         ))}
                       </select>
                     </div>
+                  )}
+                  {compareNote && (
+                    <p className="text-xs text-brand-navy" role="status">
+                      {compareNote}
+                    </p>
                   )}
                   <div className="md:hidden space-y-2">
                     <button
@@ -969,7 +998,26 @@ function Home() {
                             )}
                           </div>
                         </Link>
-                        <div className="flex items-center justify-end border-t border-brand-navy/10 px-3 py-2">
+                        <div className="flex items-center justify-between gap-2 border-t border-brand-navy/10 px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCompare(listing.id)}
+                              aria-pressed={compareIds.includes(listing.id)}
+                              aria-label={
+                                compareIds.includes(listing.id)
+                                  ? `Remove ${listingLabel} from compare`
+                                  : `Add ${listingLabel} to compare`
+                              }
+                              className={`inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold ${
+                                compareIds.includes(listing.id)
+                                  ? 'bg-brand-gold text-brand-navy'
+                                  : 'border border-brand-navy/20 bg-white text-brand-navy hover:bg-brand-navy/5'
+                              }`}
+                            >
+                              {compareIds.includes(listing.id)
+                                ? 'In compare'
+                                : 'Compare'}
+                            </button>
                             <button
                               type="button"
                               onClick={() =>
@@ -1064,6 +1112,23 @@ function Home() {
       )}
 
       <RouCardIntroDialog open={showRouIntro} onDismiss={handleDismissRouIntro} />
+      <ListingCompareTray
+        listingIds={compareIds}
+        labels={Object.fromEntries(
+          listings
+            .filter((listing) => compareIds.includes(listing.id))
+            .map((listing) => [listing.id, listing.address || 'Aiken listing'])
+        )}
+        onRemove={(id) => {
+          setCompare(compareIds.filter((item) => item !== id))
+          setCompareNote(null)
+        }}
+        onMove={(from, to) => setCompare(moveCompareId(compareIds, from, to))}
+        onClear={() => {
+          setCompare([])
+          setCompareNote(null)
+        }}
+      />
       <ChatWidget
         origin={rouOrigin}
         onAmenityIntent={handleAmenityIntent}

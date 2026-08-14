@@ -2676,5 +2676,70 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Rou tells them Nick will submit the showing request. She does not ask if they want to speak to him."
+  },
+  {
+    "timestamp": "2026-08-14T03:55:00Z",
+    "task_id": "MLS_PUBLIC_FACTS_EXPAND_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-facts.ts",
+    "supporting_files": [
+      "supabase/functions/mls-ingest/index.ts",
+      "src/lib/listings-context.ts",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new table. Extra public RESO keys land in existing listings.mls_data. Days on market is computed from OnMarketDate / ListingContractDate. Spark $select still omits LivingArea, StoriesTotal, and PoolPrivateYN.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Allowlist only. No owner or agent names. Compare and listing Facts share formatListingFactRows so school/crime/family labels cannot appear. Spark token stays server-only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "listing-facts tests lock PoolFeatures, fireplace, style, and Fair Housing-safe fact-row labels. Ingest test forbids ListAgentFullName.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Public IDX facts expanded for listing page and Rou SELECTED HOME. Redeploy mls-ingest."
+  },
+  {
+    "timestamp": "2026-08-14T03:58:00Z",
+    "task_id": "LISTING_COMPARE_TRAY_V1",
+    "handshake_id": "b7e2f9a1-4c3d-4e8f-9a2b-1d5e6f7a8b9c",
+    "target_file": "src/lib/listing-compare.ts",
+    "supporting_files": [
+      "src/components/ListingCompareTray.tsx",
+      "src/routes/api/-listing-compare.ts",
+      "src/routes/index.tsx",
+      "src/routes/listing.$listingId.tsx"
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new RPC. Compare reads listings by UUID via loadListingCompare. Max 4. Tab-scoped sessionStorage only. Spark fallback only when ingest facts are thin.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "UUID allowlist on ids. No memory RPCs. Tray and API cannot import ChatWidget or Node A. Matrix labels cannot include school, crime, family, or demographic.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "listing-compare.test.ts locks parse/toggle/move, Fair Housing matrix, map and listing-page wiring, and ingest field names.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Visitors can compare up to four homes on listed facts only."
   }
 ]

@@ -11,9 +11,23 @@ export type ListingPublicFacts = {
   garage_spaces: number | null
   subdivision: string | null
   hoa_fee: number | null
+  hoa_fee_frequency: string | null
   pool: string | null
   heating: string | null
   cooling: string | null
+  architectural_style: string | null
+  roof: string | null
+  flooring: string | null
+  fireplace: string | null
+  basement: string | null
+  parking: string | null
+  patio_porch: string | null
+  interior_features: string | null
+  exterior_features: string | null
+  new_construction: boolean | null
+  waterfront: boolean | null
+  on_market_date: string | null
+  days_on_market: number | null
   list_office_name: string | null
 }
 
@@ -27,11 +41,28 @@ export const PUBLIC_RESO_SELECT = [
   'GarageSpaces',
   'SubdivisionName',
   'AssociationFee',
+  'AssociationFeeFrequency',
   'Heating',
   'Cooling',
   'ArchitecturalStyle',
   'ListingId',
   'ListOfficeName',
+  'PoolFeatures',
+  'FireplaceYN',
+  'FireplacesTotal',
+  'FireplaceFeatures',
+  'Roof',
+  'Flooring',
+  'Basement',
+  'ParkingFeatures',
+  'PatioAndPorchFeatures',
+  'InteriorFeatures',
+  'ExteriorFeatures',
+  'NewConstructionYN',
+  'WaterFrontYN',
+  'GarageYN',
+  'ListingContractDate',
+  'OnMarketDate',
 ].join(',')
 
 export const PUBLIC_RESO_SELECT_MIN = [
@@ -108,9 +139,23 @@ export function emptyListingPublicFacts(): ListingPublicFacts {
     garage_spaces: null,
     subdivision: null,
     hoa_fee: null,
+    hoa_fee_frequency: null,
     pool: null,
     heating: null,
     cooling: null,
+    architectural_style: null,
+    roof: null,
+    flooring: null,
+    fireplace: null,
+    basement: null,
+    parking: null,
+    patio_porch: null,
+    interior_features: null,
+    exterior_features: null,
+    new_construction: null,
+    waterfront: null,
+    on_market_date: null,
+    days_on_market: null,
     list_office_name: null,
   }
 }
@@ -119,21 +164,14 @@ export function mergePublicFacts(
   primary: ListingPublicFacts,
   fallback: ListingPublicFacts
 ): ListingPublicFacts {
-  return {
-    sqft: primary.sqft ?? fallback.sqft,
-    year_built: primary.year_built ?? fallback.year_built,
-    lot_size_acres: primary.lot_size_acres ?? fallback.lot_size_acres,
-    property_subtype: primary.property_subtype ?? fallback.property_subtype,
-    remarks: primary.remarks ?? fallback.remarks,
-    stories: primary.stories ?? fallback.stories,
-    garage_spaces: primary.garage_spaces ?? fallback.garage_spaces,
-    subdivision: primary.subdivision ?? fallback.subdivision,
-    hoa_fee: primary.hoa_fee ?? fallback.hoa_fee,
-    pool: primary.pool ?? fallback.pool,
-    heating: primary.heating ?? fallback.heating,
-    cooling: primary.cooling ?? fallback.cooling,
-    list_office_name: primary.list_office_name ?? fallback.list_office_name,
+  const empty = emptyListingPublicFacts()
+  const keys = Object.keys(empty) as (keyof ListingPublicFacts)[]
+  const merged = { ...empty }
+  for (const key of keys) {
+    const value = primary[key] ?? fallback[key]
+    merged[key] = value as never
   }
+  return merged
 }
 
 /** IDX courtesy line. Empty office → nothing. Never default to Nick’s shop. */
@@ -215,6 +253,46 @@ function firstString(
   return null
 }
 
+function yn(value: unknown): boolean | null {
+  if (value === true || value === 'true' || value === 'Yes' || value === 'Y') {
+    return true
+  }
+  if (value === false || value === 'false' || value === 'No' || value === 'N') {
+    return false
+  }
+  return null
+}
+
+function isoDateOnly(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null
+  const stamp = Date.parse(value)
+  if (!Number.isFinite(stamp)) return null
+  return new Date(stamp).toISOString().slice(0, 10)
+}
+
+export function daysOnMarketFromDate(
+  isoDate: string | null,
+  now = Date.now()
+): number | null {
+  if (!isoDate) return null
+  const stamp = Date.parse(isoDate)
+  if (!Number.isFinite(stamp)) return null
+  const days = Math.floor((now - stamp) / 86_400_000)
+  if (days < 0 || days > 5000) return null
+  return days
+}
+
+function formatFireplace(data: Record<string, unknown>): string | null {
+  const total = firstNumber(data, ['FireplacesTotal'])
+  if (total != null && total > 0 && total <= 20) {
+    return total === 1 ? '1 fireplace' : `${Math.round(total)} fireplaces`
+  }
+  const flag = yn(data.FireplaceYN)
+  if (flag === true) return firstString(data, ['FireplaceFeatures'], 120) || 'Yes'
+  if (flag === false) return 'No'
+  return firstString(data, ['FireplaceFeatures'], 120)
+}
+
 function flattenMlsPayload(mlsData: unknown): Record<string, unknown> {
   if (!mlsData || typeof mlsData !== 'object' || Array.isArray(mlsData)) {
     return {}
@@ -241,11 +319,16 @@ export function extractPublicListingFacts(
   ])
   const yearRaw = firstNumber(data, ['YearBuilt', 'Year Built2'])
   const acresRaw = firstNumber(data, ['LotSizeAcres'])
-  const poolYn = data.PoolPrivateYN
+  const poolYn = yn(data.PoolPrivateYN)
+  const poolFeatures = firstString(data, ['PoolFeatures'], 120)
   const pool =
-    poolYn === true || poolYn === 'true'
-      ? 'private pool'
-      : firstString(data, ['PoolFeatures'])
+    poolYn === true
+      ? poolFeatures || 'private pool'
+      : poolFeatures
+  const onMarket =
+    isoDateOnly(data.OnMarketDate) || isoDateOnly(data.ListingContractDate)
+  const garageSpaces = firstNumber(data, ['GarageSpaces'])
+  const garageYn = yn(data.GarageYN)
 
   return {
     sqft:
@@ -261,14 +344,115 @@ export function extractPublicListingFacts(
     property_subtype: firstString(data, ['PropertySubType']),
     remarks: firstString(data, ['PublicRemarks'], 800),
     stories: firstNumber(data, ['StoriesTotal']),
-    garage_spaces: firstNumber(data, ['GarageSpaces']),
+    garage_spaces:
+      garageSpaces != null && garageSpaces >= 0 && garageSpaces <= 20
+        ? garageSpaces
+        : garageYn === true
+          ? 1
+          : null,
     subdivision: firstString(data, ['SubdivisionName'], 120),
     hoa_fee: firstNumber(data, ['AssociationFee']),
+    hoa_fee_frequency: firstString(data, ['AssociationFeeFrequency'], 40),
     pool,
     heating: firstString(data, ['Heating'], 120),
     cooling: firstString(data, ['Cooling'], 120),
+    architectural_style: firstString(data, ['ArchitecturalStyle'], 120),
+    roof: firstString(data, ['Roof'], 80),
+    flooring: firstString(data, ['Flooring'], 120),
+    fireplace: formatFireplace(data),
+    basement: firstString(data, ['Basement'], 120),
+    parking: firstString(data, ['ParkingFeatures'], 120),
+    patio_porch: firstString(data, ['PatioAndPorchFeatures'], 120),
+    interior_features: firstString(data, ['InteriorFeatures'], 200),
+    exterior_features: firstString(data, ['ExteriorFeatures'], 200),
+    new_construction: yn(data.NewConstructionYN),
+    waterfront: yn(data.WaterFrontYN),
+    on_market_date: onMarket,
+    days_on_market: daysOnMarketFromDate(onMarket),
     list_office_name: firstString(data, ['ListOfficeName'], 120),
   }
+}
+
+export type ListingFactRow = {
+  key: string
+  label: string
+  value: string
+}
+
+function yesNo(value: boolean | null): string | null {
+  if (value === true) return 'Yes'
+  if (value === false) return 'No'
+  return null
+}
+
+/** Property facts only. Never schools, crime, or who lives nearby. */
+export function formatListingFactRows(
+  facts: ListingPublicFacts,
+  extras?: {
+    mls_id?: string | null
+    price?: number | null
+    beds?: number | null
+    baths?: number | null
+  }
+): ListingFactRow[] {
+  const rows: ListingFactRow[] = []
+  const push = (key: string, label: string, value: string | null | undefined) => {
+    if (value == null || !String(value).trim()) return
+    rows.push({ key, label, value: String(value).trim() })
+  }
+
+  if (extras?.price != null) {
+    push('price', 'Price', `$${Number(extras.price).toLocaleString()}`)
+  }
+  if (extras?.beds != null) push('beds', 'Beds', String(extras.beds))
+  if (extras?.baths != null) push('baths', 'Baths', String(extras.baths))
+  if (facts.sqft != null) {
+    push('sqft', 'Living area', `${facts.sqft.toLocaleString()} sqft`)
+  }
+  if (facts.year_built != null) {
+    push('year_built', 'Year built', String(facts.year_built))
+  }
+  if (facts.lot_size_acres != null) {
+    push('lot_size_acres', 'Lot', `${facts.lot_size_acres} acres`)
+  }
+  push('property_subtype', 'Type', facts.property_subtype)
+  if (facts.stories != null) push('stories', 'Stories', String(facts.stories))
+  if (facts.garage_spaces != null) {
+    push('garage_spaces', 'Garage', String(facts.garage_spaces))
+  }
+  push('subdivision', 'Subdivision', facts.subdivision)
+  if (facts.hoa_fee != null) {
+    const fee = `$${Number(facts.hoa_fee).toLocaleString()}`
+    push(
+      'hoa_fee',
+      'HOA',
+      facts.hoa_fee_frequency ? `${fee} ${facts.hoa_fee_frequency}` : fee
+    )
+  }
+  push('pool', 'Pool', facts.pool)
+  push('heating', 'Heat', facts.heating)
+  push('cooling', 'Cool', facts.cooling)
+  push('architectural_style', 'Style', facts.architectural_style)
+  push('roof', 'Roof', facts.roof)
+  push('flooring', 'Flooring', facts.flooring)
+  push('fireplace', 'Fireplace', facts.fireplace)
+  push('basement', 'Basement', facts.basement)
+  push('parking', 'Parking', facts.parking)
+  push('patio_porch', 'Patio / porch', facts.patio_porch)
+  push('interior_features', 'Interior', facts.interior_features)
+  push('exterior_features', 'Exterior', facts.exterior_features)
+  push('new_construction', 'New construction', yesNo(facts.new_construction))
+  push('waterfront', 'Waterfront', yesNo(facts.waterfront))
+  if (facts.days_on_market != null) {
+    push(
+      'days_on_market',
+      'Days on market',
+      facts.days_on_market === 1 ? '1 day' : `${facts.days_on_market} days`
+    )
+  }
+  push('list_office_name', 'Listing office', facts.list_office_name)
+  if (extras?.mls_id) push('mls_id', 'MLS', extras.mls_id)
+  return rows
 }
 
 export function isAikenCountyAddress(

@@ -36,9 +36,23 @@ export type ListingSummary = {
   garage_spaces?: number | null
   subdivision?: string | null
   hoa_fee?: number | null
+  hoa_fee_frequency?: string | null
   pool?: string | null
   heating?: string | null
   cooling?: string | null
+  architectural_style?: string | null
+  roof?: string | null
+  flooring?: string | null
+  fireplace?: string | null
+  basement?: string | null
+  parking?: string | null
+  patio_porch?: string | null
+  interior_features?: string | null
+  exterior_features?: string | null
+  new_construction?: boolean | null
+  waterfront?: boolean | null
+  on_market_date?: string | null
+  days_on_market?: number | null
   list_office_name?: string | null
 }
 
@@ -156,6 +170,24 @@ export function formatSelectedListingBlock(listing: ListingSummary): string {
   if (listing.pool) parts.push(listing.pool)
   if (listing.heating) parts.push(`heat: ${listing.heating}`)
   if (listing.cooling) parts.push(`cool: ${listing.cooling}`)
+  if (listing.architectural_style) parts.push(listing.architectural_style)
+  if (listing.roof) parts.push(`roof: ${listing.roof}`)
+  if (listing.flooring) parts.push(`floors: ${listing.flooring}`)
+  if (listing.fireplace) parts.push(`fireplace: ${listing.fireplace}`)
+  if (listing.basement) parts.push(`basement: ${listing.basement}`)
+  if (listing.parking) parts.push(`parking: ${listing.parking}`)
+  if (listing.patio_porch) parts.push(listing.patio_porch)
+  if (listing.interior_features) parts.push(`interior: ${listing.interior_features}`)
+  if (listing.exterior_features) parts.push(`exterior: ${listing.exterior_features}`)
+  if (listing.new_construction === true) parts.push('new construction')
+  if (listing.waterfront === true) parts.push('waterfront')
+  if (listing.days_on_market != null) {
+    parts.push(
+      listing.days_on_market === 1
+        ? '1 day on market'
+        : `${listing.days_on_market} days on market`
+    )
+  }
   if (listing.list_office_name) {
     parts.push(`listed by ${listing.list_office_name}`)
   }
@@ -193,6 +225,13 @@ function missingSelectedFacts(listing: ListingSummary): string[] {
   if (!listing.pool) missing.push('pool')
   if (!listing.heating) missing.push('heating')
   if (!listing.cooling) missing.push('cooling')
+  if (!listing.architectural_style) missing.push('style')
+  if (!listing.roof) missing.push('roof')
+  if (!listing.flooring) missing.push('flooring')
+  if (!listing.fireplace) missing.push('fireplace')
+  if (listing.new_construction == null) missing.push('new construction')
+  if (listing.waterfront == null) missing.push('waterfront')
+  if (listing.days_on_market == null) missing.push('days on market')
   if (!listing.list_office_name) missing.push('listing office')
   return missing
 }
@@ -301,9 +340,23 @@ export function mergeListingFacts(
     garage_spaces: listing.garage_spaces ?? facts.garage_spaces,
     subdivision: listing.subdivision ?? facts.subdivision,
     hoa_fee: listing.hoa_fee ?? facts.hoa_fee,
+    hoa_fee_frequency: listing.hoa_fee_frequency ?? facts.hoa_fee_frequency,
     pool: listing.pool ?? facts.pool,
     heating: listing.heating ?? facts.heating,
     cooling: listing.cooling ?? facts.cooling,
+    architectural_style: listing.architectural_style ?? facts.architectural_style,
+    roof: listing.roof ?? facts.roof,
+    flooring: listing.flooring ?? facts.flooring,
+    fireplace: listing.fireplace ?? facts.fireplace,
+    basement: listing.basement ?? facts.basement,
+    parking: listing.parking ?? facts.parking,
+    patio_porch: listing.patio_porch ?? facts.patio_porch,
+    interior_features: listing.interior_features ?? facts.interior_features,
+    exterior_features: listing.exterior_features ?? facts.exterior_features,
+    new_construction: listing.new_construction ?? facts.new_construction,
+    waterfront: listing.waterfront ?? facts.waterfront,
+    on_market_date: listing.on_market_date ?? facts.on_market_date,
+    days_on_market: listing.days_on_market ?? facts.days_on_market,
     list_office_name: listing.list_office_name ?? facts.list_office_name,
   }
 }
@@ -425,5 +478,74 @@ export async function loadListingDetail(
     }
   } catch {
     return null
+  }
+}
+
+export type ListingCompareHome = {
+  id: string
+  address: string | null
+  price: number | null
+  beds: number | null
+  baths: number | null
+  mls_id: string | null
+  photo: string | null
+  facts: ListingPublicFacts
+}
+
+/** Up to four public homes for side-by-side facts. No owner PII. No Spark if ingest is complete. */
+export async function loadListingCompare(
+  listingIds: string[]
+): Promise<ListingCompareHome[]> {
+  const ids = [...new Set(listingIds.map((id) => id.trim()).filter(isListingId))].slice(
+    0,
+    4
+  )
+  if (ids.length === 0) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('listings')
+      .select(
+        'id, mls_id, address, city, state, zip_code, price, beds, baths, mls_data'
+      )
+      .in('id', ids)
+    if (error || !Array.isArray(data)) return []
+
+    const byId = new Map<string, ListingTableRow>()
+    for (const item of data) {
+      if (!item || typeof item !== 'object') continue
+      const row = item as ListingTableRow
+      if (typeof row.id === 'string') byId.set(row.id, row)
+    }
+
+    const homes = await Promise.all(
+      ids.map(async (id) => {
+        const row = byId.get(id)
+        if (!row) return null
+        const fromStore = extractPublicListingFacts(row.mls_data)
+        const needSpark =
+          fromStore.sqft == null ||
+          fromStore.year_built == null ||
+          !fromStore.list_office_name
+        const fromSpark = needSpark
+          ? await fetchSparkListingFacts(row.mls_id)
+          : emptyListingPublicFacts()
+        const facts = mergePublicFacts(fromStore, fromSpark)
+        const photos = extractListingPhotos(row.mls_data)
+        return {
+          id,
+          address: formatDetailAddress(row),
+          price: finiteOrNull(row.price),
+          beds: finiteOrNull(row.beds),
+          baths: finiteOrNull(row.baths),
+          mls_id: typeof row.mls_id === 'string' ? row.mls_id : null,
+          photo: photos[0] ?? null,
+          facts,
+        } satisfies ListingCompareHome
+      })
+    )
+    return homes.filter((home): home is ListingCompareHome => home != null)
+  } catch {
+    return []
   }
 }

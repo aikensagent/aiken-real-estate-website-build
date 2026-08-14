@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     const filter =
       "StandardStatus eq 'Active' and (PropertyType eq 'Residential' or PropertyType eq 'Land')"
     const select =
-      'ListingKey,ListingId,UnparsedAddress,StreetNumber,StreetName,StreetSuffix,City,StateOrProvince,PostalCode,ListPrice,BedroomsTotal,BathroomsTotalInteger,BathroomsFull,BathroomsHalf,Latitude,Longitude,StandardStatus,PropertyType,PropertySubType,BuildingAreaTotal,YearBuilt,LotSizeAcres,PublicRemarks,GarageSpaces,SubdivisionName,AssociationFee,Heating,Cooling,ArchitecturalStyle,ListOfficeName'
+      'ListingKey,ListingId,UnparsedAddress,StreetNumber,StreetName,StreetSuffix,City,StateOrProvince,PostalCode,ListPrice,BedroomsTotal,BathroomsTotalInteger,BathroomsFull,BathroomsHalf,Latitude,Longitude,StandardStatus,PropertyType,PropertySubType,BuildingAreaTotal,YearBuilt,LotSizeAcres,PublicRemarks,GarageSpaces,SubdivisionName,AssociationFee,AssociationFeeFrequency,Heating,Cooling,ArchitecturalStyle,ListOfficeName,PoolFeatures,FireplaceYN,FireplacesTotal,FireplaceFeatures,Roof,Flooring,Basement,ParkingFeatures,PatioAndPorchFeatures,InteriorFeatures,ExteriorFeatures,NewConstructionYN,WaterFrontYN,GarageYN,ListingContractDate,OnMarketDate'
     let nextUrl: string | null =
       `${RESO_BASE}?$filter=${encodeURIComponent(filter)}&$top=100&$select=${select}`
     const allRaw: any[] = []
@@ -153,12 +153,29 @@ Deno.serve(async (req) => {
           GarageSpaces: item.GarageSpaces ?? null,
           SubdivisionName: item.SubdivisionName ?? null,
           AssociationFee: item.AssociationFee ?? null,
+          AssociationFeeFrequency: item.AssociationFeeFrequency ?? null,
           PoolPrivateYN: item.PoolPrivateYN ?? null,
+          PoolFeatures: item.PoolFeatures ?? null,
           Heating: item.Heating ?? null,
           Cooling: item.Cooling ?? null,
           ArchitecturalStyle: item.ArchitecturalStyle ?? null,
           ListingId: item.ListingId ?? null,
           ListOfficeName: item.ListOfficeName ?? null,
+          FireplaceYN: item.FireplaceYN ?? null,
+          FireplacesTotal: item.FireplacesTotal ?? null,
+          FireplaceFeatures: item.FireplaceFeatures ?? null,
+          Roof: item.Roof ?? null,
+          Flooring: item.Flooring ?? null,
+          Basement: item.Basement ?? null,
+          ParkingFeatures: item.ParkingFeatures ?? null,
+          PatioAndPorchFeatures: item.PatioAndPorchFeatures ?? null,
+          InteriorFeatures: item.InteriorFeatures ?? null,
+          ExteriorFeatures: item.ExteriorFeatures ?? null,
+          NewConstructionYN: item.NewConstructionYN ?? null,
+          WaterFrontYN: item.WaterFrontYN ?? null,
+          GarageYN: item.GarageYN ?? null,
+          ListingContractDate: item.ListingContractDate ?? null,
+          OnMarketDate: item.OnMarketDate ?? null,
         }
         const merge = await supabase
           .from('listings')
