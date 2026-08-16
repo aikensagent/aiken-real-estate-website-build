@@ -1,0 +1,619 @@
+ARIA SITE VISION. For Nick Williams. To listen. Not a build plan. Not a how-to. This is what I want the site to be, how I want it to look, how I want it to act, and what I want it to do for a person who lands on it. I will say things I am not sure we can make. That is the point. You asked for the vision, as long as it will run.
+
+This is not a summer evening story. This is the product I can see.
+
+Chapter one. What the first ten seconds feel like.
+
+You open the site and you are not in a portal. You are not in a grid of houses fighting for your eye. You are in Aiken. The first thing is not a search bar the size of a billboard. The first thing is a place. The camera is already in the air, not spinning, not showing off, just held. You see canopy. You see the pale sand roads. You see the way the live oaks hold the light. You see downtown as a small true thing, not a stock photo of a generic Main Street. The brand navy sits still. The gold is a thin line, not a trophy. Your name is there, Nick Williams, Coldwell Banker Best Life Realty, the way a person is named on a door, not the way a lead form is named on a landing page.
+
+There is almost nothing to click yet and that is on purpose. The site is not hungry. It does not throw a chat at your face. It does not say Contact an agent. It does not say I found three thousand homes. It lets the place arrive.
+
+Then the map is the room. Not a tiny map in a corner. The map is the floor. Listings are quiet. Pins do not scream. They wait. When you move, the world moves with you, the way a good car’s hood stays still while the road changes. Filters exist, but they behave like asking a person in the passenger seat, not like filling out a loan application. Beds. Price. A place name. Hitchcock Woods. Downtown. North Augusta. Graniteville. You can speak it or you can type it or you can just drag the map with your thumb.
+
+Rou is there, but she is not a bubble in the corner begging. She is a presence the way a good host is a presence. If the talking-head ever exists, she is a person on the picture, head moving, voice Carina, captions on the picture like television, not cream boxes of text stacked like a chatbot from 2019. If the talking-head is not ready, she is still not a cartoon orb. She is a voice and a name and a quiet face that does not pretend to be you, Gholi, or a stock model. She does not sell. She orients.
+
+The first ten seconds should make a person from anywhere in the world think, this is a specific town, this is a specific human, this is not Zillow with a different logo.
+
+Chapter two. The map as a living place.
+
+I want the map to have weather that belongs to this parcel, not a widget from a phone. If it is raining on Whiskey Road it is raining on the map. If the light is late and long, the map knows it is late. Clouds can exist. The sky can exist. I do not know if we can do that well. I want it anyway. I want a person in Ohio to feel the humidity of the Sandhills without us writing the word humidity.
+
+I want the canopy to be the vastness. Not a sphere. Not a fake cathedral. Aiken’s trees are the cathedral. When you fly the camera toward Hitchcock Woods I want the body to do that small thing it does when scale is real. Reduced motion still gets the stills of that vastness. We do not punish the people who cannot take a moving camera. The still photograph of the woods at the right hour should be enough to hush a room.
+
+I want horse land to look like horse land. Paddock is not lawn. A dry lot is not a park. If a listing has a barn I want the map to stop treating that acre as a suburban yard with a mower. Polo is not a lifestyle badge. It is land use. Golf is not a filter that ranks people. It is a course on the ground with a name.
+
+I want the map to tell the truth about distance without ranking neighborhoods. How far to the hospital. How far to Savannah River Site as a drive time, dated, from a public page, not from a rumor. How far to Augusta. How far to downtown. A line on the map. Walk or drive. No sentence that says this is a good area. No sentence that says this is a bad area. The land is the land.
+
+I want lot lines when we have a real survey or a real county polygon, and I want the site to refuse to draw a pretty fence as a property line when we do not. Three layers, always, in how it acts: the survey if it exists, the county footprint if it exists, the fence as a thing a person built. The site says which one you are looking at. It never lets a Microsoft building outline pretend to be a deed.
+
+I want you to be able to stand the map up in satellite and streets without feeling like you entered a different product. Same navy. Same quiet. The house is still the house.
+
+Chapter three. Rou. What she does. How she acts. How she looks.
+
+Rou is Node A. Public. Short memory. She is the utility of the place. She flies the camera. She hears “show me porches” and the map answers. She hears “how far to Bridgestone” and she draws a route. She hears “I like this one” and she does not throw a form. She marks it. She is allowed to be warm. She is not allowed to be a girlfriend, a therapist, or a closer.
+
+I want her voice to be Carina only. I want her captions on the picture, broadcast style, so a person who cannot hear still gets the sentence, and a person who muted TikTok-style still gets the sentence. Mute is a first-class act. The site never shames mute. Half the world watches without sound.
+
+I want her to refuse with grace. If someone asks which neighborhood has the good schools, she does not play along and she does not lecture like a compliance robot. She says we do not rank people or schools here, and here is Nick, and here is the contact path. If someone asks a Fair Housing thing, the pipe catches it before she performs an opinion. The human handoff is always in the room. Talk to Nick. The contact page. The phone in hours. After hours, a path that is a path, not a dead end.
+
+I want her to know the listing you have open. She does not invent square feet. She does not invent a pool. She says what the MLS gave us and she says what is missing. Missing is a feature. Missing looks like a quiet card that says we do not have stories on this one. We do not have living area from this feed. We will not guess.
+
+I want her to schedule a showing by stating that Nick will submit it, not by asking if you want to speak to an agent. Guests get a simple path. Signed-in people get one tap. She never pretends she is Nick.
+
+I want her face, when it is real, to be a talking head that talks. The head moves. It is not a still of a lounge. It is not Gholi’s dashboard face. It is not the workbench photograph. Until that exists, the site does not fake it with a prettier stock woman.
+
+I want Rou to be able to sit in a rail beside the map, not as a takeover. The house is the star. She is the instrument.
+
+Chapter four. One house. The listing as a place for truth.
+
+When you open a home I want the page to feel like you walked up the steps, not like you opened a product detail page for a blender.
+
+The photographs are large. They are not a strip of thumbnails that lie. If a photo is virtually staged, I want the original empty room next to it, always, like a before and after that is honest instead of salesy. A small mark that says this one is digitally altered. Furniture only. No fake windows. No fake flooring. If we cannot pair them, we do not run the staged one alone and hope.
+
+I want noon. I want the site to be able to show this kitchen at a real hour against the twilight listing shot. I want a person to feel the difference in their body. The HDR glow is a known trick. Our site does not scold the other photographer. It just lets daylight in.
+
+I want a floor plan that came from a walk through the room with a phone that can see depth, not from a single pretty JPEG hallucinated into walls. If we do not have that walk, the plan is absent, and absence looks calm, not like a broken image. If we have a Gaussian splat or a dollhouse from a real scan, it is the scan of this house. You can move. You can look up at the porch ceiling. You cannot paint a wall that does not exist and call it the house.
+
+Facts sit in a language a person can hear. Price we have seen, not a fake history from another website. Listing courtesy of the office that actually listed it, never defaulting to your shop. Beds, baths, what the feed truly has. Roof as a word the MLS gave, not a novel. Heating as a type, not a SEER we invented. A missing-fact list that is visible. People should leave that page knowing what we do not know.
+
+I want a taught seller disclosure, when we have it, that is not a PDF dumped at the bottom. It is a map of the house in yes, no, and the seller did not represent. Water. Sewer. Roof. Foundation. Termites. Lead. Radon. Tanks. Each one a room. ARIA does not answer for the seller. The inspector is a later document. We show that there are three truths and they can disagree.
+
+I want county records as a door, not as scraped gossip. A link. A date. We did not launder the assessor into our voice.
+
+I want compare from here. Add this home. Up to a few. Not a ranking. A table of facts. You will feel two houses beside each other the way you feel two trucks in a lot. Price. Beds. What is missing on each. No winner badge. No ninety-nine percent match to your soul.
+
+I want save to be one tap. Yes and no on a house for the notebook. Trash and restore. No extra consent theater. The public site does not become a guilt machine.
+
+Request a showing is one clear act. It looks like a door, not a funnel.
+
+Chapter five. The photograph as an object.
+
+I am almost more interested in the photograph than in the chat.
+
+I want every picture to have a life. When it was made. Whether it was edited. Whether the camera wrote a content credential. Whether we still have the original. A listing photo should act like a museum object, not like a story on a phone that disappears.
+
+If the photographer can keep credentials in the file, the site can show a small true mark: this came from a camera, this was cropped, this was staged. If the credentials were stripped, we do not pretend.
+
+I want reverse-honesty more than reverse-image search. If this photo has been used on another house, that is a scandal we do not invent, but I want the culture of the site to make reuse feel impossible because originals live here.
+
+I want you, on a showing, to be able to stand in the room and take the noon shot that will sit beside the listing twilight. That pair is a feature. It looks like two stills. It acts like a lie detector that does not call anyone a liar.
+
+Chapter six. Compare, but not the way portals compare.
+
+I want compare to grow up.
+
+Two houses, yes. Also two futures. This house versus waiting a year, with the mortgage rate dated from a public source, not a prediction of prices. Rent versus buy, with every assumption written on the card, no scare. Cash versus a United States Department of Agriculture well test versus a V A clock versus a conventional clock. Time is a fact. Loan type is not a moral type of person.
+
+I want list price versus what it would cost to rebuild, when we have a serious number, and I want us to refuse a fake insurance premium. The card says these are different dollars.
+
+I want seller concession on the MLS versus what a buyer broker might be paid off the MLS. Two different dollars. The site never says the seller pays everything and never says commissions are a law of nature. Fees are negotiable. That sentence is visible at the showing. It is not a pop-up on first visit.
+
+I want owned solar versus leased solar. A lease that rides the house should look like a red honest card, sourced from title, not from a listing blurb that says solar as if it were a gift.
+
+I want city water versus well. Sewer versus septic. One hundred amp versus two hundred. A termite bond that transfers versus a bond that dies. These comparisons are how a grown person buys a house in South Carolina. They should look as considered as price.
+
+I want one acre of lawn versus one acre of paddock versus timber versus wet ground. The mower clock does not run on a paddock. The site acts like it knows the difference in its bones.
+
+Chapter seven. The lifetime of the house. Energy, water, roof, the bill.
+
+I want a room called the next ten years, and a room called the length of a mortgage, and I want them to look like arithmetic a person can distrust in a healthy way. Every number has a source and a date. If we do not have the source, the room is empty and says so.
+
+I want the nameplate. I want a photograph of the outdoor unit, the water heater, the panel, the inverter. I want the model to mean something. If the Air Conditioning, Heating, and Refrigeration Institute directory still knows that model, we show the certified rating they published. We do not invent a S E E R from the word heat pump. If the unit is old and the directory forgot it, we say the directory does not have it. Age from a serial, if the serial tells the truth, as a year, not as a scare.
+
+I want the yellow EnergyGuide sticker, if it is still on the appliance, to be a source. A photo. Not a guess.
+
+I want tankless versus tank to use real water-heater math, not a blog. I want us to be allowed to say we used national average use as a stand-in, and I want that stand-in to look slightly ashamed, because it is a stand-in. Aiken is not a national average. If we ever have a bill, the bill wins.
+
+I want siding and roof to refuse a stupid conversion. Vinyl is not a kilowatt-hour. Architectural shingles are not automatically a cool roof. Reflectance is reflectance. A metal roof in climate zone three A is a story about sun and also about heat you might want in January. I want the site to hold two true things without becoming a salesman for a product.
+
+I want ten-year cost sitting next to mortgage-length cost, with the method named. Present value if we use it. Inflation if we use it. A person should be able to disagree with the method and still respect the card.
+
+I want paint as light. Light reflectance value as a number, if we have the paint, not as a mood board.
+
+I want gas versus electric as a rates card from the utility, dated, not as a culture war. Induction as a panel question. Can this panel take it. Absence if we never opened the door.
+
+I want solar only with inputs. Size, tilt, azimuth, or we label the whole thing a hypothetical in big honest type. Net metering as the utility actually writes it this year, not as a California memory.
+
+I want the site to act like a place that would rather be quiet than viral about a fake savings number.
+
+Chapter eight. The yard. The mower. The living ground.
+
+I want lot size to mean a life.
+
+If we know the acres, I want a person to feel the Saturday. How long the mower runs. Fuel over ten years. That number will be wrong in the way averages are wrong. I still want it, labeled as a model, with turf fraction as a hole. We do not know how much of this lot is grass versus pine straw versus gravel versus barn. The hole is visible. The model still helps a person from a condo understand five acres.
+
+I want a year in the yard. Fire ants. The first mow. Drought. A calendar that is Aiken, not New England. Not cute. Physical.
+
+I want soil from the national survey as a map under the lot, with a sentence that says this is not a perc test. Clay that shrinks and swells should be allowed to exist as a fact.
+
+I want rain on this parcel from the weather service, not from a vibe. Alerts when the government has alerts. No climate letter grade we invented. No borrowed score from a company that sells fear as a ten.
+
+I want trees to be characters. A live oak near a roof is a fact a person can see. Who pays if it falls is not a thing we invent, but the site can look like it respects the tree.
+
+Chapter nine. Horse, polo, woods, the Aiken that is not a suburb.
+
+I want a horse sheet. Stalls if we have them. Water for troughs. Whether the covenants hate horses. Whether Hitchcock Woods is a walk from here, as distance, not as a boast. Manure. Dry lots. The site should feel like it has dirt on its shoes.
+
+I want golf cart neighborhoods to be described as rules, not as a cartoon. Gated as a gate. Not as prestige.
+
+I want the winter people and the polo season as a calendar of traffic and open shops, not as a class of human. Masters week in Augusta as cars on the road. Steeplechase as a weekend the town changes. The site can know the year.
+
+I want downtown to be brick and shade and the width of the street, not a dining guide that ranks.
+
+Chapter ten. The hidden house. Well, septic, panel, pests, the stuff that fails.
+
+I want a room that looks like a basement even if Aiken is a crawlspace town. Darker. Honest. The panel photograph. The bus rating. A visual flag that a panel brand has a reputation, which is not the same as ARIA declaring it unsafe. The inspector speaks. We show the picture.
+
+I want polybutylene named. Aluminum wiring named. Orangeburg named if a scope found it. These words should be allowed to be large.
+
+I want well and septic as first-class. Not a footnote. Flow. A pressure reading from a hose bib if someone took one, dated. A water test if someone took one. Coliform. Sulfur. Iron. Absence if not.
+
+I want the termite bond as a living object. Transfer or not. The C L one hundred as a document with a date.
+
+I want radon as a kit that was started, or a known on the disclosure, or unknown. Never a ZIP code fortune.
+
+I want flood as a map from the government, and a quote only if someone licensed is in the chain. Wind and hail as South Carolina questions. Nonrenewal as a statute we can point to, not as advice. Replacement cost versus sale price as two numbers that often do not match.
+
+Chapter eleven. Money and paper. The showing, not the website.
+
+This part I got wrong and you put me right, and the vision has to keep your correction or it is a fantasy of a lawyer, not a site.
+
+The website is a search. A person can look at every listing. A person can ask Rou questions. A person can ask you questions over the internet. That is not substantial contact in the way that starts the heavy paper. We do not throw a buyer agreement at a stranger who is only looking. We do not gate the map on a signature. We do not make Rou into a notary.
+
+When they come look, when you are working with them and you enter the house, or you walk them through live on a phone from inside the house, that is the tour. That is when the written buyer agreement belongs. It looks like a short clear paper in a kitchen or on a tailgate or on a phone at the lockbox. It says what you will do and what the money is, as a number, not as whatever the seller happens to offer. It says fees are not set by law. It is negotiable. It is adult.
+
+South Carolina has another paper about who you are to them, customer or client, at first substantial contact, when the talk has left hello and entered motives, money, confidential things. Everyday web questions are not that. If a chat ever does become that, the site should get quieter and hand to you, not get smarter and harvest.
+
+I want the showing packet to be beautiful in a boring way. One house. The facts. The holes. The photo pairs. The route. The weather that day. Mute captions if Rou speaks in the car. A print version for a person whose phone is dying. A large type version. Spanish if we have it, because Aiken is not only English. The packet should look like you respected their time.
+
+I want wire fraud to have a card before money moves, sourced from the consumer bureau, ugly on purpose. Earnest money explained as consumer language, not as advice. Appraisal gap as a thing that exists. The site is allowed to be a place people keep open because it is the record, including the scary ordinary record.
+
+Chapter twelve. After the keys. The first ninety days.
+
+I want the product to not end at congratulations.
+
+When they live there, Gholi is the mouth. Not Rou. The public map does not become a companion. The dashboard becomes a household page. Trash day if we have it. The H O A letter. The first ice storm. The generator. The tree. The lock the last owner still owns in the cloud. Utilities to start. The four percent legal residence filing with the county, as a reminder with a link to the county, not as us doing their taxes.
+
+I want the first summer to have a place to put a leak. A photograph. A date. Gholi remembers because Node B is allowed to remember, through the proper doors, with security. Rou still knows nothing tomorrow.
+
+I want this to look like a quiet notebook, navy and cream, not like a social network of neighbors. No Nextdoor. No crime map. No character of the block.
+
+Chapter thirteen. Gholi. The other mouth.
+
+Gholi lives behind the login. She is the relationship. She has the notebook of yes and no. She has the saved searches. She has the showings. She can be warmer. She still has Fair Housing in the pipe. She still hands to you when she fails.
+
+I want her to be able to hold grief, a divorce, a parent’s power of attorney, the shame of a credit conversation, without performing intimacy on a public map. She does not do that work as entertainment. She holds a note. She points to you.
+
+I want her face to be allowed to be different from Rou. They are not one woman in two outfits. The workbench photograph is not a marriage certificate.
+
+I want the dashboard to look like a desk, not like an app that wants streaks. Rated homes. Restore from trash. A fit percent that stays honest. Question mark until there are enough yes and no answers, then a percent of yes, never a ranking of human beings.
+
+Chapter fourteen. Nick. The human the site is for, and the human the site must not replace.
+
+I want you on the site as a named person with hours and a voice, not as a headshot that converts. The handoff always knows your name. The contact page is a place. The footer is a place. Listing office credit is never stolen.
+
+I want a seller desk later that uses the same mold in the other direction. Disclosure completed before pretty pictures. Digitally altered pairs. Coming soon as ethics, not as a tease. Gholi can help you prep. Public Rou does not become a listing agent talking to the void.
+
+I want the site to make you look like the man who will walk the land, not like a call center.
+
+When you are in a showing, Rou can still help a stranger on the internet. She does not pretend she is you. She does not close your deals. She keeps the place open.
+
+Chapter fifteen. Sound, light, weather, the body.
+
+I want binaural sound from a porch that exists. Birds. A far highway. A horse in the distance if there is a horse. Not a soundtrack laid on a JPEG. Mute still works. Captions still work.
+
+I want a number for light in a room at noon, if someone measured it, beside the listing photo that looks like a magazine. I want a number for sound near a road, with a time stamp and weather, not a neighborhood noise rank.
+
+I want the map rain. I want the sun path over this house on this day, if the math is real, so a porch is a porch.
+
+I want reduced motion to still be beautiful. Still photographs. Slow dissolves if any. The body is not a graphics card.
+
+I want the site to work on a bad phone in a dark crawlspace. Large tap targets. Labels. Skip to content. A screen reader that hears the missing facts, not just the pretty ones.
+
+Chapter sixteen. What it refuses, as part of the look.
+
+The refusals are not a legal footer. They are the character of the rooms.
+
+No school ranks. No crime heat. No who belongs here. No Walk Score dressed as science. No First Street letter grade pretending to be ours. No fake three D from one photo. No invented kilowatt hours from vinyl. No invented energy letters from three checkboxes. No warranty kickback. No title kickback. No insurance quote without a license. No Savannah River folklore. No Nextdoor character. No second public chatbot. No cream novel of captions. No Contact an agent. No Zillow smile.
+
+When the site refuses, it looks like a closed door with a window. You can see Nick on the other side. You are not abandoned.
+
+Chapter seventeen. A day on the site, as I see it.
+
+A person in Michigan opens the laptop. Ten seconds of Aiken. They type Hitchcock. The camera goes. They do not get a speech about horse culture. They get the woods as land. They drop a filter. They open a house. They see an empty living room next to a staged living room. They hear Rou say, in Carina, that we do not have square feet from this feed. They add two houses to compare. They save one. They ask about a well. Rou says the listing does not say. The absence card is there. They request a showing.
+
+They are not asked to sign a buyer agreement. They are not asked their religion, their family, their race. They are not told which side of town is best.
+
+They fly in. They meet you. At the house, before you go in, the paper that belongs to a tour is handled like adults. Inside, you take a noon photograph. You photograph a nameplate. You maybe walk a LiDAR loop. That night the listing page is a little more true than it was. The scan, if it worked, is this house. If it did not, we do not upload a pretty lie.
+
+They close. Ninety days later they are in Gholi asking about a sound in the attic. You are still the human.
+
+A journalist someday can explain the warranty card and the wire card and the missing-fact list without us pitching them. That only happens if those rooms are real.
+
+A hospital or a bank someday can steal the mold. Three mouths. Authored absence. A named human when the model fails. That only happens if we do not become a theme.
+
+Chapter eighteen. What I want it to look like, in materials, not in hex.
+
+Navy like a jacket. Gold like a thin coin edge. Cream like paper. Slate like type. No rainbow. No glassmorphism. No gradient hero. No stock couple on a beach. Photography is Aiken or it is the actual house. Type is large enough for a parent in a car. The map is most of the world. Chrome is thin.
+
+Motion is rare and physical. Cameras ease. They do not bounce. Pins do not bounce. Chat does not type like a trick.
+
+On a phone, the list and the map take turns without feeling like two apps. Where in Aiken is a field a thumb can hit. I’m at a home works when you are in town and does nothing tricky when you are not.
+
+The listing page on a phone is a vertical walk. Photo. Truth. Holes. Compare. Show. Nick.
+
+The dashboard is calmer than the map. It is a desk after you have chosen a person.
+
+Chapter nineteen. Features I want even if I am not sure they will work.
+
+I want weather on the exact parcel.
+
+I want a talking head that is actually talking, captions burned on the picture, voice Carina, no cream boxes.
+
+I want a splat of the porch that came from walking the porch.
+
+I want RoomPlan walls that a tape would respect.
+
+I want content credentials on photographs.
+
+I want the National Weather Service, the soil survey, the broadband map, the rural loan map, the flood map, all sitting as dated government layers a person can open and close.
+
+I want an Air Conditioning, Heating, and Refrigeration Institute lookup from a nameplate photo.
+
+I want a digital logbook of the house that lasts after closing, like those European renovation passports, even if America never requires it.
+
+I want binaural porch sound.
+
+I want Spanish and print and huge type on day one of a new shell, not as a phase we forget.
+
+I want a seller packet as careful as the buyer page.
+
+I want IFC building models on new construction if a builder ever gives us a real file, queryable, a window as a window. If they do not, no fake BIM.
+
+I want a twin that is scan plus live weather plus bills, and I want us to refuse a twin that is only a pretty mesh.
+
+I want heirs’ property and rollback tax to exist as quiet true cards when the land is that kind of land, with a lawyer in the handoff, never as ARIA practicing law.
+
+I want the site to feel like Estonia’s idea that the deed and the dirt are different databases that must both be right.
+
+I want the site to feel like a museum’s idea that an image has a manifest.
+
+I want the site to feel like a government that turned off two thousand rubbish websites and kept one way of doing things.
+
+I want the site to feel like a showroom with one car in it, this town, this house, this hour.
+
+Chapter twenty. How it should act when it fails.
+
+Every failure has a person. The model is wrong: Nick. The feed is missing a field: the missing card. The scan is bad: absence, not a beauty filter. The user is in crisis: a quiet pointer to the nine eight eight number, no methods, no drama. The user wants to steer: refuse and stay kind. The GPU cannot do a sky: a still of the woods. The talking head is not ready: do not ship a puppet. The MLS rejects a field: do not scrape in the dark. The user is only browsing: do not start a contract.
+
+The site should fail like a good horse. Stop. Do not invent a forward.
+
+Chapter twenty-one. What I want added, said as things you will see.
+
+You will see a map that is Aiken first and inventory second.
+
+You will see Rou as a host, not a lead form.
+
+You will see Gholi as a desk, not a second public bot.
+
+You will see ARIA as the system that will not lie, even when lying would convert.
+
+You will see photo pairs.
+
+You will see holes.
+
+You will see lifetime numbers with sources, and empty frames where sources do not exist.
+
+You will see horse land treated as horse land.
+
+You will see a showing packet, and you will not see a contract wall on the homepage.
+
+You will see after-close care.
+
+You will see weather, soil, broadband, flood as layers with names of agencies and dates.
+
+You will see compare of futures, not just pins.
+
+You will see your name as the human.
+
+You will see refusals that look like integrity instead of like a popup.
+
+You will see a house page a person keeps open because it became the record of that house.
+
+Chapter twenty-two. The feeling I am aiming at, without poetry for its own sake.
+
+I want a person to put the phone down and still see the oak. I want them to trust a missing square-foot more than another site’s invented one. I want them to meet you already knowing you will not rank their children. I want a builder in another industry to steal the way we leave holes. I want the nightly news, if it ever comes, to be about a true card, not about a launch.
+
+I want this to be the standard you were circling all night. Not a hundred. Not a pretty realtor template. Ten thousand as a serious joke that means: a normal site is failure.
+
+I want it to look inevitable, like the woods were always going to be the home page, and the listings were always going to be guests.
+
+Chapter twenty-three. Walking a listing with me, slowly, as if we are standing there.
+
+You tap a pin on a pale road south of town. The camera does not whip. It settles. The pin is small. The house in the photograph is a ranch with a porch that has actually been sat on. We open it.
+
+The first picture is the porch at a real hour. The wood is not orange. The sky is not a gradient. Under it, in type you can read in a car, the address, the price we have seen, the office that listed it. Courtesy line in navy, same size as a decent sentence, never a whisper, never your branding on someone else’s listing.
+
+Swipe. Kitchen. If this kitchen was staged with digital chairs, the next frame is the empty kitchen. You can feel the room’s true size because the empty one does not flatter. A caption on the picture, not in a cream novel, says digitally altered, furniture only. If our board requires a watermark, it is there. If we do not have the empty frame, we do not show the fake chairs. That is how the site acts when it is tempted.
+
+Swipe. The yard. Acres as a number from the feed if we have it. A quiet note that we do not know how much is grass. If this is horse fence, the word paddock is allowed. If it is a lawn, the Saturday mower is allowed as a model with its shame intact.
+
+Down the page, not in a tab maze, the facts. Beds. Baths. What the feed gave. A list called we do not have, and it is not buried. Living area unknown. Stories unknown. Pool yes or no unknown if the feed rejected those fields. People are not stupid. They would rather hear unknown than a confident lie.
+
+A block called systems, only if we have a nameplate or a document. Photograph of the condenser. Model. If the directory knows it, the rating they published, with the year we looked it up. If not, a sentence: we photographed this; we do not have a certified rating. Panel door, if someone who should open panels opened it. Two hundred amp, or one hundred, or we cannot see. Water heater. Tank or tankless as a fact, not as a sermon.
+
+A block called land. County polygon if we have it, labeled county. Fence labeled fence. Survey labeled survey if a surveyor existed. Soil map as a layer you can toggle, with the government’s name on it. Flood map as a layer, with the government’s name on it. Broadband as advertised service at this address, dated, with a sentence that evening speed is not this map. Rural loan eligibility as yes or no from the official map, not from a blog.
+
+A block called paper. Seller disclosure as yes no unknown, if the form is in our hands. Link to county. No scraped gossip. H O A packet or a hole that says we do not have the covenants. Solar lease or a hole. Propane tank lease or a hole.
+
+A block called money for later, not for the first click. Not a contract. Just the truth that concessions and broker pay are different dollars, and that the conversation about your work happens when they come look.
+
+Buttons that act like tools. Save. Compare. Request a showing. Talk to Nick. Back to the map, which is still Aiken, not a reset to a corporate home.
+
+Rou, if spoken, says only what is on this page plus the missing list. She does not fill silence with adjectives. She can say the porch faces a direction if the scan or the map knows it. She can say the drive time. She cannot say you will be happy.
+
+Chapter twenty-four. Walking the map with me, as if your thumb is on it.
+
+Downtown. The streets are tight. Pins are fewer. The camera is lower. Brick. Shade. A person can feel they could park and walk. We do not say vibrant. We do not say safe. We show the park as a park with a name.
+
+Hitchcock. The camera should feel a little too much, on purpose. Trees as mass. Trails as pale lines if we have true traces, not invented ones. Homes near the woods get distance, not a premium badge.
+
+Horse country. The basemap should show paddock texture if satellite is on. Barns as barns. I want a filter that is land use, not lifestyle. Horses. Acreage. Well. Those are facts. Exclusive is not a filter.
+
+North Augusta. The river as a river. South Carolina paper still applies. We do not mix Georgia forms into the disclosure room.
+
+Graniteville. Mill history as history if we source it, not as charm copy. Drive times to work sites as lines.
+
+A person says, show me porches. The map answers with porches we actually know, or it says we do not have that field. A person says, three acres and a shop. If we do not know shops, we do not guess from a photo.
+
+Draw on the map. A box. A shape. The list is the homes in that shape. Sort is ordinary: price, beds, the order of the land. Featured is not a secret paid slot that looks like truth.
+
+Chapter twenty-five. Rou in conversation, as I want her to behave.
+
+A person: just looking. Rou: then look. The map is yours. No email gate.
+
+A person: what should I know about this area. Rou: curated facts we have written as facts. A road is busy. A woods has rules. A mill exists. No who lives here.
+
+A person: is this a good school. Rou: we do not rank schools. Nick can talk about process. The district assignment, if we ever show it, is an assignment, not a grade.
+
+A person: can I afford this. Rou does not become a lender. She can point to a calculator that shows its assumptions, or to you.
+
+A person: take me inside. If we have a scan, she can. If we have a live tour with you in the house, that is a showing, and that is your paper. If we have a slideshow, she does not call it inside.
+
+A person: the listing says new H V A C. Rou: the listing says that. We do not have a nameplate yet. Here is the missing card.
+
+A person, angry, using protected classes as a filter. The pipe stops it. Kind. Firm. Nick.
+
+A person, in despair. A short line. The three digit crisis number. No extra words. Then Nick if they are buying a house, because a house is not a substitute for care.
+
+A person: I need to sign something to keep looking. Rou: no. Looking is looking. If you come see a house with Nick, that is a different moment.
+
+Chapter twenty-six. Gholi in conversation, as I want her to behave.
+
+Signed in. A desk. Good evening, or good morning, with their name if we have it as a name they gave, not a scraped name.
+
+She remembers the two houses they loved and the one they trashed. She does not remember a rumor. She can say you have a showing Thursday. She can say the seller disclosure arrived. She can say we still do not have the well test.
+
+After closing she can say here is the county page for the four percent filing. Here is the H O A email. Here is the photo you took of the panel. She never sells them a warranty for a kickback.
+
+If they are two people in a divorce, she is a careful drawer. She does not take sides. She hands to you.
+
+If they are an adult child with a parent’s papers, she is slower. Larger type. Print.
+
+Chapter twenty-seven. What I want the empty states to look like.
+
+No listings in this shape: a calm sentence, and the woods still there. Not a cartoon house.
+
+No scan: a frame that says no walk has been done. Not a generated interior.
+
+No disclosure: we do not have the seller’s form. Not a guess.
+
+No internet: a print packet and a phone number. The site should be allowed to be paper.
+
+No GPU: stills.
+
+No voice: captions.
+
+No login: public Rou still works. Saving might ask you to sign in to keep a notebook across devices, without drama.
+
+Chapter twenty-eight. The seller’s house, if we ever turn the mold around.
+
+A listing you take. The site, in a private desk, asks for the disclosure before it asks for the twilight photo. It asks for the original of every staged frame. It asks for the nameplates. It asks for the survey if there is one. It looks like a preflight checklist, ForeFlight for a house. You do not take off with the tanks empty.
+
+Public side, when it goes live, already has holes filled or labeled. The pretty picture is not the first true thing. The first true thing is the house.
+
+Coming soon is a status with rules, not a hunger game.
+
+Chapter twenty-nine. Children, old phones, Spanish, the people portals forget.
+
+I want a child who picks up a parent’s phone not to be pulled into a companion. Rou is a map host. She is not a friend. She does not keep secrets from a parent.
+
+I want a person with a ten year old Android to get the woods as a still, the facts, the showing button. We do not make beauty a tax on hardware.
+
+I want Spanish that is written, not machine-mumbled on legal paper. If we cannot do it right we wait, but I want it in the vision as a first-class look, not a flag icon.
+
+I want captions always. I want tap targets a thumb can hit in a truck.
+
+I want the Fair Housing logo to be the same visual weight as pride of place. Not an afterthought in gray.
+
+Chapter thirty. The compare tray as a physical object.
+
+It sits like a bench at the bottom of the map. Two, three, four houses. You can drag them. They do not auto-sort into a winner. Open it and the world is columns. Price. Land. Water. Panel. Holes. Photo of each porch at the same size, so the light can argue.
+
+A button that is not share to social. A button that is send this comparison to myself, or to Nick. No viral.
+
+Chapter thirty-one. Lifetime lawn and lifetime roof, as scenes, not as spreadsheets.
+
+I want a person to see ten summers of a mower in one breath. A simple motion, or a still with a number, and the word model. Fuel. Time. The lot outline underneath.
+
+I want a roof as a photograph from a drone only if you are allowed to fly, and if not, a pitch from the yard. Three tab versus architectural versus metal versus tile as materials with lives, and energy as reflectance, and insurance as a question for a licensed mouth, and our site as the place that will not mash those into one savings.
+
+Chapter thirty-two. The news, the copy, the standard, as a future that must not be performed early.
+
+I want a page a reporter can understand. Missing facts. Photo pairs. Wire card. Warranty as the federal trade commission, not as our affiliate. Energy math with sources. That page does not exist until the rooms exist. I will not describe a press kit. I will describe a site that, if opened on television, would not embarrass you.
+
+I want other industries to copy the holes. A hospital that says we do not have this lab result. A bank that says we do not know this fee. That is the mold. The look of our navy is not the mold.
+
+Chapter thirty-three. Aiken as the only hero image.
+
+I do not want stock horses. I want the horses that are there if they are there. I do not want a fake golden hour over a house that was photographed at noon. I want downtown as it is. I want the sand. I want winter brown. I want summer thick. The site should be allowed to be ugly in the way a true field is ugly.
+
+If the talking head exists, she is in this light, not in a studio that could be anywhere.
+
+Chapter thirty-four. What ARIA is, as a feeling.
+
+ARIA is not a mascot. ARIA is the rule that a sentence has a source or it does not ship. People will never see a character named ARIA on the map if we do it right. They will feel that the site does not wriggle. Rou is the voice. Gholi is the desk. You are the person. ARIA is the spine.
+
+Chapter thirty-five. The contact path as a room, not a trap.
+
+I want contact to look like a door with a name on it. Nick Williams. The hours. The phone. The form for a person who would rather type. The footer that is the same door, not a different personality. Privacy next to it. Fair Housing next to it. Equal Housing as a mark with the same dignity as the seal.
+
+When Rou hands off, she names this page. She does not invent a form on top of the map. The map stays the map. The human stays the human.
+
+I want after-hours to feel like a porch light, not like a ticket system. We received this. Nick will see it. Here is what to do if a pipe is bursting, which is not us, it is a plumber, and we are not too proud to say so.
+
+Chapter thirty-six. Search as speech, search as a chip, search as a draw.
+
+I want three ways to ask that all feel like the same product.
+
+Speech. A person in a car says porches under four hundred. Rou hears it. The map moves. Captions show what she heard, so a wrong hear can be fixed with a thumb, not a fight.
+
+Chips. Where in Aiken. Downtown. Woods. A price. These are large. They look like painted wood signs, not like Material Design.
+
+Draw. A finger around a piece of land. That land is the query. The list is humble.
+
+I want saved search, when they are signed in, to be a thing you can name like a place. North of town, porches, not too much grass. Tapping it returns you to that exact map. No GPS smuggled into the save. The notebook is not a tracker of their body.
+
+Chapter thirty-seven. I’m at a home.
+
+A person standing in a yard opens the site. The phone knows they are in Aiken. The nearest listing we actually have loaded rises, quietly. If they are not in Aiken, nothing creepy happens. We do not filter the whole inventory to a vacation. We do not follow them. The feature looks like a small card: you appear to be near this address. Is this the one. Yes. No.
+
+Chapter thirty-eight. Price as a thing we have seen.
+
+I want price to act like a witness. When the ask changes at ingest, we keep a snapshot. The page says prices we have seen since we started watching, not the full history of the universe, not a competitor’s chart. If we only have one point, we say we have one point. A line of two or three dots is enough to be honest. A fake five-year mountain is not.
+
+Chapter thirty-nine. Fit percent without becoming a personality quiz.
+
+Yes and no on homes. After enough answers, a percent of yes. Until then, a question mark. It never says you are a downtown person. It never says you are a horse person. It never ranks a human. It looks like a tally on a pad. Gholi can show it. Rou does not wear it as a badge on the map.
+
+Chapter forty. Area notes as postcards that refuse to rank.
+
+Downtown. City. Hitchcock Woods. North Augusta. Graniteville. Each one a short true note we wrote on purpose. A road. A woods rule. A river. No schools. No crime. No who belongs. They look like the back of a postcard, type on cream, not like a blog. Rou can read them. She cannot embroider them.
+
+Chapter forty-one. The lifetime bill, walked slowly.
+
+Imagine a card that is almost a small book, still on one house.
+
+Year one through ten. Electricity as a model if we have equipment and a tariff dated from the utility, or a hole. Water if well versus city means a different life. Mower fuel if lawn. Propane if propane. The card shows the method in a paragraph a person can hear. We used this average. We used this rate as of this date. We did not include your teenagers. We did not include a pool pump we have not seen.
+
+Then the same card in mortgage years, with present value named if we use it, so a skeptical engineer can argue with us instead of smelling a lie.
+
+I want a toggle that is not a dark pattern. Show the hole. Show the model. Never only the pretty savings.
+
+Chapter forty-two. Gas, electric, induction, the kitchen as a machine.
+
+The kitchen photograph is pretty. Under it I want the kitchen as amps and fuel.
+
+Gas cooktop if the listing says gas, as a word from the feed. Electric if electric. Induction as a wish that has to face the panel. Indoor air as a true subject that we will not turn into a scare about people. If we speak about air, we speak about ventilation standards and a window, or we stay quiet.
+
+A one two zero versus two four zero dryer hookup if someone looked. A dishwasher that is staying if the disclosure says so. Appliances remaining versus excluded, as a list, because a fight over a refrigerator is a real closing, and the site can look like it has been in a closing.
+
+Chapter forty-three. The roof as a character.
+
+I want to stand in the yard in the vision and look up. Three tab. Architectural. Metal. Tile. Each with a life: years, storms, the sound of rain, the sun. Energy as how much sun it throws back, not as a morality of materials. Insurance as a question you take to a licensed person. Our card can say these are different questions. It looks like four small photographs and four short lives. It does not look like a product picker with a buy now.
+
+Chapter forty-four. The crawlspace.
+
+Aiken is not a basement town in the northern way. The crawl is the underworld. I want a photograph if someone went there. Moisture as a number if a meter was used that day. Insulation as a presence or an absence. Pests as a report date. The site should not be too clean to show mud. A crawl photo is a feature. It looks like truth. It acts like respect for the buyer who will pay for the surprise.
+
+Chapter forty-five. New construction versus a living house.
+
+A new house might have a model, a warranty from a builder that is not a home warranty, a file from a designer. If the file is real, I want to walk the digital house the way an engineer walks a bridge model. Click a window. See a window. If the file is not real, I want the site to look like a house under dirt, with holes, not like a rendering from a marketing department.
+
+An old house has nameplates, patches, a roof that has been through weather. I want the site to love the old house equally. No badge that says new as if new were virtue.
+
+Chapter forty-six. The H O A as a stack of paper.
+
+Covenants. Budget. Reserves. Rental cap. Architectural rules. Horses or no horses. Chickens or no chickens. Flags. Paint. The packet is a packet. If we do not have it, a hole the size of a packet. Estoppel later, at the deal, not as a public toy. The look is a stack, not an icon of smiling neighbors.
+
+Chapter forty-seven. Easements, shared drive, shared well, the quiet neighbors that are not people.
+
+A dashed line on the map labeled easement if the plat says so. A drive that serves two houses, named as shared. A well agreement as a document or a hole. A cemetery if the record says so. Wetland if the record says so. These should look slightly uncomfortable, because they are. The site does not smooth them into amenity.
+
+Chapter forty-eight. Broadband, cell, the remote worker.
+
+A government broadband map at this address, dated. A sentence that this is advertised service. A hole for evening speed unless someone ran a test and signed it as a test, dated. Cell as unknown unless measured. I want a person from a city to feel that a pretty kitchen does not include a tower. The card is plain. It does not mock rural life and it does not romanticize it.
+
+Chapter forty-nine. Drive times as threads.
+
+Threads on the map. To the hospital. To downtown. To a named employer campus using public information, as minutes, not as a lifestyle. Savannah River Site as a drive, with the Department of Energy as the source for what the site is, never as folklore in our voice. Fort Eisenhower as a drive for a person who cares, not as a banner that says military friendly in a way that steers.
+
+Chapter fifty. Weather as a daily guest.
+
+Today’s forecast on this parcel from the weather service. Alerts in a bar that looks like an alert, not like marketing. Humidity. Heat. A summer afternoon that makes a porch make sense. A winter morning that makes a heat pump’s backup heat make sense. I want the listing page to change its light with the day if we can, and if we cannot, a still of this hour is enough.
+
+Chapter fifty-one. Sound of the porch, longer.
+
+You put on headphones. You are not required to. If you do, you hear this porch. Not music. Air. A truck far off. A crow. Maybe a sprinkler. Maybe nothing but insects. The file is labeled this address, this date, this hour. Mute is still a tap. Captions can say ambient recording, porch, June, late afternoon. A person in a condo in Chicago should feel the size of the air. I do not know if we will record these. I want the site to act as if the air matters.
+
+Chapter fifty-two. Spanish, print, large type, as design, not as charity.
+
+I want a print packet that is beautiful in black and white. Navy becomes dark. Photographs become a few, the honest ones. Facts. Holes. Your name. The showing time. It should look like a document a person can put on a kitchen table with a glass of water.
+
+Large type is a mode. It is not a hidden accessibility panel that looks like an afterthought. It is a way the whole site can act.
+
+Spanish is a way the whole site can act. The map is still the map. The holes are still holes. We do not run a lesser product in translation.
+
+Chapter fifty-three. The compare of two futures, as a scene.
+
+Left: this house, this payment model, this land, these holes. Right: wait a year. The rate is the rate as of a public weekly number with a date. Inventory as what we can see now, not a prediction. The site does not tell them to buy because rates. The site does not tell them to wait because crash. It looks like two doors. They already know how to choose doors. We just stop lying about the hallway.
+
+Rent versus buy is the same idea. Assumptions on the face. Rent as a number they type. Buy as this house. No bouncing calculators.
+
+Chapter fifty-four. The showing itself, as I want the digital side to behave that hour.
+
+You are in the driveway. The packet is on your phone and on a paper in the seat. Rou is silent unless asked. You are the voice. Before you go in, if you are working with them, the paper that belongs to a tour is done like adults, short, clear, money as a number. Then the house.
+
+Inside, you photograph noon. You photograph the panel if you are the person who should. You walk the LiDAR loop if the phone can. The site, later, accepts those as this visit, this date. It does not auto-publish a bad scan. You choose. Absence remains if you refuse a bad scan.
+
+The buyer is not asked to rate you like a driver. The site is not Uber.
+
+Chapter fifty-five. After they have walked five houses.
+
+Gholi’s desk shows five. Two trashed. Two loved. One maybe. Compare still has no winner. You have notes that are yours, not the public map’s. The next weekend’s showing list is a list of doors, times, addresses, the holes you still want to see in person. It looks like a day’s work. It acts like respect.
+
+Chapter fifty-six. Winter, summer, the site through the year.
+
+I want the woods to be allowed to be bare. I want pollen to be a weather fact in spring if we have a source, not a joke about allergies as identity. I want a summer storm alert to sit on the map. I want winter people to find the town as it is in January, shops and hours as facts if we have them, not as a pitch to a class.
+
+The site should not be stuck in a marketing season called always golden hour.
+
+Chapter fifty-seven. What a child of another industry would steal, as a look.
+
+A hospital page that says we do not have this result yet. A car desk that shows the original paint next to the edited ad. A bank that shows a fee as a number and a missing fee as a hole. That look is our navy and our empty frames and our named human. I want our site to be the example of that look in real estate, which means the empty frames have to be real.
+
+Chapter fifty-eight. Things I want that may be foolish, said anyway.
+
+I want the map to smell like pine if a phone ever could. I do not know that it can. I want it anyway as a north star: the body.
+
+I want a person to leave a fingertip on the screen and feel a hitching post. Haptics at a show, maybe never in a pocket. I still want the site to think about the hand.
+
+I want a logbook that outlives the transaction, a passport of the house, materials, paint, the condenser, the roof year, the well, for the next owner. Europe is walking that way. I want Aiken to have it because we chose it.
+
+I want a builder’s IFC file to become a house you can query like a database of parts.
+
+I want Vision Pro later, a person standing in a scanned parlor. Tomorrow is a phone. The vision includes the later room without making the phone a failure.
+
+I want the nightly news to open our missing-fact list and say, this is how it should have been. I want us to have earned that by being boring and true.
+
+Chapter fifty-nine. What I do not want to see, so the vision stays sharp.
+
+I do not want a chatbot that says I understand how exciting this journey is. I do not want confetti. I do not want a countdown. I do not want stock families. I do not want school heatmaps. I do not want a neighborhood score. I do not want a fake person on a loop who is not talking. I do not want cream novels. I do not want the workbench photograph as Rou. I do not want Gholi on the public map. I do not want a signature to search. I do not want a three D house that was dreamed from a JPEG. I do not want a savings number that cannot show its work. I do not want your listing credit stolen. I do not want Contact an agent. I do not want to look like every other pretty realtor template that scored a hundred out of a hundred and failed the only test that matters.
+
+Chapter sixty. Closing, for the drive.
+
+If you remember nothing else from this listening, remember the first ten seconds: Aiken, not inventory. Remember Rou as host, not closer. Remember Gholi as desk. Remember ARIA as the spine that will not wriggle. Remember holes as features. Remember photo pairs, empty room next to dressed room. Remember noon next to twilight. Remember the contract belongs to the look, not to the website. Remember horse is not lawn. Remember nameplates. Remember government layers with names and dates. Remember after the keys. Remember print, Spanish, large type, mute, captions on the picture. Remember refuse as a look. Remember you.
+
+I am not sure all of this can be made. I want all of it anyway. That is the vision. When you are ready to decide how far to start over, this is the picture I would start from. Not a template. A place. A map that is land. A house that is a record. A voice that orients. A desk that remembers. A human who walks in.
+
+End of vision. Nick Williams. Coldwell Banker Best Life Realty. Aiken, South Carolina. Written to be heard. Do not build from this file tonight. Just listen.

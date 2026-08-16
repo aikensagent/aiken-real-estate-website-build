@@ -2,6 +2,11 @@
 
 **Last Updated:** 2026-08-14
 
+## Under consideration (not decided, not execute)
+- Evening of 2026-08-14: Nick said we can and will start over (new agents, designs, anything required to meet that night’s vault standard), and also: do not execute and do not make final decisions — consider first.
+- Consideration set lives in the Cursor canvas `evening-rebuild-consideration.canvas.tsx` (levels A–D, keep vs on-the-table, draft agents, draft design laws, open questions).
+- Site code is not torn down. Vaults 1–9 remain notes. Talking-head video still waits for execute.
+
 ## Phase 0 — Foundation & Design Tokens
 - COMPLETE
 

@@ -2840,5 +2840,485 @@
       }
     ],
     "master_synthesizer_signoff": "Aria v2.0 - Public contact path is real. Share tags and manifest match the live brand. Still no Resend, Twilio, video, or admin."
+  },
+  {
+    "timestamp": "2026-08-14T04:50:00Z",
+    "task_id": "IDEA_VAULT_PASS_4_MATERIALS_ENERGY_IDX",
+    "target_file": "canvases/god-bar-idea-vault-pass-4.canvas.tsx",
+    "supporting_files": [
+      "src/lib/listing-facts.ts",
+      "supabase/functions/mls-ingest/index.ts"
+    ],
+    "failure_modes": [
+      {
+        "id": "invented_kwh_from_idx_type",
+        "detection": "Any dollar on a listing without dated tariff, occupancy bin, and labeled default efficiency",
+        "isolation": "Notes only this turn. When executed: unknown Heating/Appliances must author absence, never a save figure"
+      },
+      {
+        "id": "spark_select_400_green_fields",
+        "detection": "ConstructionMaterials / Appliances / GreenEnergyEfficient $select rejected like LivingArea",
+        "isolation": "Same probe-and-min-select pattern already locked for LivingArea; do not assume Spark will return them"
+      },
+      {
+        "id": "utility_bill_pii_on_map",
+        "detection": "Buyer kWh or Dominion account on public Node A",
+        "isolation": "Bill calibration is Gholi / personal_notes only; public card uses EIA/DOE defaults"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Do not persist invented annual_savings on listings. Keep system classes in mls_data. Calculator is a pure function of decoded IDX class + dated rate snapshot + occupancy bin + IECC 3A. Living-area unknown path is the template for empty Heating. OpenStudio-HPXML is the later engine, not a new public table.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Utility bills are PII — paste into Node B only. Fair Housing: equipment not occupants; no neighborhood energy rank. Asbestos lookup is listing-said, not a diagnosis. No HVAC contractor affiliate. Vault-first if OpenEI/utility keys ever exist. FTC EnergyGuide national rate is not DESC.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Gates when executed: empty Heating yields no dollar; UEF compare only inside the same DOE bin; tariff without as-of date fails; Spark 400 on new keys falls back like LivingArea. This turn is notes only — no ingest $select change.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 4 vault only. IDX type lists are not SEER/UEF. Honest auto-calc is DOE bins + dated DESC tariffs + labeled defaults. No site work until execute."
+  },
+  {
+    "timestamp": "2026-08-14T04:55:00Z",
+    "task_id": "IDEA_VAULT_PASS_4_HORIZON_SIDING_ROOF",
+    "target_file": "canvases/god-bar-idea-vault-pass-4.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "vinyl_brick_as_kwh",
+        "detection": "Cladding lookup converted to a utility-bill dollar",
+        "isolation": "Siding R is a few percent of a zone-3 wall; mortgage money is replacement TCO, separate column"
+      },
+      {
+        "id": "threetab_vs_architectural_as_kwh",
+        "detection": "Roof=Shingle priced as architectural vs 3-tab energy save",
+        "isolation": "RESO has no 3-tab vs architectural lookup. Same-color asphalt ≈ same albedo. Energy lever is reflectance/tile-vent/metal coating"
+      },
+      {
+        "id": "retrofit_roi_on_listing_compare",
+        "detection": "Tankless install premium subtracted from a buyer who already gets the unit in the house",
+        "isolation": "Listing card = operating + replacement events in the clock. Retrofit ROI is a different card"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Two clocks: 10-year sum and 30-year NIST UPV* / FEMP 3% real. Replacement events inside the window (tank 10–15, tankless 20+, roof class lifespans). Roof already in mls_data. Do not invent 3-tab vs architectural. No new table this turn — notes only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "City of Aiken water FAQ is public (35–42 ppm). Well hardness is not. No roofing/HVAC affiliate. Fair Housing unchanged. Asbestos shingle remains listing-said.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Gates when executed: age-unknown heater cannot assume a 10-year replacement; Roof=Shingle cannot emit an architectural-vs-3-tab dollar; vinyl vs brick cannot emit kWh. Notes only this turn.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Horizon math and envelope honesty added to pass 4 vault. Still no site work until execute."
+  },
+  {
+    "timestamp": "2026-08-14T04:58:00Z",
+    "task_id": "IDEA_VAULT_PASS_5_STAY_ON_YARD_VISUAL",
+    "target_file": "canvases/god-bar-idea-vault-pass-5.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "acres_as_turf",
+        "detection": "LotSizeAcres converted 1:1 into mowing gallons",
+        "isolation": "Turf fraction is a labeled band until footprint/aerial; woods and paddocks are not lawn"
+      },
+      {
+        "id": "photo_to_splat_fake_tour",
+        "detection": "Single MLS JPEG depth-splatted as a walk",
+        "isolation": "Refuse. Real splat only from a scan. Same gate as talking-head video"
+      },
+      {
+        "id": "autoplay_ambient",
+        "detection": "Sound or motion without opt-in / reduced-motion",
+        "isolation": "Weather and grass field respect prefers-reduced-motion; audio opt-in only"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Yard clock is a pure function of LotSizeAcres + labeled turf fraction + season cuts + field GPH band. No new table. Weather is Mapbox style, not a feed we invent. Parcel polygon needed before a plotter gift.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No lawn-care affiliate. No neighborhood via yard. Gholi holds crew vs self-mow. Street audio only if captured here. Photo-to-splat is a fake listing.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Null acres → no gallons. Reduced-motion skips particles. View transitions skip on 404. Notes only — no Mapbox rain or WebGPU in the app this turn.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 5 vault: lifetime yard from lot size, stay-on weather/field, 2026 visual/physical tech. No site work until execute."
+  },
+  {
+    "timestamp": "2026-08-14T05:05:00Z",
+    "task_id": "IDEA_VAULT_VERIFICATION_COMPARE",
+    "target_file": "canvases/god-bar-vault-verification-compare.canvas.tsx",
+    "supporting_files": [
+      "canvases/god-bar-every-industry.canvas.tsx",
+      "canvases/god-bar-idea-vault.canvas.tsx",
+      "canvases/god-bar-idea-vault-pass-2.canvas.tsx",
+      "canvases/god-bar-idea-vault-pass-3.canvas.tsx",
+      "canvases/god-bar-idea-vault-pass-4.canvas.tsx",
+      "canvases/god-bar-idea-vault-pass-5.canvas.tsx"
+    ],
+    "failure_modes": [
+      {
+        "id": "overwrite_original_vaults",
+        "detection": "Edits to pass 1–5 or every-industry boards this turn",
+        "isolation": "This turn wrote only the compare canvas. Originals untouched."
+      },
+      {
+        "id": "blog_as_irs_solar_credit",
+        "detection": "25D 30% until 2032 vs expired 31 Dec 2025 taken as fact",
+        "isolation": "Compare board flags the conflict; ARIA waits for IRS as-of"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Turf clock closes with parcel minus footprint (Aiken GIS 2021 layer / Microsoft open footprints), not LotSizeAcres alone. Electric/GreenEnergyGeneration still un-probed on Spark. No site schema this turn.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Wire-fraud room is CFPB/FBI, not a product pitch. HouseSigma school scores refused. SC 27-50 is disclosure, not a diagnosis. Solar incentive blogs conflict — IRS only. Footprints licensed or open, not scraped qPublic.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Compare canvas is additive. Original seven vault files not modified. Holes listed instead of invented kWh for 3A cool-roof penalty.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Verification compare written. Original idea vaults kept. Union is both sets. No site work."
+  },
+  {
+    "timestamp": "2026-08-14T05:10:00Z",
+    "task_id": "IDEA_VAULT_PASS_6_AWE_BODY",
+    "target_file": "canvases/god-bar-idea-vault-pass-6-awe.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "particle_orgasm_theme",
+        "detection": "Awe implemented as autoplay particles or AI pretty house",
+        "isolation": "Notes lock vastness to this oak/sky/hour; WebGPU degrades; mute default"
+      },
+      {
+        "id": "awe_only_on_high_end_gpu",
+        "detection": "First frame blank without core WebGPU",
+        "isolation": "Chrome 146 compatibility mode + still-sky fallback; numbers always render"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "No new tables. Sky/sun already Mapbox-capable. Awe is a first-frame composition plus degrade path, not a new service.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Binaural only if captured here, opt-in, no covert street talk. No sexualization of buyers. No generated listings. Fair Housing unchanged.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Reduced-motion stills remain vast. WebGPU crash cannot be the hero. Notes only — no shaders in the app this turn.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 6 awe vault. Body-response bar translated to vastness + this place. Originals kept. No site work."
+  },
+  {
+    "timestamp": "2026-08-14T05:15:00Z",
+    "task_id": "IDEA_VAULT_PASS_7_NEWS_COPY",
+    "target_file": "canvases/god-bar-idea-vault-pass-7-news-copy.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "pitch_before_product",
+        "detection": "Language or press claiming rooms that are not live",
+        "isolation": "Stripe rule in the vault: slogan only after the card exists. Notes only this turn."
+      },
+      {
+        "id": "wrong_news",
+        "detection": "Headline from FHA miss, invented save, fake splat, warranty kickback",
+        "isolation": "Refuse list explicit. Consumer-desk hooks only: FTC warranty, wire, sourced bills, fake-contractor contrast"
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Copy path is the existing industry-blind context matrix plus a published pattern, not a new table. Second vertical is the trend piece after Aiken rooms ship.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Wrong-news list: FHA, hallucination, steering, kickback, fake 3D. Wire and warranty rooms are CFPB/FTC citations, not affiliate. No paid coverage.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Interview sentence is illegal until those listing cards exist. This turn added notes only.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 7: copy-the-world and nightly-news are earned by public-interest rooms plus an open mold. Originals kept. No site work."
+  },
+  {
+    "timestamp": "2026-08-14T05:05:00Z",
+    "task_id": "IDEA_VAULT_PASS_8_UNTHOUGHT",
+    "target_file": "canvases/god-bar-idea-vault-pass-8-unthought.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "repeat_prior_vaults",
+        "detection": "Gap canvas restates energy/lawn/EPC/awe/news as new",
+        "isolation": "Explicit: those stay in passes 1–7. This file is only unvaulted rooms."
+      },
+      {
+        "id": "legal_or_insurance_advice",
+        "detection": "Invented premiums, commissions-as-law, SRS folklore, photo-to-3D",
+        "isolation": "Primary citations only (NAR Aug 17 2024, SOP 12-10, SC 38-75-740/790, 27-50, DOE SRS, EPA lead). Absence until local MLS photo rule and Spark Electric probe exist. Notes only."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Gap rooms are paper/photo/insurance/title/after-close, not new map tables. Spark $select Electric/Appliances/ConstructionMaterials still un-probed. Parcel polygon vs GIS vs fence remains three layers.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "NAR compensation is negotiable not fixed. FHA: no crime maps, no school ranks, no SRS steering. Insurance quotes require a license or absence. Crisis path is 988 only. Gholi holds grief/POA; Rou does not perform intimacy on the map.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Local MLS digitally-altered rule and Nick’s actual buyer-agreement form are unconfirmed — labeled search, not fact. No site work this turn.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 8 gap vault: what was not thought. Compare money/photo/paper/clocks/two futures. Originals kept. No site work."
+  },
+  {
+    "timestamp": "2026-08-14T05:10:00Z",
+    "task_id": "IDEA_VAULT_PASS_9_WORLD_TOMORROW",
+    "target_file": "canvases/god-bar-idea-vault-pass-9-world-tomorrow.canvas.tsx",
+    "failure_modes": [
+      {
+        "id": "record_equals_ship",
+        "detection": "Tomorrow kit or EU passport language treated as live site features",
+        "isolation": "Canvas lock: record ≠ ship. Photo-to-3D, fake HES 1–10, First Street as ARIA fact, talking-head video all refused."
+      },
+      {
+        "id": "unqualified_measurement_as_truth",
+        "detection": "Phone dB/lux/radon kit or AHRI miss presented as certified",
+        "isolation": "Tagged T/W/L/P/R. AHRI has models not serials. HES requires DOE-certified assessor. Notes only."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "X-Road pattern: title ≠ GIS ≠ MLS stay federated. RoomPlan/splat only from a walk. IFC/Cesium only if a file exists. NWS/SSURGO/FCC/PVWatts as dated government pulls.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Heirs Act 149 is Gholi+lawyer not Rou advice. Crime/school/Walk Score/EJScreen ranks refused. C2PA only if credentials survive export. Street View scrape refused.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Pass 8 local searches still open (MLS photo rule, buyer form, Spark Electric). ADU statewide bill is not Aiken zoning. No site work this turn.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Pass 9 world catch-all + tomorrow checks recorded. Originals kept. No site work."
+  },
+  {
+    "timestamp": "2026-08-14T05:12:00Z",
+    "task_id": "EVENING_REBUILD_CONSIDERATION",
+    "target_file": "canvases/evening-rebuild-consideration.canvas.tsx",
+    "supporting_files": [
+      "STATUS.md"
+    ],
+    "failure_modes": [
+      {
+        "id": "consideration_as_execute",
+        "detection": "Teardown of src/, new always-on design rules, or locked agent roster this turn",
+        "isolation": "Canvas labeled not-a-decision. No public UI edits. No new .cursor/rules. STATUS section is under-consideration only."
+      },
+      {
+        "id": "greenfield_burn_of_engine",
+        "detection": "Level D treated as default",
+        "isolation": "Bias noted as consider-B/C-not-D, explicitly not a decision. Laws/MLS/FHA listed as keep-regardless."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Four teardown levels. Engine (RPCs, ingest, context-matrix, Node A/B isolation) listed keep-regardless. Greenfield repo is highest cost.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "Refuse officer as a candidate agent. FHA, kickbacks, photo-to-3D, insurance quotes remain refuse. No second public chatbot in any draft roster.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Open questions 1–3 block a real decision. Three local searches still un-run. This turn added notes + STATUS consideration line only.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Rebuild is on the table and not decided. Consideration canvas only. No execute."
+  },
+  {
+    "timestamp": "2026-08-14T05:14:00Z",
+    "task_id": "BUYER_AGREEMENT_NOT_WEB_CONTACT",
+    "target_file": "canvases/god-bar-idea-vault-pass-8-unthought.canvas.tsx",
+    "supporting_files": [
+      "canvases/evening-rebuild-consideration.canvas.tsx",
+      "canvases/god-bar-idea-vault-pass-9-world-tomorrow.canvas.tsx"
+    ],
+    "failure_modes": [
+      {
+        "id": "gate_map_on_signature",
+        "detection": "Rou or homepage requires written buyer agreement before search or chat",
+        "isolation": "Nick lock recorded: agreement at the look. Web search and internet Q&A are not substantial contact. Dream of paper-before-map struck."
+      },
+      {
+        "id": "conflate_nar_and_sc370",
+        "detection": "Treat NAR tour agreement and SC brokerage disclosure as one form",
+        "isolation": "Vault now names two papers, two clocks. ARIA cites; Nick uses the showing form. Not legal advice."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Site remains a search. Showing is the look. No signature gate on map or Node A.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "NAR: working-with + tour. SC 40-57-370: substantive contact for brokerage disclosure, not first hit. Solicitation excepted. Internet Q&A per Nick is not substantial. Notes only, not practice counsel.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Pass 8/9 and consideration canvas corrected. No site work.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Written buyer agreement is a showing event, not a website event. Vaults corrected. No execute."
+  },
+  {
+    "timestamp": "2026-08-14T05:20:00Z",
+    "task_id": "VISION_SPEECHIFY_EMAIL",
+    "target_file": "artifacts/ARIA-VISION-SPEECHIFY.txt",
+    "failure_modes": [
+      {
+        "id": "vision_as_execute",
+        "detection": "Listening file treated as a build ticket",
+        "isolation": "File and email say not a how-to, not execute. Site code untouched."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "Vision keeps engine split, map-as-place, survey/GIS/fence as three layers, government layers dated.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "No web signature gate. FHA refusals as character. Crisis path short. Photo pairs not fake 3D.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "Spoken prose ~10.8k words. Emailed nick@thebestlifeteam.com with txt attachment. No src changes.",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - Speechify vision sent. Not execute."
+  },
+  {
+    "timestamp": "2026-08-15T23:55:00Z",
+    "task_id": "INTEGRITY_CHECK_GROK_BUILD_CONFUSION",
+    "target_file": "STATUS.md",
+    "failure_modes": [
+      {
+        "id": "foreign_site_leak",
+        "detection": "Working tree compared to origin/master 1808d9d; src hashes vs HEAD; no grok.build artifacts in src",
+        "isolation": "Committed code identical to GitHub. Phantom git status on four source files hashed equal to HEAD."
+      }
+    ],
+    "contributions": [
+      {
+        "agent": "Dr. Marcus Hale",
+        "signature": "[ARCHITECT]",
+        "input_provided": "HEAD equals origin/master. App identity still TanStack ARIA (Rou/Gholi, listings, contact). Local extras are notes, ledger, workbench avatar, vision artifacts only.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Nadia Sokolov",
+        "signature": "[SECURITY]",
+        "input_provided": "TTS path still server-only GROK_API_KEY + PII/FH fail-closed. No foreign site keys or routes mixed in.",
+        "status": "SIGNED"
+      },
+      {
+        "agent": "Theo Brooks",
+        "signature": "[QA]",
+        "input_provided": "vitest 32 files / 193 tests passed. Vite client+SSR+Nitro compile succeeded. Trailing Unix cp in npm run build fails on Windows after a good compile (pre-existing script, not a code change).",
+        "status": "SIGNED"
+      }
+    ],
+    "master_synthesizer_signoff": "Aria v2.0 - This repo is intact vs GitHub. Other Grok Build site did not change shipped source."
   }
 ]
