@@ -1,15 +1,26 @@
 # GitHub map — aikensagent
 
-**Work here.** This repo is the live Aiken site (Cursor, IDX, map).
+Refresh [github.com/aikensagent](https://github.com/aikensagent). Names are now obvious.
 
-| Repo | Status | What it is |
-| --- | --- | --- |
-| **aiken-real-estate-website-build** | LIVE | Cursor IDX + map. Canonical. |
-| [talk-with-rou](https://github.com/aikensagent/talk-with-rou) | assets | Rou stills / HUD. Not runnable. |
-| [topaz-timber-crisp-quartz](https://github.com/aikensagent/topaz-timber-crisp-quartz) | parked | Oppenheim Grok copy. Dummy listings. |
-| [brokerage-desk](https://github.com/aikensagent/brokerage-desk) | parked | Incomplete Oppenheim desk. |
-| private | archived | Empty. Never had code. |
-| terra-crisp-cabin-wood | archived | Wrong app (therapist demo). |
-| aiken-visionary | archived | Old Vercel experiment. |
+## Open this to work
 
-Do not start a new site. Change this repo.
+**[aiken-real-estate-website-build](https://github.com/aikensagent/aiken-real-estate-website-build)**  
+LIVE Aiken site. IDX + map. Grok Build uses this.
+
+## The Rou landing you were hunting
+
+**[aiken-rou-hud](https://github.com/aikensagent/aiken-rou-hud)**  
+Rou stills + HUD overlay. Not the live IDX. We put this onto the live site when you say so.
+
+## Parked (do not work here)
+
+| Repo | What |
+| --- | --- |
+| [parked-oppenheim-copy](https://github.com/aikensagent/parked-oppenheim-copy) | Oppenheim Grok clone. Dummy listings. |
+| [parked-oppenheim-desk](https://github.com/aikensagent/parked-oppenheim-desk) | Incomplete desk copy. |
+
+## Archived (hidden unless you show archived)
+
+`private` (empty), `terra-crisp-cabin-wood` (wrong app), `aiken-visionary` (old).
+
+Old URLs still redirect: `talk-with-rou` → `aiken-rou-hud`, `topaz-timber-crisp-quartz` → `parked-oppenheim-copy`.
